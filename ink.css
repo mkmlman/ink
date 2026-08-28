@@ -221,24 +221,31 @@
         right: 8px;
         left: 8px;
         top: auto;
-        bottom: calc(40px + env(safe-area-inset-bottom));
+        bottom: calc(52px + env(safe-area-inset-bottom));
         transform: none;
         flex-direction: row;
         align-items: center;
         width: auto;
         max-width: none;
-        padding: 12px 12px 14px;
+        padding: 14px 12px 16px;
         gap: 16px;
         overflow-x: auto;
+        overflow-y: hidden;
         scrollbar-width: none;
-        border-radius: 14px;
+        border-radius: 16px;
         -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
+        background: rgba(0,0,0,0.92);
+        opacity: 1 !important;
+        visibility: visible !important;
       }
       .fluid-dialers::before { display: none; }
-      .dial { min-width: 128px; width: 128px; }
-      .dial-knob{height:44px;padding:14px 0}
+      .dial { min-width: 132px; width: 132px; flex-shrink: 0; }
+      .dial-knob{height:44px;padding:15px 0}
+      .dial-knob-face{height:4px;background:rgba(255,255,255,0.28)}
+      .dial-knob-face::after{width:16px;height:16px;box-shadow:0 2px 8px rgba(0,0,0,.6)}
       .dial input[type="range"]{height:44px}
-      .dial-reset { width: auto; padding: 0 16px; height:44px; margin-top: 0; }
+      .dial-reset { width: auto; padding: 0 18px; height:44px; margin-top: 0; flex-shrink:0 }
     }
     /* background toggle (ocean/fluid style) */
     .bg-toggle {
