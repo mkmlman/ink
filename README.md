@@ -2,6 +2,8 @@
 
 Standalone WebGL fluid ink — extracted from [mkmlman/ink](https://github.com/mkmlman/ink).
 
+> **Live demo:** https://mkmlman.github.io/ink/
+
 ## Files
 - `fluid.js` — WebGL2 fluid simulation (`SIM 256`, `CURL 4`, `BRIGHTNESS 3`, `IDLE 0`)
 - `dials.js` — 10-slider panel (`radius/curl/density/pressureDiss/velocity/iterations/splatForce/brightness/idle/bloom`) + `localStorage ink:fluid-dials-v1`
