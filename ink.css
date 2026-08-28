@@ -2,16 +2,25 @@
     /* ------------------------------------------------------------------ */
     .fluid-canvas {
       position: fixed;
-      inset: 0;
+      inset: 52px 0 0 0;
       z-index: 0;
       width: 100vw;
-      height: 100vh;
+      height: calc(100vh - 52px);
       pointer-events: none;
       opacity: 0;
       transition: opacity 1s ease;
     }
     @supports (height: 100dvh) {
-      .fluid-canvas { height: 100dvh; }
+      .fluid-canvas { height: calc(100dvh - 52px); }
+    }
+    @media (max-width: 560px) {
+      .fluid-canvas {
+        inset: calc(62px + env(safe-area-inset-top)) 0 0 0;
+        height: calc(100vh - 62px - env(safe-area-inset-top));
+      }
+      @supports (height: 100dvh) {
+        .fluid-canvas { height: calc(100dvh - 62px - env(safe-area-inset-top)); }
+      }
     }
     .fluid-canvas.is-visible { opacity: 1; }
     /* when fluid is visible, let the frosted sheet breathe a bit more */
