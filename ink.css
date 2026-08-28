@@ -221,7 +221,7 @@
         right: 8px;
         left: 8px;
         top: auto;
-        bottom: calc(10px + env(safe-area-inset-bottom));
+        bottom: calc(40px + env(safe-area-inset-bottom));
         transform: none;
         flex-direction: row;
         align-items: center;
