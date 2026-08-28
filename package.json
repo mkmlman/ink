@@ -1,0 +1,10 @@
+{
+  "name": "ink",
+  "version": "1.0.0",
+  "description": "Standalone WebGL fluid ink — extracted from mkmlman/ink",
+  "type": "module",
+  "main": "fluid.js",
+  "files": ["fluid.js","dials.js","LDR_LLL1_0.png","index.html","ink.css"],
+  "keywords": ["fluid","webgl","ink","canvas"],
+  "license": "MIT"
+}

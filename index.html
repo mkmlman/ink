@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ink — fluid demo</title>
+  <link rel="stylesheet" href="ink.css">
+  <style>
+    *{box-sizing:border-box}html,body{height:100%;margin:0;background:#000;color:#eaeaea;font-family:ui-monospace,Menlo,monospace}
+    .info{position:fixed;top:12px;left:12px;z-index:10;font-size:12px;opacity:.7}
+    .info a{color:#fff}
+  </style>
+</head>
+<body>
+  <div class="info">ink — <a href="https://github.com/mkmlman/ink">from ink</a></div>
+  <canvas class="fluid-canvas is-visible" id="fluid" aria-hidden="true"></canvas>
+  <div class="fluid-dialers" id="fluid-dialers">
+    <div class="dial" data-key="radius" data-min="0.10" data-max="0.80" data-step="0.05" data-value="0.40"><div class="dial-head"><span class="dial-label">Radius</span><span class="dial-value">0.40</span></div><button class="dial-knob" tabindex="-1" aria-hidden="true" role="presentation"><span class="dial-knob-face"><span class="dial-indicator"></span></span></button><input type="range" id="dial-radius" min="0.10" max="0.80" step="0.05" value="0.40"></div>
+    <div class="dial" data-key="curl" data-min="0" data-max="8" data-step="0.5" data-value="4"><div class="dial-head"><span class="dial-label">Curl</span><span class="dial-value">4</span></div><button class="dial-knob" tabindex="-1" aria-hidden="true" role="presentation"><span class="dial-knob-face"><span class="dial-indicator"></span></span></button><input type="range" id="dial-curl" min="0" max="8" step="0.5" value="4"></div>
+    <div class="dial" data-key="density" data-min="0" data-max="5" data-step="0.25" data-value="4"><div class="dial-head"><span class="dial-label">Density</span><span class="dial-value">4</span></div><button class="dial-knob" tabindex="-1" aria-hidden="true" role="presentation"><span class="dial-knob-face"><span class="dial-indicator"></span></span></button><input type="range" id="dial-density" min="0" max="5" step="0.25" value="4"></div>
+    <div class="dial" data-key="pressureDiss" data-min="0" data-max="0.20" data-step="0.01" data-value="0.08"><div class="dial-head"><span class="dial-label">Press Diss</span><span class="dial-value">0.08</span></div><button class="dial-knob" tabindex="-1" aria-hidden="true" role="presentation"><span class="dial-knob-face"><span class="dial-indicator"></span></span></button><input type="range" id="dial-pressureDiss" min="0" max="0.20" step="0.01" value="0.08"></div>
+    <div class="dial" data-key="velocity" data-min="0" data-max="1" data-step="0.05" data-value="0"><div class="dial-head"><span class="dial-label">Velocity</span><span class="dial-value">0</span></div><button class="dial-knob" tabindex="-1" aria-hidden="true" role="presentation"><span class="dial-knob-face"><span class="dial-indicator"></span></span></button><input type="range" id="dial-velocity" min="0" max="1" step="0.05" value="0"></div>
+    <div class="dial" data-key="iterations" data-min="4" data-max="32" data-step="1" data-value="16"><div class="dial-head"><span class="dial-label">Iterations</span><span class="dial-value">16</span></div><button class="dial-knob" tabindex="-1" aria-hidden="true" role="presentation"><span class="dial-knob-face"><span class="dial-indicator"></span></span></button><input type="range" id="dial-iterations" min="4" max="32" step="1" value="16"></div>
+    <div class="dial" data-key="splatForce" data-min="2000" data-max="20000" data-step="500" data-value="12000"><div class="dial-head"><span class="dial-label">Splat Force</span><span class="dial-value">12000</span></div><button class="dial-knob" tabindex="-1" aria-hidden="true" role="presentation"><span class="dial-knob-face"><span class="dial-indicator"></span></span></button><input type="range" id="dial-splatForce" min="2000" max="20000" step="500" value="12000"></div>
+    <div class="dial" data-key="brightness" data-min="0" data-max="5" data-step="0.25" data-value="3"><div class="dial-head"><span class="dial-label">Brightness</span><span class="dial-value">3</span></div><button class="dial-knob" tabindex="-1" aria-hidden="true" role="presentation"><span class="dial-knob-face"><span class="dial-indicator"></span></span></button><input type="range" id="dial-brightness" min="0" max="5" step="0.25" value="3"></div>
+    <div class="dial" data-key="idle" data-min="0" data-max="2" data-step="0.25" data-value="0"><div class="dial-head"><span class="dial-label">Idle</span><span class="dial-value">0</span></div><button class="dial-knob" tabindex="-1" aria-hidden="true" role="presentation"><span class="dial-knob-face"><span class="dial-indicator"></span></span></button><input type="range" id="dial-idle" min="0" max="2" step="0.25" value="0"></div>
+    <div class="dial" data-key="bloom" data-min="0" data-max="1.2" data-step="0.05" data-value="0.30"><div class="dial-head"><span class="dial-label">Bloom</span><span class="dial-value">0.30</span></div><button class="dial-knob" tabindex="-1" aria-hidden="true" role="presentation"><span class="dial-knob-face"><span class="dial-indicator"></span></span></button><input type="range" id="dial-bloom" min="0" max="1.2" step="0.05" value="0.30"></div>
+    <button class="dial-reset" id="dial-reset" type="button">↺ Reset</button>
+  </div>
+  <script src="fluid.js"></script>
+  <script src="dials.js"></script>
+  <script>
+    // ensure visible by default in standalone demo
+    window.addEventListener('load',()=>{ document.getElementById('fluid')?.classList.add('is-visible'); });
+  </script>
+</body>
+</html>
