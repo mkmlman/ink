@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>ink — fluid demo</title>
   <link rel="stylesheet" href="ink.css">
   <style>
@@ -21,6 +21,12 @@
     .gh-link{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;color:var(--muted);text-decoration:none;transition:color .2s,background .2s,transform .2s}
     .gh-link:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 8%,transparent);transform:translateY(-1px)}
     .gh-link svg{width:17px;height:17px}
+    @media(max-width:560px){
+      .topbar{padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top));gap:10px}
+      .topbar .brand{font-size:.68rem}
+      .theme-toggle,.gh-link{width:42px;height:42px;min-width:42px;min-height:42px}
+      .theme-toggle svg,.gh-link svg{width:17px;height:17px}
+    }
   </style>
 </head>
 <body>
