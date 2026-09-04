@@ -4,7 +4,7 @@
     var BOX = document.getElementById('fluid-dialers');
     if (!BOX) return;
 
-    // wait for fluid to be ready; retry a few times if loaded before fluid.js
+    // wait for fluid to be ready; retry briefly if dials.js loads first
     var ATTEMPTS = 0;
     function init() {
       var fluid = window.inkFluid;
@@ -14,191 +14,132 @@
       }
       var config = fluid.config;
       var STORAGE_KEY = 'ink:fluid-dials-v1';
-     
+
       var MAP = {
-        radius:     { cfg:'SPLAT_RADIUS',            inputId:'dial-radius',     min:0.10, max:0.80, step:0.05,  def:0.40 },
-        curl:       { cfg:'CURL_STRENGTH',           inputId:'dial-curl',       min:0,    max:8,    step:0.5,   def:4 },
-        density:    { cfg:'DENSITY_SLIDER', inputId:'dial-density',  min:0,    max:5,    step:0.25,  def:4 },
-        pressureDiss:{ cfg:'PRESSURE_DISSIPATION',   inputId:'dial-pressureDiss', min:0,  max:0.20, step:0.01,  def:0.08 },
-        velocity:   { cfg:'VELOCITY_DISSIPATION',    inputId:'dial-velocity',   min:0,    max:1,    step:0.05,  def:0 },
-        iterations: { cfg:'PRESSURE_ITERATIONS',     inputId:'dial-iterations', min:4,    max:32,   step:1,     def:16 },
-        splatForce: { cfg:'SPLAT_FORCE',             inputId:'dial-splatForce', min:2000, max:20000,step:500,   def:12000 },
-        brightness: { cfg:'BRIGHTNESS',              inputId:'dial-brightness', min:0,    max:5,    step:0.25,  def:3 },
-        idle:       { cfg:'IDLE_INJECTION',          inputId:'dial-idle',       min:0,    max:2,    step:0.25,  def:0 },
-        bloom:      { cfg:'BLOOM_INTENSITY',         inputId:'dial-bloom',      min:0,    max:1.2,  step:0.05,  def:0.30 }
+        radius:      { cfg:'SPLAT_RADIUS',          inputId:'dial-radius',       min:0.10, max:0.80,  step:0.05, def:0.40 },
+        curl:        { cfg:'CURL',                  inputId:'dial-curl',         min:0,    max:8,     step:0.5,  def:4 },
+        density:     { cfg:'DENSITY_SLIDER',        inputId:'dial-density',      min:0,    max:5,     step:0.25, def:4 },
+        pressureDiss:{ cfg:'PRESSURE_DISSIPATION',  inputId:'dial-pressureDiss', min:0,    max:0.20,  step:0.01, def:0.08 },
+        velocity:    { cfg:'VELOCITY_DISSIPATION',  inputId:'dial-velocity',     min:0,    max:1,     step:0.05, def:0 },
+        iterations:  { cfg:'PRESSURE_ITERATIONS',   inputId:'dial-iterations',   min:4,    max:32,    step:1,    def:16 },
+        splatForce:  { cfg:'SPLAT_FORCE',           inputId:'dial-splatForce',   min:2000, max:20000, step:500,  def:12000 },
+        brightness:  { cfg:'BRIGHTNESS',            inputId:'dial-brightness',   min:0,    max:5,     step:0.25, def:3 },
+        idle:        { cfg:'IDLE_INJECTION',        inputId:'dial-idle',         min:0,    max:2,     step:0.25, def:0 },
+        bloom:       { cfg:'BLOOM_INTENSITY',       inputId:'dial-bloom',        min:0,    max:1.2,   step:0.05, def:0.30 }
       };
       var dials = {};
       var persistTimer = null;
       function clamp(v, lo, hi){ return Math.min(hi, Math.max(lo, v)); }
       function snap(v, step, min){
-        var n = Math.round((v - min)/step);
-        return +(min + n*step).toFixed(4);
+        var n = Math.round((v - min) / step);
+        return +(min + n * step).toFixed(4);
       }
       function loadStored(){
-        try{ var raw=localStorage.getItem(STORAGE_KEY); if(raw) return JSON.parse(raw);}catch(e){}
+        try {
+          var raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) return JSON.parse(raw) || {};
+        } catch (e) {}
         return {};
       }
       function saveStored(){
         clearTimeout(persistTimer);
         persistTimer = setTimeout(function(){
-          var obj={};
-          Object.keys(dials).forEach(function(k){ obj[k]=dials[k].value; });
-          try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); }catch(e){}
+          var obj = {};
+          Object.keys(dials).forEach(function(k){ obj[k] = dials[k].value; });
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); } catch (e) {}
         }, 120);
       }
-      function angleFor(value, min, max){
-        var t = (value - min)/(max - min);
-        return -135 + t*270;
-      }
       function pctFor(value, min, max){
-        return ((value - min)/(max - min))*100;
+        return ((value - min) / (max - min)) * 100;
+      }
+      function formatValue(value, step){
+        if (step < 0.01) return value.toFixed(3);
+        if (step < 1) return value.toFixed(2);
+        return String(Math.round(value));
       }
       function setDial(key, value, opts){
         var meta = MAP[key];
-        if(!meta) return;
+        if (!meta || !dials[key]) return;
         value = clamp(snap(+value, meta.step, meta.min), meta.min, meta.max);
-        if (!dials[key]) return;
+        if (isNaN(value)) value = meta.def;
         dials[key].value = value;
         try {
           fluid.setConfig(meta.cfg, value);
-        } catch(e){
-          config[meta.cfg] = value;
+        } catch (e) {
+          try { config[meta.cfg] = value; } catch (_e) {}
         }
-        var knob = dials[key].knob;
         var pct = pctFor(value, meta.min, meta.max);
-        if(knob) {
-          knob.style.setProperty('--dial-angle', angleFor(value, meta.min, meta.max)+'deg');
-          knob.style.setProperty('--dial-pct', pct + '%');
+        var d = dials[key];
+        if (d.knob) d.knob.style.setProperty('--dial-pct', pct + '%');
+        if (d.valEl) d.valEl.textContent = formatValue(value, meta.step);
+        if (d.wrap) {
+          d.wrap.setAttribute('data-value', String(value));
+          d.wrap.style.setProperty('--dial-pct', pct + '%');
         }
-        if(knob){
-          knob.setAttribute('aria-valuenow', String(value));
-          knob.setAttribute('aria-valuetext', String(value));
-          knob.setAttribute('aria-valuemin', String(meta.min));
-          knob.setAttribute('aria-valuemax', String(meta.max));
-        }
-        var valEl = dials[key].valEl;
-        if(valEl) {
-          valEl.textContent = (meta.step < 0.01 ? value.toFixed(3) : meta.step < 1 ? value.toFixed(2) : String(Math.round(value)));
-          valEl.style.setProperty('--dial-pct', pct + '%');
-        }
-        var wrap = dials[key].wrap;
-        if(wrap) {
-          wrap.setAttribute('data-value', String(value));
-          wrap.style.setProperty('--dial-pct', pct + '%');
-        }
-        var range = dials[key].range;
-        if(range && String(range.value)!==String(value)) range.value = String(value);
-        if(!opts || !opts.silent) saveStored();
+        if (d.range && String(d.range.value) !== String(value)) d.range.value = String(value);
+        if (d.range) d.range.setAttribute('aria-valuetext', formatValue(value, meta.step));
+        if (!opts || !opts.silent) saveStored();
       }
 
       var stored = loadStored();
       BOX.querySelectorAll('.dial[data-key]').forEach(function(wrap){
         var key = wrap.getAttribute('data-key');
         var meta = MAP[key];
-        if(!meta) return;
+        if (!meta) return;
         var range = document.getElementById(meta.inputId);
         var knob = wrap.querySelector('.dial-knob');
         var valEl = wrap.querySelector('.dial-value');
+        var labelEl = wrap.querySelector('.dial-label');
+        var labelText = labelEl ? labelEl.textContent.trim() : key;
         var initial = stored[key] != null ? stored[key] : (range ? parseFloat(range.value) : meta.def);
-        if(isNaN(initial)) initial = meta.def;
-        dials[key] = { wrap:wrap, knob:knob, valEl:valEl, range:range, value:initial };
-        setDial(key, initial, {silent:true});
-        if(range){
+        if (isNaN(initial)) initial = meta.def;
+        dials[key] = { wrap: wrap, knob: knob, valEl: valEl, range: range, value: initial };
+        if (range) {
+          // single accessible slider per dial — the knob is visual only
+          range.setAttribute('aria-label', labelText);
+          range.setAttribute('title', labelText);
           range.addEventListener('input', function(){ setDial(key, parseFloat(range.value)); });
         }
-        if(knob){
-           (function(key, knob, meta){
-             var dragging=false, activePointerId=null, activeEl=null;
-             function valueFromX(clientX){
-               var rect = knob.getBoundingClientRect();
-               // knob has 24px hit area; clamp to track bounds for forgiving hit
-               var pct = (clientX - rect.left) / rect.width;
-               pct = Math.max(0, Math.min(1, pct));
-               return meta.min + pct * (meta.max - meta.min);
-             }
-             function setFromClientX(clientX){
-               setDial(key, valueFromX(clientX));
-             }
-             function onDown(e){
-               try{ e.preventDefault(); }catch(_e){}
-               dragging=true;
-               var el = e.currentTarget;
-               activeEl = el;
-               if(el.setPointerCapture && e.pointerId!=null) try{ el.setPointerCapture(e.pointerId);}catch(_e){}
-               activePointerId = e.pointerId;
-               // jump immediately to click/drag position — works for knob, wrap, and value
-               var cx = e.clientX != null ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : null);
-               if(cx != null) setFromClientX(cx);
-               el.style.cursor='grabbing';
-               knob.style.cursor='grabbing';
-               try{ knob.focus(); }catch(_e){}
-             }
-             function onMove(e){
-               if(!dragging) return;
-               var x = e.clientX != null ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : null);
-               if(x==null) return;
-               setFromClientX(x);
-             }
-             function onUp(e){
-               if(!dragging) return;
-               dragging=false;
-               if(activeEl) activeEl.style.cursor='';
-               knob.style.cursor='';
-               if(activeEl && activePointerId!=null && activeEl.releasePointerCapture) try{ activeEl.releasePointerCapture(activePointerId);}catch(_e){}
-               activeEl=null;
-             }
-             function attach(el){
-               if(!el) return;
-               el.addEventListener('pointerdown', onDown);
-               el.addEventListener('wheel', function(e){
-                 e.preventDefault();
-                 var dir = e.deltaY < 0 ? 1 : -1;
-                 // hold shift for finer step
-                 var step = e.shiftKey ? meta.step : meta.step;
-                 setDial(key, dials[key].value + dir*step);
-               }, {passive:false});
-               // click anywhere on dial row also jumps (for mouse users without drag)
-               el.addEventListener('click', function(e){
-                 if(dragging) return;
-                 var cx = e.clientX;
-                 if(cx != null) setFromClientX(cx);
-               });
-             }
-             attach(knob);
-             attach(valEl);
-             attach(wrap);
-             window.addEventListener('pointermove', onMove);
-             window.addEventListener('pointerup', onUp);
-             window.addEventListener('pointercancel', onUp);
-            knob.addEventListener('keydown', function(e){
-              if(e.key==='ArrowLeft' || e.key==='ArrowDown'){ e.preventDefault(); setDial(key, dials[key].value - meta.step); }
-              else if(e.key==='ArrowRight' || e.key==='ArrowUp'){ e.preventDefault(); setDial(key, dials[key].value + meta.step); }
-              else if(e.key==='Home'){ e.preventDefault(); setDial(key, meta.min); }
-              else if(e.key==='End'){ e.preventDefault(); setDial(key, meta.max); }
-            });
-            if(valEl){
-              valEl.setAttribute('tabindex','0');
-              valEl.setAttribute('role','slider');
-              valEl.addEventListener('keydown', function(e){
-                if(e.key==='ArrowLeft' || e.key==='ArrowDown'){ e.preventDefault(); setDial(key, dials[key].value - meta.step); }
-                else if(e.key==='ArrowRight' || e.key==='ArrowUp'){ e.preventDefault(); setDial(key, dials[key].value + meta.step); }
-              });
-            }
-          })(key, knob, meta);
-        }
+        if (knob) knob.setAttribute('aria-hidden', 'true');
+        setDial(key, initial, { silent: true });
       });
-      Object.keys(dials).forEach(function(k){ setDial(k, dials[k].value, {silent:true}); });
+      Object.keys(dials).forEach(function(k){ setDial(k, dials[k].value, { silent: true }); });
+
       var resetBtn = document.getElementById('dial-reset');
-      if(resetBtn){
+      if (resetBtn) {
         resetBtn.addEventListener('click', function(){
-          Object.keys(MAP).forEach(function(k){ setDial(k, MAP[k].def); });
+          Object.keys(MAP).forEach(function(k){ if (dials[k]) setDial(k, MAP[k].def); });
         });
       }
-      window.inkDials = {
+
+      // collapsible panel — optional #dialers-toggle in host page
+      var toggle = document.getElementById('dialers-toggle');
+      if (toggle) {
+        var COLLAPSE_KEY = 'ink:fluid-dialers-collapsed';
+        const syncToggle = () => {
+          var collapsed = BOX.hasAttribute('hidden');
+          toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+          toggle.setAttribute('aria-label', collapsed ? 'Show fluid controls' : 'Hide fluid controls');
+        };
+        try {
+          if (localStorage.getItem(COLLAPSE_KEY) === '1') BOX.setAttribute('hidden', '');
+        } catch (e) {}
+        syncToggle();
+        toggle.addEventListener('click', function(){
+          if (BOX.hasAttribute('hidden')) BOX.removeAttribute('hidden');
+          else BOX.setAttribute('hidden', '');
+          try { localStorage.setItem(COLLAPSE_KEY, BOX.hasAttribute('hidden') ? '1' : '0'); } catch (e) {}
+          syncToggle();
+        });
+      }
+
+      var api = {
         set: setDial,
         get: function(k){ return dials[k] ? dials[k].value : null; },
+        reset: function(){ Object.keys(MAP).forEach(function(k){ if (dials[k]) setDial(k, MAP[k].def); }); },
         box: BOX
       };
+      window.inkDials = api;
     }
 
     if (document.readyState === 'loading') {
@@ -206,7 +147,7 @@
     } else {
       init();
     }
-  } catch(err) {
+  } catch (err) {
     console.warn('ink dials init failed', err);
   }
 })();

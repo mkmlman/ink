@@ -1,10 +1,51 @@
 {
   "name": "ink",
-  "version": "1.0.0",
-  "description": "Standalone WebGL fluid ink — extracted from mkmlman/ink",
+  "version": "1.1.0",
+  "description": "Standalone WebGL fluid ink background with tunable dials",
   "type": "module",
   "main": "fluid.js",
-  "files": ["fluid.js","dials.js","LDR_LLL1_0.png","index.html","ink.css","ink-icon.svg","LICENSE"],
-  "keywords": ["fluid","webgl","ink","canvas"],
+  "exports": {
+    ".": "./fluid.js",
+    "./fluid": "./fluid.js",
+    "./dials": "./dials.js",
+    "./css": "./ink.css"
+  },
+  "unpkg": "fluid.js",
+  "jsdelivr": "fluid.js",
+  "sideEffects": [
+    "fluid.js",
+    "dials.js",
+    "*.css"
+  ],
+  "files": [
+    "fluid.js",
+    "dials.js",
+    "ink.css",
+    "LDR_LLL1_0.png",
+    "index.html",
+    "ink-icon.svg",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "python3 -m http.server 8080",
+    "check": "node --check fluid.js && node --check dials.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mkmlman/ink.git"
+  },
+  "homepage": "https://mkmlman.github.io/ink/",
+  "bugs": {
+    "url": "https://github.com/mkmlman/ink/issues"
+  },
+  "keywords": [
+    "fluid",
+    "webgl",
+    "webgl2",
+    "ink",
+    "canvas",
+    "background"
+  ],
   "license": "MIT"
 }

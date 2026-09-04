@@ -4,25 +4,27 @@
 // Simulation section
 
 const canvas = document.getElementById('fluid');
-console.log('ink fluid: init', canvas, 'kami=', document.documentElement.getAttribute('data-design-system'), 'reduce=', window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
 if (!canvas) return;
-if (document.documentElement.getAttribute('data-design-system') === 'kami') return;
-if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { canvas.hidden = true; return; }
-resizeCanvas();
+(function respectReducedMotion(){
+  try {
+    var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mq.matches) { canvas.hidden = true; }
+    const apply = () => { canvas.hidden = !!mq.matches; };
+    if (typeof mq.addEventListener === 'function') mq.addEventListener('change', apply);
+    else if (typeof mq.addListener === 'function') mq.addListener(apply);
+  } catch (e) {}
+})();
 
 let config = {
-   
     SIM_RESOLUTION: 256,
     DYE_RESOLUTION: 1024,
-    CAPTURE_RESOLUTION: 512,
     DENSITY_DISSIPATION: 1.0,
     VELOCITY_DISSIPATION: 0.0,
     PRESSURE_DISSIPATION: 0.08,
     PRESSURE: 0.8,
     PRESSURE_ITERATIONS: 16,
     CURL: 4,
-    CURL_STRENGTH: 4,
     SPLAT_RADIUS: 0.40,
     SPLAT_FORCE: 12000,
     BRIGHTNESS: 3.0,
@@ -31,7 +33,7 @@ let config = {
     COLORFUL: true,
     COLOR_UPDATE_SPEED: 10,
     PAUSED: false,
-    BACK_COLOR: { r: 250, g: 249, b: 246 },
+    BACK_COLOR: { r: 10, g: 10, b: 10 },
     TRANSPARENT: false,
     BLOOM: true,
     BLOOM_ITERATIONS: 8,
@@ -43,13 +45,16 @@ let config = {
     SUNRAYS_RESOLUTION: 196,
     SUNRAYS_WEIGHT: 1.0,
 }
-// ink: sync paper background with theme
+// sync paper background with host theme when present; default stays dark
 function syncFluidPaper(){
-  var isDark = document.documentElement.getAttribute('data-theme')==='dark' || document.documentElement.getAttribute('data-theme')==='pitch';
-  config.BACK_COLOR = isDark ? {r:26,g:26,b:26} : {r:250,g:249,b:246};
+  var theme = document.documentElement.getAttribute('data-theme');
+  if (theme === 'light') config.BACK_COLOR = { r: 250, g: 249, b: 246 };
+  else config.BACK_COLOR = { r: 10, g: 10, b: 10 };
 }
 syncFluidPaper();
-new MutationObserver(syncFluidPaper).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+try {
+  new MutationObserver(syncFluidPaper).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+} catch (e) {}
 
 function pointerPrototype () {
     this.id = -1;
@@ -68,7 +73,25 @@ let pointers = [];
 let splatStack = [];
 pointers.push(new pointerPrototype());
 
-const { gl, ext } = getWebGLContext(canvas);
+const ctx = getWebGLContext(canvas);
+const gl = ctx && ctx.gl;
+const ext = ctx && ctx.ext;
+if (!gl || !ext || !ext.formatRGBA) {
+  try { canvas.hidden = true; } catch (e) {}
+  console.warn('ink: WebGL unavailable — fluid disabled');
+  return;
+}
+
+// GPU reset / driver hiccup: pause instead of throwing every frame, then
+// reload (all programs/textures are invalid after a real restore).
+canvas.addEventListener('webglcontextlost', (e) => {
+  try { e.preventDefault(); } catch (err) {}
+  config.PAUSED = true;
+  console.warn('ink: WebGL context lost — fluid paused');
+});
+canvas.addEventListener('webglcontextrestored', () => {
+  try { window.location.reload(); } catch (err) {}
+});
 
 if (isMobile()) {
     config.DYE_RESOLUTION = 512;
@@ -80,15 +103,21 @@ if (!ext.supportLinearFiltering) {
     config.SUNRAYS = false;
 }
 
-// startGUI disabled for ink — no dat.gui
-
 function getWebGLContext (canvas) {
-    const params = { alpha: true, depth: false, stencil: false, antialias: false, preserveDrawingBuffer: false };
+    // opaque canvas: cheaper compositing, and the sim fills every pixel anyway
+    const params = { alpha: false, depth: false, stencil: false, antialias: false, preserveDrawingBuffer: false, powerPreference: 'high-performance', failIfMajorPerformanceCaveat: false };
 
-    let gl = canvas.getContext('webgl2', params);
+    let gl = null;
+    try {
+        gl = canvas.getContext('webgl2', params);
+    } catch (e) { gl = null; }
     const isWebGL2 = !!gl;
-    if (!isWebGL2)
-        gl = canvas.getContext('webgl', params) || canvas.getContext('experimental-webgl', params);
+    if (!isWebGL2) {
+        try {
+            gl = canvas.getContext('webgl', params) || canvas.getContext('experimental-webgl', params);
+        } catch (e) { gl = null; }
+    }
+    if (!gl) return { gl: null, ext: null };
 
     let halfFloat;
     let supportLinearFiltering;
@@ -102,7 +131,8 @@ function getWebGLContext (canvas) {
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
-    const halfFloatTexType = isWebGL2 ? gl.HALF_FLOAT : halfFloat.HALF_FLOAT_OES;
+    const halfFloatTexType = isWebGL2 ? gl.HALF_FLOAT : (halfFloat && halfFloat.HALF_FLOAT_OES);
+    if (!halfFloatTexType) return { gl: null, ext: null };
     let formatRGBA;
     let formatRG;
     let formatR;
@@ -171,107 +201,8 @@ function supportRenderTextureFormat (gl, internalFormat, format, type) {
     return status == gl.FRAMEBUFFER_COMPLETE;
 }
 
-function startGUI () {
-    var gui = new dat.GUI({ width: 300 });
-    gui.add(config, 'DYE_RESOLUTION', { 'high': 1024, 'medium': 512, 'low': 256, 'very low': 128 }).name('quality').onFinishChange(initFramebuffers);
-    gui.add(config, 'SIM_RESOLUTION', { '32': 32, '64': 64, '128': 128, '256': 256 }).name('sim resolution').onFinishChange(initFramebuffers);
-    gui.add(config, 'DENSITY_DISSIPATION', 0, 4.0).name('density diffusion');
-    gui.add(config, 'VELOCITY_DISSIPATION', 0, 4.0).name('velocity diffusion');
-    gui.add(config, 'PRESSURE', 0.0, 1.0).name('pressure');
-    gui.add(config, 'CURL', 0, 50).name('vorticity').step(1);
-    gui.add(config, 'SPLAT_RADIUS', 0.01, 1.0).name('splat radius');
-    gui.add(config, 'SHADING').name('shading').onFinishChange(updateKeywords);
-    gui.add(config, 'COLORFUL').name('colorful');
-    gui.add(config, 'PAUSED').name('paused').listen();
-
-    gui.add({ fun: () => {
-        splatStack.push(parseInt(Math.random() * 20) + 5);
-    } }, 'fun').name('Random splats');
-
-    let bloomFolder = gui.addFolder('Bloom');
-    bloomFolder.add(config, 'BLOOM').name('enabled').onFinishChange(updateKeywords);
-    bloomFolder.add(config, 'BLOOM_INTENSITY', 0.1, 2.0).name('intensity');
-    bloomFolder.add(config, 'BLOOM_THRESHOLD', 0.0, 1.0).name('threshold');
-
-    let sunraysFolder = gui.addFolder('Sunrays');
-    sunraysFolder.add(config, 'SUNRAYS').name('enabled').onFinishChange(updateKeywords);
-    sunraysFolder.add(config, 'SUNRAYS_WEIGHT', 0.3, 1.0).name('weight');
-
-    let captureFolder = gui.addFolder('Capture');
-    captureFolder.addColor(config, 'BACK_COLOR').name('background color');
-    captureFolder.add(config, 'TRANSPARENT').name('transparent');
-    captureFolder.add({ fun: captureScreenshot }, 'fun').name('take screenshot');
-
-    if (isMobile())
-        gui.close();
-}
-
 function isMobile () {
     return /Mobi|Android/i.test(navigator.userAgent);
-}
-
-function captureScreenshot () {
-    let res = getResolution(config.CAPTURE_RESOLUTION);
-    let target = createFBO(res.width, res.height, ext.formatRGBA.internalFormat, ext.formatRGBA.format, ext.halfFloatTexType, gl.NEAREST);
-    render(target);
-
-    let texture = framebufferToTexture(target);
-    texture = normalizeTexture(texture, target.width, target.height);
-
-    let captureCanvas = textureToCanvas(texture, target.width, target.height);
-    let datauri = captureCanvas.toDataURL();
-    downloadURI('fluid.png', datauri);
-    URL.revokeObjectURL(datauri);
-}
-
-function framebufferToTexture (target) {
-    gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
-    let length = target.width * target.height * 4;
-    let texture = new Float32Array(length);
-    gl.readPixels(0, 0, target.width, target.height, gl.RGBA, gl.FLOAT, texture);
-    return texture;
-}
-
-function normalizeTexture (texture, width, height) {
-    let result = new Uint8Array(texture.length);
-    let id = 0;
-    for (let i = height - 1; i >= 0; i--) {
-        for (let j = 0; j < width; j++) {
-            let nid = i * width * 4 + j * 4;
-            result[nid + 0] = clamp01(texture[id + 0]) * 255;
-            result[nid + 1] = clamp01(texture[id + 1]) * 255;
-            result[nid + 2] = clamp01(texture[id + 2]) * 255;
-            result[nid + 3] = clamp01(texture[id + 3]) * 255;
-            id += 4;
-        }
-    }
-    return result;
-}
-
-function clamp01 (input) {
-    return Math.min(Math.max(input, 0), 1);
-}
-
-function textureToCanvas (texture, width, height) {
-    let captureCanvas = document.createElement('canvas');
-    let ctx = captureCanvas.getContext('2d');
-    captureCanvas.width = width;
-    captureCanvas.height = height;
-
-    let imageData = ctx.createImageData(width, height);
-    imageData.data.set(texture);
-    ctx.putImageData(imageData, 0, 0);
-
-    return captureCanvas;
-}
-
-function downloadURI (filename, uri) {
-    let link = document.createElement('a');
-    link.download = filename;
-    link.href = uri;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
 }
 
 class Material {
@@ -883,7 +814,31 @@ let bloomFramebuffers = [];
 let sunrays;
 let sunraysTemp;
 
-let ditheringTexture = createTextureAsync('LDR_LLL1_0.png');
+let ditheringTexture = createTextureAsync(resolveDitherUrl());
+
+// Dithering LUT ships next to fluid.js — resolve relative to the script (not
+// the page) so CDN embeds keep working. Override with
+// `<canvas id="fluid" data-texture="...">` or `window.inkDitherUrl`.
+function resolveDitherUrl () {
+    try {
+        if (canvas.dataset && canvas.dataset.texture) return canvas.dataset.texture;
+        if (typeof window !== 'undefined' && window.inkDitherUrl) return window.inkDitherUrl;
+        let src = null;
+        try { src = document.currentScript && document.currentScript.src; } catch (e) {}
+        if (!src) {
+            try {
+                const s = document.querySelector('script[src*="fluid"]');
+                if (s) src = s.getAttribute('src');
+            } catch (e) {}
+        }
+        if (src) {
+            try { return new URL('LDR_LLL1_0.png', src).toString(); } catch (e) {}
+            const i = src.lastIndexOf('/');
+            if (i >= 0) return src.slice(0, i + 1) + 'LDR_LLL1_0.png';
+        }
+    } catch (e) {}
+    return 'LDR_LLL1_0.png';
+}
 
 const blurProgram            = new Program(blurVertexShader, blurShader);
 const copyProgram            = new Program(baseVertexShader, copyShader);
@@ -1072,11 +1027,19 @@ function createTextureAsync (url) {
     };
 
     let image = new Image();
+    image.crossOrigin = 'anonymous'; // allow CDN-hosted LUT (unpkg/jsdelivr send ACAO:*)
     image.onload = () => {
         obj.width = image.width;
         obj.height = image.height;
         gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+        try {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+        } catch (e) {
+            console.warn('ink: dithering texture upload failed', e);
+        }
+    };
+    image.onerror = () => {
+        console.warn('ink: dithering texture not found at ' + url + ' — continuing without it');
     };
     image.src = url;
 
@@ -1092,15 +1055,20 @@ function updateKeywords () {
 }
 
 updateKeywords();
+resizeCanvas();
 initFramebuffers();
 multipleSplats(parseInt(Math.random() * 20) + 5);
 
-let lastUpdateTime = Date.now();
+let lastUpdateTime = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
 let colorUpdateTimer = 0.0;
 update();
 
 function update () {
     const dt = calcDeltaTime();
+    // hidden tab, reduced-motion, show()==false, or WebGL failure: keep the
+    // rAF chain alive but skip all GL work (calcDeltaTime already advanced
+    // the clock, so resume has no time jump).
+    if (document.hidden || canvas.hidden) { requestAnimationFrame(update); return; }
     if (resizeCanvas())
         initFramebuffers();
     updateColors(dt);
@@ -1112,7 +1080,7 @@ function update () {
 }
 
 function calcDeltaTime () {
-    let now = Date.now();
+    let now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
     let dt = (now - lastUpdateTime) / 1000;
     dt = Math.min(dt, 0.016666);
     lastUpdateTime = now;
@@ -1391,7 +1359,17 @@ function correctRadius (radius) {
     return radius;
 }
 
+function isUIEvent (e) {
+    try {
+        if (e && e.target && typeof e.target.closest === 'function') {
+            return !!e.target.closest('#fluid-dialers, #dialers-toggle, .topbar, .site-footer, button, input, a, select, textarea');
+        }
+    } catch (err) {}
+    return false;
+}
+
 window.addEventListener('mousedown', e => {
+    if (isUIEvent(e)) return;
     let posX = scaleByPixelRatio(e.clientX !== undefined ? e.clientX : e.offsetX);
     let posY = scaleByPixelRatio(e.clientY !== undefined ? e.clientY : e.offsetY);
     let pointer = pointers.find(p => p.id == -1);
@@ -1401,7 +1379,13 @@ window.addEventListener('mousedown', e => {
 });
 
 window.addEventListener('mousemove', e => {
+    if (isUIEvent(e)) return;
     let pointer = pointers[0];
+    if (!pointer.down) {
+        // hover-paint: track position so the next move has a valid delta,
+        // but only emit a splat once the pointer is down or already moving.
+        // Keep hover-paint for the demo feel while ignoring UI hovers.
+    }
     let posX = scaleByPixelRatio(e.clientX !== undefined ? e.clientX : e.offsetX);
     let posY = scaleByPixelRatio(e.clientY !== undefined ? e.clientY : e.offsetY);
     updatePointerMoveData(pointer, posX, posY);
@@ -1412,7 +1396,8 @@ window.addEventListener('mouseup', () => {
 });
 
 window.addEventListener('touchstart', e => {
-    e.preventDefault();
+    if (isUIEvent(e)) return; // let dialers / topbar scroll & interact natively
+    if (e.cancelable) e.preventDefault();
     const touches = e.targetTouches;
     while (touches.length >= pointers.length)
         pointers.push(new pointerPrototype());
@@ -1421,10 +1406,11 @@ window.addEventListener('touchstart', e => {
         let posY = scaleByPixelRatio(touches[i].pageY);
         updatePointerDownData(pointers[i + 1], touches[i].identifier, posX, posY);
     }
-});
+}, { passive: false });
 
 window.addEventListener('touchmove', e => {
-    e.preventDefault();
+    if (isUIEvent(e)) return;
+    if (e.cancelable) e.preventDefault();
     const touches = e.targetTouches;
     for (let i = 0; i < touches.length; i++) {
         let pointer = pointers[i + 1];
@@ -1433,7 +1419,7 @@ window.addEventListener('touchmove', e => {
         let posY = scaleByPixelRatio(touches[i].pageY);
         updatePointerMoveData(pointer, posX, posY);
     }
-}, false);
+}, { passive: false });
 
 window.addEventListener('touchend', e => {
     const touches = e.changedTouches;
@@ -1446,6 +1432,7 @@ window.addEventListener('touchend', e => {
 });
 
 window.addEventListener('keydown', e => {
+    if (isUIEvent(e)) return;
     if (e.code === 'KeyP')
         config.PAUSED = !config.PAUSED;
     if (e.key === ' ')
@@ -1541,14 +1528,17 @@ function wrap (value, min, max) {
 }
 
 function getResolution (resolution) {
-    let aspectRatio = gl.drawingBufferWidth / gl.drawingBufferHeight;
+    const dw = gl.drawingBufferWidth || 0;
+    const dh = gl.drawingBufferHeight || 0;
+    if (!dw || !dh) return { width: Math.round(resolution), height: Math.round(resolution) };
+    let aspectRatio = dw / dh;
     if (aspectRatio < 1)
         aspectRatio = 1.0 / aspectRatio;
 
     let min = Math.round(resolution);
     let max = Math.round(resolution * aspectRatio);
 
-    if (gl.drawingBufferWidth > gl.drawingBufferHeight)
+    if (dw > dh)
         return { width: max, height: min };
     else
         return { width: min, height: max };
@@ -1563,6 +1553,9 @@ function getTextureScale (texture, width, height) {
 
 function scaleByPixelRatio (input) {
     let pixelRatio = window.devicePixelRatio || 1;
+    // cap DPR: full-res fluid on 3x phones is a perf cliff; 1.5–2x is visually identical
+    const cap = isMobile() ? 1.5 : 2;
+    if (pixelRatio > cap) pixelRatio = cap;
     return Math.floor(input * pixelRatio);
 }
 
@@ -1575,21 +1568,29 @@ function hashCode (s) {
     }
     return hash;
 };
-// ink integration — expose fluid control for background toggle (ocean/fluid/off)
-window.inkFluid = {
+// public control surface
+function applySingleConfig (key, value) {
+    if (key === 'CURL_STRENGTH' || key === 'CURL') { config.CURL = value; }
+    else if (key === 'PRESSURE_DISSIPATION') { config.PRESSURE_DISSIPATION = value; config.PRESSURE = Math.max(0, Math.min(1, 1 - value * 2)); }
+    else if (key === 'VELOCITY_DISSIPATION') { config.VELOCITY_DISSIPATION = value; }
+    else if (key === 'DENSITY_SLIDER') { config.DENSITY_DISSIPATION = 1 - value * 0.02; }
+    else config[key] = value;
+    if (key === 'BLOOM' || key === 'SHADING' || key === 'SUNRAYS') updateKeywords();
+    if (key === 'SIM_RESOLUTION' || key === 'DYE_RESOLUTION') initFramebuffers();
+}
+const inkFluid = {
   show: function(){ canvas.hidden = false; canvas.style.display = ''; canvas.classList.add('is-visible'); if (typeof resizeCanvas === 'function' && typeof initFramebuffers === 'function'){ resizeCanvas(); initFramebuffers(); } },
   hide: function(){ canvas.hidden = true; canvas.style.display = 'none'; canvas.classList.remove('is-visible'); },
   splat: function(x,y,dx,dy){ splat(x,y,dx,dy, generateColor()); },
+  burst: function(n){ splatStack.push(n == null ? (parseInt(Math.random() * 20) + 5) : n); },
+  pause: function(){ config.PAUSED = true; },
+  resume: function(){ config.PAUSED = false; },
+  get paused(){ return !!config.PAUSED; },
   get config(){ return config; },
   setConfig: function(key, value){
-   
-    if(key==='CURL_STRENGTH') { config.CURL = value; config.CURL_STRENGTH = value; }
-    else if(key==='PRESSURE_DISSIPATION') { config.PRESSURE_DISSIPATION = value; config.PRESSURE = Math.max(0, Math.min(1, 1 - value*2)); }
-    else if(key==='VELOCITY_DISSIPATION') { config.VELOCITY_DISSIPATION = value; }
-    else if(key==='DENSITY_SLIDER') { config.DENSITY_DISSIPATION = 1 - value*0.02; }
-    else config[key]=value;
-    if(key==='BLOOM' || key==='SHADING' || key==='SUNRAYS') updateKeywords();
-    if(key==='SIM_RESOLUTION' || key==='DYE_RESOLUTION') initFramebuffers();
+    if (key && typeof key === 'object') { Object.keys(key).forEach(k => applySingleConfig(k, key[k])); return; }
+    applySingleConfig(key, value);
   }
 };
+window.inkFluid = inkFluid;
 })();

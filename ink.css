@@ -1,277 +1,258 @@
-/* Fluid background (ported from ink)                               */
-    /* ------------------------------------------------------------------ */
-    .fluid-canvas {
-      position: fixed;
-      inset: 52px 0 0 0;
-      z-index: 0;
-      width: 100vw;
-      height: calc(100vh - 52px);
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 1s ease;
-    }
-    @supports (height: 100dvh) {
-      .fluid-canvas { height: calc(100dvh - 52px); }
-    }
-    @media (max-width: 560px) {
-      .fluid-canvas {
-        inset: calc(62px + env(safe-area-inset-top)) 0 0 0;
-        height: calc(100vh - 62px - env(safe-area-inset-top));
-      }
-      @supports (height: 100dvh) {
-        .fluid-canvas { height: calc(100dvh - 62px - env(safe-area-inset-top)); }
-      }
-    }
-    .fluid-canvas.is-visible { opacity: 1; }
-    /* when fluid is visible, let the frosted sheet breathe a bit more */
-    body:has(.fluid-canvas.is-visible) .sheet {
-      background: color-mix(in srgb, var(--bg) 72%, transparent);
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .fluid-canvas { display: none !important; }
-    }
-    @media print {
-      .fluid-canvas { display: none !important; }
-    }
+/* ink — fluid background + dial panel */
+:root {
+  --ink-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
 
-    /* Fluid dialers — vertical slider column on the right */
-    .fluid-dialers {
-      position: fixed;
-      right: 14px;
-      top: 50%;
-      bottom: auto;
-      left: auto;
-      z-index: 220;
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 14px;
-      padding: 16px 12px 14px;
-      width: 176px;
-      max-height: min(88vh, 620px);
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.14) transparent;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      background: rgba(0,0,0,0.88);
-      box-shadow: 0 8px 28px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.06) inset;
-      transform: translateY(-50%);
-      transition: opacity 0.22s ease, transform 0.22s ease;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-    .fluid-dialers::-webkit-scrollbar { width: 4px; }
-    .fluid-dialers::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 999px; }
-    .fluid-dialers[hidden] { display: none !important; }
-    @media (prefers-reduced-motion: reduce) {
-      .fluid-dialers { transition: none; }
-    }
-    .fluid-dialers::before {
-      content: "FLUID";
-      font-family: var(--mono);
-      font-size: 0.52rem;
-      letter-spacing: 0.18em;
-      color: #6e6e70;
-      line-height: 1;
-      margin-bottom: 2px;
-      text-align: center;
-    }
-    .dial {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 6px;
-      width: 100%;
-      flex-shrink: 0;
-    }
-    .dial-head {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 8px;
-      pointer-events: none;
-    }
-    .dial-head .dial-value { pointer-events: auto; }
-    .dial-label {
-      font-family: var(--mono);
-      font-size: 0.52rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: #8a8a8c;
-      line-height: 1;
-      white-space: nowrap;
-    }
-    .dial-value {
-      font-family: var(--mono);
-      font-size: 0.58rem;
-      letter-spacing: 0.02em;
-      color: #d0d0d2;
-      font-variant-numeric: tabular-nums;
-      line-height: 1;
-      min-height: 0.58rem;
-      cursor: ew-resize;
-      user-select: none;
-      text-align: right;
-      border-bottom: 1px dotted transparent;
-      padding-bottom: 1px;
-    }
-    .dial-value:hover { color: #fff; border-bottom-color: rgba(255,255,255,0.18); }
-    .dial-value:active { cursor: grabbing; }
-    /* Slider: thin track + pill thumb — large hit area */
-    .dial-knob {
-      appearance: none;
-      -webkit-appearance: none;
-      width: 100%;
-      height: 28px;
-      border: 0;
-      background: transparent;
-      position: relative;
-      cursor: ew-resize;
-      touch-action: none;
-      padding: 6px 0;
-      flex-shrink: 0;
-      --dial-pct: 0%;
-      --dial-angle: -135deg;
-      border-radius: 999px;
-      pointer-events: none;
-    }
-    .dial-knob:focus-visible { outline: 1px solid rgba(255,255,255,0.55); outline-offset: 2px; border-radius: 999px; }
-    .dial-knob-face {
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 50%;
-      height: 3px;
-      background: rgba(255,255,255,0.18);
-      border-radius: 999px;
-      transform: translateY(-50%);
-      overflow: visible;
-    }
-    .dial-knob-face::before {
-      content: "";
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: var(--dial-pct);
-      background: #f2f2f3;
-      border-radius: 999px;
-      pointer-events: none;
-    }
-    .dial-knob-face::after {
-      content: "";
-      position: absolute;
-      left: var(--dial-pct);
-      top: 50%;
-      width: 14px; height: 14px;
-      border-radius: 50%;
-      background: #fff;
-      border: 1px solid #0a0a0c;
-      transform: translate(-50%, -50%);
-      box-shadow: 0 1px 6px rgba(0,0,0,0.5);
-      pointer-events: none;
-      transition: transform 0.08s ease, box-shadow 0.08s ease;
-    }
-    .dial-knob:active .dial-knob-face::after { transform: translate(-50%, -50%) scale(1.15); box-shadow: 0 2px 10px rgba(0,0,0,0.6); }
-    .dial-knob:hover .dial-knob-face { background: rgba(255,255,255,0.22); }
-    .dial-knob:hover .dial-knob-face::after { box-shadow: 0 1px 8px rgba(0,0,0,0.6); }
-    .dial-indicator { display: none; }
-    /* native range overlay — makes drag trivial (browser handles it) */
-    .dial input[type="range"] {
-      position: absolute;
-      left: 0; right: 0;
-      bottom: 0;
-      height: 28px;
-      margin: 0;
-      padding: 0;
-      -webkit-appearance: none;
-      appearance: none;
-      background: transparent;
-      opacity: 0;
-      cursor: ew-resize;
-      z-index: 3;
-      display: block !important;
-      touch-action: none;
-    }
-    .dial input[type="range"]:focus-visible + .dial-knob,
-    .dial:has(input[type="range"]:focus-visible) .dial-knob {
-      outline: 1px solid rgba(255,255,255,0.55);
-      outline-offset: 2px;
-      border-radius: 999px;
-    }
-    .dial-reset {
-      appearance: none;
-      align-self: center;
-      width: 100%;
-      height: 28px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(255,255,255,0.04);
-      color: #8d8d8f;
-      font-family: var(--mono);
-      font-size: 0.58rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      line-height: 1;
-      cursor: pointer;
-      display: grid;
-      place-items: center;
-      flex-shrink: 0;
-      margin-top: 4px;
-      transition: color 0.14s, border-color 0.14s, background 0.14s;
-    }
-    .dial-reset:hover { color: #fff; border-color: rgba(255,255,255,0.20); background: rgba(255,255,255,0.08); }
-    @media (max-width: 860px) {
-      .fluid-dialers { right: 10px; width: 160px; padding: 14px 10px 12px; gap: 14px; }
-    }
-    @media (max-width: 560px) {
-      .fluid-dialers {
-        right: 8px;
-        left: 8px;
-        top: auto;
-        bottom: calc(52px + env(safe-area-inset-bottom));
-        transform: none;
-        flex-direction: row;
-        align-items: center;
-        width: auto;
-        max-width: none;
-        padding: 14px 12px 16px;
-        gap: 16px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        scrollbar-width: none;
-        border-radius: 16px;
-        -webkit-overflow-scrolling: touch;
-        touch-action: pan-x;
-        background: rgba(0,0,0,0.92);
-        opacity: 1 !important;
-        visibility: visible !important;
-      }
-      .fluid-dialers::before { display: none; }
-      .dial { min-width: 132px; width: 132px; flex-shrink: 0; }
-      .dial-knob{height:44px;padding:15px 0}
-      .dial-knob-face{height:4px;background:rgba(255,255,255,0.28)}
-      .dial-knob-face::after{width:16px;height:16px;box-shadow:0 2px 8px rgba(0,0,0,.6)}
-      .dial input[type="range"]{height:44px}
-      .dial-reset { width: auto; padding: 0 18px; height:44px; margin-top: 0; flex-shrink:0 }
-    }
-    /* background toggle (ocean/fluid style) */
-    .bg-toggle {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 34px; height: 34px;
-      border-radius: 999px;
-      border: 1px solid transparent;
-      background: transparent;
-      color: var(--muted);
-      cursor: pointer;
-      font-size: 14px;
-      line-height: 1;
-      transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
-    }
-    .bg-toggle:hover { color: var(--accent); background: var(--accent-soft); border-color: var(--line); }
+/* Full-bleed canvas behind chrome (topbar blurs over it) */
+.fluid-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+@supports (height: 100dvh) {
+  .fluid-canvas { height: 100dvh; }
+}
+.fluid-canvas.is-visible { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .fluid-canvas { display: none !important; }
+  /* sliders tune a hidden sim — remove the panel too so it can't confuse */
+  .fluid-dialers, .dialers-toggle { display: none !important; }
+}
+@media print {
+  .fluid-canvas { display: none !important; }
+}
 
-    /* ------------------------------------------------------------------ */
-    /* Top bar
+/* Panel toggle (lives in topbar; wired by dials.js) */
+.dialers-toggle {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: #b9b9bb;
+  font-family: var(--mono, var(--ink-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace));
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.14s, border-color 0.14s, background 0.14s;
+  white-space: nowrap;
+}
+.dialers-toggle:hover { color: #fff; border-color: rgba(255,255,255,0.24); background: rgba(255,255,255,0.08); }
+.dialers-toggle:focus-visible { outline: 2px solid rgba(255,255,255,0.6); outline-offset: 2px; }
+.dialers-toggle[aria-expanded="false"] { opacity: 0.85; }
+
+/* Fluid dialers — vertical slider column on the right */
+.fluid-dialers {
+  position: fixed;
+  right: 14px;
+  top: 50%;
+  z-index: 220;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  padding: 16px 12px 14px;
+  width: 176px;
+  max-height: min(88vh, 620px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.14) transparent;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  background: rgba(0,0,0,0.88);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.06) inset;
+  transform: translateY(-50%);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.fluid-dialers::-webkit-scrollbar { width: 4px; }
+.fluid-dialers::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 999px; }
+.fluid-dialers[hidden] { display: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .fluid-dialers { transition: none; }
+}
+.fluid-dialers::before {
+  content: "FLUID";
+  font-family: var(--mono, var(--ink-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace));
+  font-size: 0.52rem;
+  letter-spacing: 0.18em;
+  color: #6e6e70;
+  line-height: 1;
+  margin-bottom: 2px;
+  text-align: center;
+}
+.dial {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
+  flex-shrink: 0;
+}
+.dial-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.dial-label {
+  font-family: var(--mono, var(--ink-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace));
+  font-size: 0.52rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8a8a8c;
+  line-height: 1;
+  white-space: nowrap;
+}
+.dial-value {
+  font-family: var(--mono, var(--ink-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace));
+  font-size: 0.58rem;
+  letter-spacing: 0.02em;
+  color: #d0d0d2;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  min-height: 0.58rem;
+  text-align: right;
+}
+/* Visual track only — the native range input below handles all interaction */
+.dial-knob {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  position: relative;
+  padding: 6px 0;
+  flex-shrink: 0;
+  --dial-pct: 0%;
+  border-radius: 999px;
+  pointer-events: none;
+}
+.dial-knob-face {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 3px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 999px;
+  transform: translateY(-50%);
+  overflow: visible;
+}
+.dial-knob-face::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: var(--dial-pct);
+  background: #f2f2f3;
+  border-radius: 999px;
+  pointer-events: none;
+}
+.dial-knob-face::after {
+  content: "";
+  position: absolute;
+  left: var(--dial-pct);
+  top: 50%;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #0a0a0c;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.5);
+  pointer-events: none;
+}
+.dial:hover .dial-knob-face { background: rgba(255,255,255,0.24); }
+.dial-indicator { display: none; }
+/* Native range overlay — browser handles drag / touch / keyboard */
+.dial input[type="range"] {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 0;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  opacity: 0;
+  cursor: ew-resize;
+  z-index: 3;
+  display: block !important;
+  touch-action: none;
+}
+.dial:has(input[type="range"]:focus-visible) .dial-knob {
+  outline: 1px solid rgba(255,255,255,0.55);
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+.dial-reset {
+  appearance: none;
+  align-self: center;
+  width: 100%;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.04);
+  color: #8d8d8f;
+  font-family: var(--mono, var(--ink-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace));
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  margin-top: 4px;
+  transition: color 0.14s, border-color 0.14s, background 0.14s;
+}
+.dial-reset:hover { color: #fff; border-color: rgba(255,255,255,0.20); background: rgba(255,255,255,0.08); }
+.dial-reset:focus-visible { outline: 2px solid rgba(255,255,255,0.55); outline-offset: 2px; }
+@media (max-width: 860px) {
+  .fluid-dialers { right: 10px; width: 160px; padding: 14px 10px 12px; gap: 14px; }
+}
+@media (max-width: 560px) {
+  .fluid-dialers {
+    right: 8px;
+    left: 8px;
+    top: auto;
+    bottom: calc(52px + env(safe-area-inset-bottom));
+    transform: none;
+    flex-direction: row;
+    align-items: center;
+    width: auto;
+    max-width: none;
+    padding: 14px 12px 16px;
+    gap: 16px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    border-radius: 16px;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    background: rgba(0,0,0,0.92);
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  .fluid-dialers::before { display: none; }
+  .dial { min-width: 132px; width: 132px; flex-shrink: 0; }
+  .dial-knob { height: 44px; padding: 15px 0; }
+  .dial-knob-face { height: 4px; background: rgba(255,255,255,0.28); }
+  .dial-knob-face::after { width: 16px; height: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.6); }
+  .dial input[type="range"] { height: 44px; }
+  .dial-reset { width: auto; padding: 0 18px; height: 44px; margin-top: 0; flex-shrink: 0; }
+}

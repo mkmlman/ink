@@ -1,28 +1,105 @@
 # ink
 
-Standalone WebGL fluid ink — extracted from [mkmlman/ink](https://github.com/mkmlman/ink).
+Standalone WebGL fluid ink background with tunable dials.
 
 > **Live demo:** https://mkmlman.github.io/ink/
 
+Move the pointer to paint. `Space` bursts, `P` pauses.
+
 ## Files
-- `fluid.js` — WebGL2 fluid simulation (`SIM 256`, `CURL 4`, `BRIGHTNESS 3`, `IDLE 0`)
-- `dials.js` — 10-slider panel (`radius/curl/density/pressureDiss/velocity/iterations/splatForce/brightness/idle/bloom`) + `localStorage ink:fluid-dials-v1`
+
+- `fluid.js` — WebGL2 fluid simulation (auto-starts on `<canvas id="fluid">`)
+- `dials.js` — 10-slider panel wired to `#fluid-dialers` (persists to `localStorage ink:fluid-dials-v1`)
+- `ink.css` — full-bleed canvas + right slider column / mobile bottom bar
 - `LDR_LLL1_0.png` — dithering texture
-- `ink.css` — right fixed `176px` slider column, `Host Mono` style, `28px` native range hit-area
 - `index.html` — minimal black demo
 
-## Usage
+## Quick embed (classic)
+
 ```html
 <link rel="stylesheet" href="ink.css">
 <canvas class="fluid-canvas" id="fluid"></canvas>
-<div class="fluid-dialers" id="fluid-dialers">…</div>
-<script src="fluid.js"></script>
-<script src="dials.js"></script>
+<!-- optional panel; copy the #fluid-dialers block from index.html -->
+<script src="fluid.js" defer></script>
+<script src="dials.js" defer></script>
 ```
-Default `fluid` visible; set `localStorage ink:background` to `dappled|fluid|off`.
+
+ESM side-effect import also works (same globals, no named exports):
+
+```js
+import 'https://unpkg.com/ink@latest/fluid.js';
+import 'https://unpkg.com/ink@latest/dials.js';
+```
+
+Keep `fluid.js` before `dials.js`. The dithering LUT (`LDR_LLL1_0.png`) resolves
+relative to `fluid.js` itself, so CDN embeds work — no need to host it next to
+the page. Override when needed:
+
+```html
+<canvas class="fluid-canvas" id="fluid" data-texture="/assets/LDR_LLL1_0.png"></canvas>
+<script>window.inkDitherUrl = '/assets/LDR_LLL1_0.png';</script>
+```
+
+If the texture 404s (or CORS blocks it), ink warns and continues without
+dithering — the sim still runs.
+
+## API
+
+Primary global is `window.inkFluid`.
+
+```js
+inkFluid.show();
+inkFluid.hide();
+inkFluid.splat(0.5, 0.5, dx, dy); // normalized coords + velocity delta
+inkFluid.burst(8);                // random splats
+inkFluid.pause();
+inkFluid.resume();
+inkFluid.setConfig('CURL', 6);
+inkFluid.setConfig({ BRIGHTNESS: 2.5, BLOOM_INTENSITY: 0.4 });
+console.log(inkFluid.config, inkFluid.paused);
+```
+
+Panel helper (`window.inkDials`):
+
+```js
+inkDials.set('bloom', 0.6);
+inkDials.get('bloom');
+inkDials.reset();
+```
+
+### `setConfig` keys
+
+| Key | Default | Notes |
+| --- | --- | --- |
+| `SPLAT_RADIUS` | `0.40` | dial `radius` |
+| `CURL` | `4` | dial `curl` (`CURL_STRENGTH` aliases it) |
+| `DENSITY_SLIDER` | via dial | maps to `DENSITY_DISSIPATION = 1 - v*0.02` |
+| `PRESSURE_DISSIPATION` | `0.08` | also derives `PRESSURE` |
+| `VELOCITY_DISSIPATION` | `0` | dial `velocity` |
+| `PRESSURE_ITERATIONS` | `16` | dial `iterations` |
+| `SPLAT_FORCE` | `12000` | dial `splatForce` |
+| `BRIGHTNESS` | `3` | dial `brightness` |
+| `IDLE_INJECTION` | `0` | dial `idle`; random ambient splats when > 0 |
+| `BLOOM_INTENSITY` | `0.30` | dial `bloom` |
+| `BLOOM` / `SHADING` / `SUNRAYS` | `true` | toggle keywords |
+| `SIM_RESOLUTION` / `DYE_RESOLUTION` | `256` / `1024` (`512` on mobile) | re-inits buffers |
+| `BACK_COLOR` | `{r:10,g:10,b:10}` | follows `data-theme="light"` when set |
+
+## Behavior notes
+
+- DPR is capped (`1.5x` mobile, `2x` desktop); loop skips all GL work when the
+  tab is hidden or the canvas is hidden.
+- `prefers-reduced-motion` hides the canvas *and* the dial panel, pauses GL
+  work, and follows live changes.
+- Pointer / touch handlers ignore `#fluid-dialers`, topbar, footer, and form controls, so dragging a slider never paints behind it and the mobile dial strip keeps native scroll.
+- Missing WebGL hides the canvas with a console warning instead of throwing;
+  a lost GL context pauses, and restores via reload.
 
 ## Dev
+
 ```sh
-python3 -m http.server 8080
+npm run dev   # python3 -m http.server 8080
+npm run check # node --check fluid.js + dials.js
 ```
+
 MIT
