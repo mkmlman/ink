@@ -13,7 +13,10 @@ function emit (name, detail) {
   try {
     var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (mq.matches) { canvas.hidden = true; }
-    const apply = () => { canvas.hidden = !!mq.matches; };
+    const apply = () => {
+        canvas.hidden = !!mq.matches;
+        if (!canvas.hidden && !document.hidden) scheduleUpdate();
+    };
     if (typeof mq.addEventListener === 'function') mq.addEventListener('change', apply);
     else if (typeof mq.addListener === 'function') mq.addListener(apply);
   } catch (e) {}
@@ -1087,22 +1090,44 @@ multipleSplats(parseInt(Math.random() * 20) + 5);
 
 let lastUpdateTime = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
 let colorUpdateTimer = 0.0;
-update();
+let frameRequest = 0;
+let needsResize = false;
+
+function scheduleUpdate () {
+    if (!frameRequest && !document.hidden && !canvas.hidden)
+        frameRequest = requestAnimationFrame(update);
+}
+
+window.addEventListener('resize', () => { needsResize = true; }, { passive: true });
+if (typeof ResizeObserver === 'function') {
+    const resizeObserver = new ResizeObserver(() => { needsResize = true; });
+    resizeObserver.observe(canvas);
+}
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && !canvas.hidden) {
+        lastUpdateTime = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        scheduleUpdate();
+    }
+});
+
+scheduleUpdate();
 
 function update () {
+    frameRequest = 0;
+    // Do not keep a 60fps callback alive while the page is backgrounded or
+    // the host has intentionally hidden the canvas.
+    if (document.hidden || canvas.hidden) return;
     const dt = calcDeltaTime();
-    // hidden tab, reduced-motion, show()==false, or WebGL failure: keep the
-    // rAF chain alive but skip all GL work (calcDeltaTime already advanced
-    // the clock, so resume has no time jump).
-    if (document.hidden || canvas.hidden) { requestAnimationFrame(update); return; }
-    if (resizeCanvas())
-        initFramebuffers();
+    if (needsResize) {
+        needsResize = false;
+        if (resizeCanvas()) initFramebuffers();
+    }
     updateColors(dt);
     applyInputs();
     if (!config.PAUSED)
         step(dt);
     render(null);
-    requestAnimationFrame(update);
+    scheduleUpdate();
 }
 
 function calcDeltaTime () {
@@ -1626,8 +1651,8 @@ function applySingleConfig (key, value) {
 }
 const inkFluid = {
   available: true,
-  show: function(){ canvas.hidden = false; canvas.style.display = ''; canvas.classList.add('is-visible'); if (typeof resizeCanvas === 'function' && typeof initFramebuffers === 'function'){ resizeCanvas(); initFramebuffers(); } },
-  hide: function(){ canvas.hidden = true; canvas.style.display = 'none'; canvas.classList.remove('is-visible'); },
+  show: function(){ canvas.hidden = false; canvas.style.display = ''; canvas.classList.add('is-visible'); needsResize = true; if (resizeCanvas()) initFramebuffers(); scheduleUpdate(); },
+  hide: function(){ canvas.hidden = true; canvas.style.display = 'none'; canvas.classList.remove('is-visible'); if (frameRequest) { cancelAnimationFrame(frameRequest); frameRequest = 0; } },
   splat: function(x,y,dx,dy){ splat(x,y,dx,dy, generateColor()); },
   burst: function(n){ splatStack.push(Math.max(1, Math.min(40, n == null ? (parseInt(Math.random() * 20) + 5) : Number(n) || 1))); emit('ink:burst'); },
   pause: function(){ config.PAUSED = true; emit('ink:pausechange', { paused: true }); },

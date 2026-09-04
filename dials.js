@@ -132,8 +132,6 @@
         if (knob) knob.setAttribute('aria-hidden', 'true');
         setDial(key, initial, { silent: true });
       });
-      Object.keys(dials).forEach(function(k){ setDial(k, dials[k].value, { silent: true }); });
-
       var resetBtn = document.getElementById('dial-reset');
       if (resetBtn) {
         resetBtn.addEventListener('click', function(){

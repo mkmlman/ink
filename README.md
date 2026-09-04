@@ -10,9 +10,9 @@ the browser.
 
 ## Files
 
-- `fluid.js` — WebGL2 fluid simulation (auto-starts on `<canvas id="fluid">`)
+- `fluid.js` — WebGL fluid simulation with a WebGL1 fallback (auto-starts on `<canvas id="fluid">`)
 - `dials.js` — 10-slider panel wired to `#fluid-dialers` (persists to `localStorage ink:fluid-dials-v1`)
-- `ink.css` — full-bleed canvas + right slider column / mobile bottom bar
+- `ink.css` — full-bleed canvas + responsive control dock
 - `LDR_LLL1_0.png` — dithering texture
 - `index.html` — minimal black demo
 
@@ -93,7 +93,7 @@ inkDials.reset();
   tab is hidden or the canvas is hidden.
 - `prefers-reduced-motion` hides the canvas *and* the dial panel, pauses GL
   work, and follows live changes.
-- Pointer / touch handlers ignore `#fluid-dialers`, topbar, footer, and form controls, so dragging a slider never paints behind it and the mobile dial strip keeps native scroll.
+- Pointer / touch handlers ignore `#fluid-dialers`, topbar, footer, and form controls, so dragging a slider never paints behind it and the mobile control dock keeps native scrolling.
 - Missing WebGL hides the canvas with a console warning instead of throwing;
   a lost GL context pauses, and restores via reload.
 
