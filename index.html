@@ -3,68 +3,175 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="ink — standalone WebGL fluid ink background with tunable dials.">
-  <meta name="theme-color" content="#0a0a0a">
-  <meta property="og:title" content="ink — fluid demo">
-  <meta property="og:description" content="Standalone WebGL fluid ink with tunable dials.">
+  <meta name="description" content="ink — a living WebGL fluid canvas with controls for shape, motion, and light.">
+  <meta name="theme-color" content="#080909">
+  <meta name="color-scheme" content="dark">
+  <meta property="og:title" content="ink — fluid canvas">
+  <meta property="og:description" content="A living WebGL fluid canvas. Move through the color.">
   <meta property="og:type" content="website">
-  <title>ink — fluid demo</title>
+  <title>ink — fluid canvas</title>
   <link rel="icon" href="ink-icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="ink.css">
-  <style>
-    :root{--bg:#0a0a0a;--bg-soft:#111;--ink:#eaeaea;--muted:#8a8a8c;--line:#222;--mono:ui-monospace,Menlo,monospace}
-    *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--mono)}
-    .topbar{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-    .topbar .brand{font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px}
-    .topbar .brand svg{width:22px;height:22px;flex-shrink:0;display:block}
-    .site-footer{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:center;gap:10px;padding:8px 12px;padding-bottom:calc(8px + env(safe-area-inset-bottom));font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--line)}
-    .site-footer a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent}
-    .site-footer a:hover{color:var(--ink);border-bottom-color:var(--ink)}
-    @media(max-width:560px){.site-footer{font-size:.58rem;padding:10px 10px calc(10px + env(safe-area-inset-bottom))}}
-    .topbar .links{display:flex;align-items:center;gap:8px}
-    .gh-link{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;color:var(--muted);text-decoration:none;transition:color .2s,background .2s,transform .2s}
-    .gh-link:hover{color:var(--ink);background:rgba(255,255,255,.08);transform:translateY(-1px)}
-    .gh-link svg{width:17px;height:17px}
-    @media(max-width:560px){
-      .topbar{padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top));gap:10px}
-      .topbar .brand{font-size:.68rem}
-      .gh-link{width:42px;height:42px;min-width:42px;min-height:42px}
-      .gh-link svg{width:17px;height:17px}
-    }
-  </style>
+  <link rel="stylesheet" href="ink.css?v=1.2.2">
 </head>
 <body>
-  <div class="topbar">
-    <span class="brand"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M16 5.5C14.6 7.8 10.2 13.2 10.2 18.2A5.8 5.8 0 0016 26.5a5.8 5.8 0 005.8-8.3C21.8 13.2 17.4 7.8 16 5.5z" fill="var(--bg)"/><path d="M16 10.2c-.5.9-2.1 3.2-2.1 5.1a2.1 2.1 0 104.2 0c0-1.9-1.6-4.2-2.1-5.1z" fill="var(--bg)" opacity=".55"/><circle cx="15.2" cy="17.4" r="1.1" fill="var(--bg)" opacity=".9"/></svg> ink</span>
-    <span class="links">
-      <button class="dialers-toggle" id="dialers-toggle" type="button" aria-expanded="true" aria-controls="fluid-dialers">Fluid</button>
-      <a class="gh-link" href="https://github.com/mkmlman/ink" aria-label="GitHub repository">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0C17 5.7 18 6 18 6c.6 1.6.2 2.8.1 3.1.8.9 1.2 1.9 1.2 3.2 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="ink home">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="9" fill="currentColor"/>
+        <path d="M16 5.5C14.6 7.8 10.2 13.2 10.2 18.2A5.8 5.8 0 0016 26.5a5.8 5.8 0 005.8-8.3C21.8 13.2 17.4 7.8 16 5.5z" fill="var(--bg)"/>
+        <path d="M16 10.2c-.5.9-2.1 3.2-2.1 5.1a2.1 2.1 0 104.2 0c0-1.9-1.6-4.2-2.1-5.1z" fill="var(--bg)" opacity=".55"/>
+        <circle cx="15.2" cy="17.4" r="1.1" fill="var(--bg)" opacity=".9"/>
+      </svg>
+      <span class="brand-word">ink</span>
+      <span class="brand-note">fluid study</span>
+    </a>
+
+    <nav class="topbar-actions" aria-label="Canvas actions">
+      <button class="ui-action" id="burst-button" type="button" aria-label="Add a burst of ink" title="Add a burst of ink (Space)">
+        <svg aria-hidden="true" viewBox="0 0 16 16"><path d="M8 1.5v4M8 10.5v4M1.5 8h4M10.5 8h4M3.4 3.4l2.8 2.8M9.8 9.8l2.8 2.8M12.6 3.4 9.8 6.2M6.2 9.8 3.4 12.6"/></svg>
+        <span class="action-text">Burst</span>
+        <kbd>Space</kbd>
+      </button>
+      <button class="ui-action" id="pause-toggle" type="button" aria-label="Pause the simulation" aria-pressed="false" title="Pause the simulation (P)">
+        <svg class="pause-icon" aria-hidden="true" viewBox="0 0 16 16"><path d="M5 3.5v9M11 3.5v9"/></svg>
+        <svg class="play-icon" aria-hidden="true" viewBox="0 0 16 16"><path d="m6 3.5 5.5 4.5L6 12.5z"/></svg>
+        <span class="action-text">Pause</span>
+        <kbd>P</kbd>
+      </button>
+      <button class="dialers-toggle" id="dialers-toggle" type="button" aria-label="Hide fluid controls" aria-expanded="true" aria-controls="fluid-dialers">
+        <svg aria-hidden="true" viewBox="0 0 16 16"><path d="M2.5 4h11M2.5 8h11M2.5 12h11M5 2.5v3M10.5 6.5v3M7.5 10.5v3"/></svg>
+        <span>Controls</span>
+      </button>
+      <a class="gh-link" href="https://github.com/mkmlman/ink" target="_blank" rel="noreferrer" aria-label="Open ink on GitHub" title="Open on GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0C17 5.7 18 6 18 6c.6 1.6.2 2.8.1 3.1.8.9 1.2 1.9 1.2 3.2 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
       </a>
-    </span>
-  </div>
-  <canvas class="fluid-canvas is-visible" id="fluid" aria-hidden="true"></canvas>
-  <div class="fluid-dialers" id="fluid-dialers" role="group" aria-label="Fluid controls">
-    <div class="dial" data-key="radius" data-min="0.10" data-max="0.80" data-step="0.05" data-value="0.40"><div class="dial-head"><span class="dial-label" id="lbl-radius">Radius</span><span class="dial-value">0.40</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-radius" aria-labelledby="lbl-radius" min="0.10" max="0.80" step="0.05" value="0.40"></div>
-    <div class="dial" data-key="curl" data-min="0" data-max="8" data-step="0.5" data-value="4"><div class="dial-head"><span class="dial-label" id="lbl-curl">Curl</span><span class="dial-value">4</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-curl" aria-labelledby="lbl-curl" min="0" max="8" step="0.5" value="4"></div>
-    <div class="dial" data-key="density" data-min="0" data-max="5" data-step="0.25" data-value="4"><div class="dial-head"><span class="dial-label" id="lbl-density">Density</span><span class="dial-value">4</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-density" aria-labelledby="lbl-density" min="0" max="5" step="0.25" value="4"></div>
-    <div class="dial" data-key="pressureDiss" data-min="0" data-max="0.20" data-step="0.01" data-value="0.08"><div class="dial-head"><span class="dial-label" id="lbl-pressureDiss">Press Diss</span><span class="dial-value">0.08</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-pressureDiss" aria-labelledby="lbl-pressureDiss" min="0" max="0.20" step="0.01" value="0.08"></div>
-    <div class="dial" data-key="velocity" data-min="0" data-max="1" data-step="0.05" data-value="0"><div class="dial-head"><span class="dial-label" id="lbl-velocity">Velocity</span><span class="dial-value">0</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-velocity" aria-labelledby="lbl-velocity" min="0" max="1" step="0.05" value="0"></div>
-    <div class="dial" data-key="iterations" data-min="4" data-max="32" data-step="1" data-value="16"><div class="dial-head"><span class="dial-label" id="lbl-iterations">Iterations</span><span class="dial-value">16</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-iterations" aria-labelledby="lbl-iterations" min="4" max="32" step="1" value="16"></div>
-    <div class="dial" data-key="splatForce" data-min="2000" data-max="20000" data-step="500" data-value="12000"><div class="dial-head"><span class="dial-label" id="lbl-splatForce">Splat Force</span><span class="dial-value">12000</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-splatForce" aria-labelledby="lbl-splatForce" min="2000" max="20000" step="500" value="12000"></div>
-    <div class="dial" data-key="brightness" data-min="0" data-max="5" data-step="0.25" data-value="3"><div class="dial-head"><span class="dial-label" id="lbl-brightness">Brightness</span><span class="dial-value">3</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-brightness" aria-labelledby="lbl-brightness" min="0" max="5" step="0.25" value="3"></div>
-    <div class="dial" data-key="idle" data-min="0" data-max="2" data-step="0.25" data-value="0"><div class="dial-head"><span class="dial-label" id="lbl-idle">Idle</span><span class="dial-value">0</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-idle" aria-labelledby="lbl-idle" min="0" max="2" step="0.25" value="0"></div>
-    <div class="dial" data-key="bloom" data-min="0" data-max="1.2" data-step="0.05" data-value="0.30"><div class="dial-head"><span class="dial-label" id="lbl-bloom">Bloom</span><span class="dial-value">0.30</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-bloom" aria-labelledby="lbl-bloom" min="0" max="1.2" step="0.05" value="0.30"></div>
-    <button class="dial-reset" id="dial-reset" type="button">↺ Reset</button>
-  </div>
-  <noscript><p style="position:fixed;bottom:48px;width:100%;text-align:center;color:#8a8a8c;font-size:.7rem">ink needs JavaScript + WebGL for the fluid background.</p></noscript>
-  <footer class="site-footer">© 2026 · <a href="LICENSE">MIT License</a> · <a href="https://github.com/mkmlman/ink">Source</a></footer>
-  <script src="fluid.js" defer></script>
-  <script src="dials.js" defer></script>
+    </nav>
+  </header>
+
+  <main class="experience" aria-label="Interactive ink canvas">
+    <canvas class="fluid-canvas" id="fluid" aria-hidden="true"></canvas>
+    <section class="welcome" aria-labelledby="welcome-title">
+      <p class="eyebrow"><span class="live-dot" aria-hidden="true"></span> Live canvas</p>
+      <h1 id="welcome-title">Move through<br><em>the color.</em></h1>
+      <p class="welcome-copy">Drag anywhere to release ink into the flow.</p>
+      <div class="shortcut-guide" aria-label="Keyboard shortcuts">
+        <span><kbd>Space</kbd> burst ink</span>
+        <span><kbd>P</kbd> pause motion</span>
+      </div>
+      <p class="runtime-status" id="runtime-status" role="status" aria-live="polite">WebGL ready</p>
+    </section>
+  </main>
+
+  <aside class="fluid-dialers" id="fluid-dialers" aria-labelledby="controls-title">
+    <div class="panel-head">
+      <div>
+        <p class="eyebrow">Live tuning</p>
+        <h2 id="controls-title">Fluid controls</h2>
+      </div>
+      <span class="save-state" id="dial-status" role="status" aria-live="polite">Saved locally</span>
+    </div>
+
+    <div class="control-sections">
+      <section class="control-section" aria-labelledby="brush-title">
+        <h3 id="brush-title">Brush</h3>
+        <div class="dial-grid">
+          <div class="dial" data-key="radius" data-min="0.10" data-max="0.80" data-step="0.05" data-value="0.40"><div class="dial-head"><span class="dial-label" id="lbl-radius">Radius</span><span class="dial-value">0.40</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-radius" aria-labelledby="lbl-radius" min="0.10" max="0.80" step="0.05" value="0.40"></div>
+          <div class="dial" data-key="splatForce" data-min="2000" data-max="20000" data-step="500" data-value="12000"><div class="dial-head"><span class="dial-label" id="lbl-splatForce">Brush force</span><span class="dial-value">12000</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-splatForce" aria-labelledby="lbl-splatForce" min="2000" max="20000" step="500" value="12000"></div>
+          <div class="dial" data-key="brightness" data-min="0" data-max="5" data-step="0.25" data-value="3"><div class="dial-head"><span class="dial-label" id="lbl-brightness">Brightness</span><span class="dial-value">3</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-brightness" aria-labelledby="lbl-brightness" min="0" max="5" step="0.25" value="3"></div>
+        </div>
+      </section>
+
+      <section class="control-section" aria-labelledby="flow-title">
+        <h3 id="flow-title">Flow</h3>
+        <div class="dial-grid">
+          <div class="dial" data-key="curl" data-min="0" data-max="8" data-step="0.5" data-value="4"><div class="dial-head"><span class="dial-label" id="lbl-curl">Curl</span><span class="dial-value">4</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-curl" aria-labelledby="lbl-curl" min="0" max="8" step="0.5" value="4"></div>
+          <div class="dial" data-key="velocity" data-min="0" data-max="1" data-step="0.05" data-value="0"><div class="dial-head"><span class="dial-label" id="lbl-velocity">Velocity loss</span><span class="dial-value">0</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-velocity" aria-labelledby="lbl-velocity" min="0" max="1" step="0.05" value="0"></div>
+          <div class="dial" data-key="density" data-min="0" data-max="5" data-step="0.25" data-value="4"><div class="dial-head"><span class="dial-label" id="lbl-density">Ink persistence</span><span class="dial-value">4</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-density" aria-labelledby="lbl-density" min="0" max="5" step="0.25" value="4"></div>
+          <div class="dial" data-key="idle" data-min="0" data-max="2" data-step="0.25" data-value="0"><div class="dial-head"><span class="dial-label" id="lbl-idle">Ambient motion</span><span class="dial-value">0</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-idle" aria-labelledby="lbl-idle" min="0" max="2" step="0.25" value="0"></div>
+        </div>
+      </section>
+
+      <section class="control-section" aria-labelledby="simulation-title">
+        <h3 id="simulation-title">Simulation</h3>
+        <div class="dial-grid">
+          <div class="dial" data-key="pressureDiss" data-min="0" data-max="0.20" data-step="0.01" data-value="0.08"><div class="dial-head"><span class="dial-label" id="lbl-pressureDiss">Pressure loss</span><span class="dial-value">0.08</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-pressureDiss" aria-labelledby="lbl-pressureDiss" min="0" max="0.20" step="0.01" value="0.08"></div>
+          <div class="dial" data-key="iterations" data-min="4" data-max="32" data-step="1" data-value="16"><div class="dial-head"><span class="dial-label" id="lbl-iterations">Pressure steps</span><span class="dial-value">16</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-iterations" aria-labelledby="lbl-iterations" min="4" max="32" step="1" value="16"></div>
+          <div class="dial" data-key="bloom" data-min="0" data-max="1.2" data-step="0.05" data-value="0.30"><div class="dial-head"><span class="dial-label" id="lbl-bloom">Glow</span><span class="dial-value">0.30</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-bloom" aria-labelledby="lbl-bloom" min="0" max="1.2" step="0.05" value="0.30"></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="panel-foot">
+      <span>Changes save in this browser</span>
+      <button class="dial-reset" id="dial-reset" type="button"><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M3 6.5A5 5 0 1 1 3.8 11M3 3v3.5h3.5"/></svg> Reset defaults</button>
+    </div>
+  </aside>
+
+  <noscript><p class="no-script">ink needs JavaScript and WebGL for the fluid canvas.</p></noscript>
+  <footer class="site-footer">© 2026 <span aria-hidden="true">·</span> <a href="LICENSE">MIT License</a> <span aria-hidden="true">·</span> <a href="https://github.com/mkmlman/ink" target="_blank" rel="noreferrer">Source on GitHub</a></footer>
+
+  <script src="fluid.js?v=1.2.2" defer></script>
+  <script src="dials.js?v=1.2.2" defer></script>
   <script>
-    // dark-only — ensure fluid paper stays dark
-    document.documentElement.setAttribute('data-theme','dark');
-    window.addEventListener('load',()=>{ document.getElementById('fluid')?.classList.add('is-visible'); });
+    document.documentElement.setAttribute('data-theme', 'dark');
+
+    (() => {
+      const body = document.body;
+      const canvas = document.getElementById('fluid');
+      const runtimeStatus = document.getElementById('runtime-status');
+      const burstButton = document.getElementById('burst-button');
+      const pauseButton = document.getElementById('pause-toggle');
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      const setRuntime = (state, message) => {
+        body.dataset.runtime = state;
+        if (message) runtimeStatus.textContent = message;
+      };
+
+      const syncPause = (paused) => {
+        pauseButton.setAttribute('aria-pressed', String(paused));
+        pauseButton.setAttribute('aria-label', paused ? 'Resume the simulation' : 'Pause the simulation');
+        pauseButton.setAttribute('title', paused ? 'Resume the simulation (P)' : 'Pause the simulation (P)');
+        pauseButton.querySelector('.action-text').textContent = paused ? 'Resume' : 'Pause';
+      };
+
+      const markInteraction = () => body.classList.add('has-interaction');
+      window.addEventListener('pointerdown', markInteraction, { once: true, passive: true });
+      window.addEventListener('touchstart', markInteraction, { once: true, passive: true });
+      window.addEventListener('ink:burst', markInteraction);
+      window.addEventListener('ink:ready', () => {
+        canvas.classList.add('is-visible');
+        setRuntime('ready', 'WebGL ready');
+      });
+      window.addEventListener('ink:unavailable', () => {
+        setRuntime('unavailable', 'WebGL is unavailable — the canvas is disabled.');
+        burstButton.disabled = true;
+        pauseButton.disabled = true;
+      });
+      window.addEventListener('ink:contextlost', () => {
+        setRuntime('paused', 'The canvas paused after losing its graphics context.');
+      });
+      window.addEventListener('ink:pausechange', (event) => syncPause(Boolean(event.detail && event.detail.paused)));
+      reducedMotion.addEventListener?.('change', (event) => {
+        if (event.matches) setRuntime('reduced-motion', 'Motion is disabled by your system settings.');
+        else if (window.inkFluid?.available !== false) setRuntime('ready', 'WebGL ready');
+      });
+
+      burstButton.addEventListener('click', () => {
+        markInteraction();
+        window.inkFluid?.burst(8);
+      });
+      pauseButton.addEventListener('click', () => {
+        markInteraction();
+        if (!window.inkFluid) return;
+        if (window.inkFluid.paused) window.inkFluid.resume();
+        else window.inkFluid.pause();
+      });
+
+      syncPause(false);
+      if (reducedMotion.matches) setRuntime('reduced-motion', 'Motion is disabled by your system settings.');
+      window.addEventListener('load', () => canvas.classList.add('is-visible'));
+    })();
   </script>
 </body>
 </html>

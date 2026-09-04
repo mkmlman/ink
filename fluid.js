@@ -6,6 +6,9 @@
 const canvas = document.getElementById('fluid');
 
 if (!canvas) return;
+function emit (name, detail) {
+  try { window.dispatchEvent(new CustomEvent(name, { detail })); } catch (e) {}
+}
 (function respectReducedMotion(){
   try {
     var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -78,6 +81,19 @@ const gl = ctx && ctx.gl;
 const ext = ctx && ctx.ext;
 if (!gl || !ext || !ext.formatRGBA) {
   try { canvas.hidden = true; } catch (e) {}
+  window.inkFluid = {
+    available: false,
+    config,
+    get paused () { return true; },
+    show: function(){},
+    hide: function(){},
+    splat: function(){},
+    burst: function(){},
+    pause: function(){},
+    resume: function(){},
+    setConfig: function(){}
+  };
+  emit('ink:unavailable');
   console.warn('ink: WebGL unavailable — fluid disabled');
   return;
 }
@@ -87,6 +103,8 @@ if (!gl || !ext || !ext.formatRGBA) {
 canvas.addEventListener('webglcontextlost', (e) => {
   try { e.preventDefault(); } catch (err) {}
   config.PAUSED = true;
+  emit('ink:contextlost');
+  emit('ink:pausechange', { paused: true });
   console.warn('ink: WebGL context lost — fluid paused');
 });
 canvas.addEventListener('webglcontextrestored', () => {
@@ -202,6 +220,14 @@ function supportRenderTextureFormat (gl, internalFormat, format, type) {
 }
 
 function isMobile () {
+    // UA alone misses iPadOS (reports Macintosh) — combine with coarse
+    // pointer + touch + small-screen signals. Used only for perf caps.
+    try {
+        if (window.matchMedia('(pointer: coarse)').matches) return true;
+    } catch (e) {}
+    try {
+        if (navigator.maxTouchPoints > 1 && Math.min(screen.width, screen.height) < 820) return true;
+    } catch (e) {}
     return /Mobi|Android/i.test(navigator.userAgent);
 }
 
@@ -1433,10 +1459,16 @@ window.addEventListener('touchend', e => {
 
 window.addEventListener('keydown', e => {
     if (isUIEvent(e)) return;
-    if (e.code === 'KeyP')
+    if (e.code === 'KeyP') {
+        e.preventDefault();
         config.PAUSED = !config.PAUSED;
-    if (e.key === ' ')
+        emit('ink:pausechange', { paused: config.PAUSED });
+    }
+    if (e.code === 'Space') {
+        e.preventDefault();
         splatStack.push(parseInt(Math.random() * 20) + 5);
+        emit('ink:burst');
+    }
 });
 
 function updatePointerDownData (pointer, id, posX, posY) {
@@ -1579,12 +1611,13 @@ function applySingleConfig (key, value) {
     if (key === 'SIM_RESOLUTION' || key === 'DYE_RESOLUTION') initFramebuffers();
 }
 const inkFluid = {
+  available: true,
   show: function(){ canvas.hidden = false; canvas.style.display = ''; canvas.classList.add('is-visible'); if (typeof resizeCanvas === 'function' && typeof initFramebuffers === 'function'){ resizeCanvas(); initFramebuffers(); } },
   hide: function(){ canvas.hidden = true; canvas.style.display = 'none'; canvas.classList.remove('is-visible'); },
   splat: function(x,y,dx,dy){ splat(x,y,dx,dy, generateColor()); },
-  burst: function(n){ splatStack.push(n == null ? (parseInt(Math.random() * 20) + 5) : n); },
-  pause: function(){ config.PAUSED = true; },
-  resume: function(){ config.PAUSED = false; },
+  burst: function(n){ splatStack.push(Math.max(1, Math.min(40, n == null ? (parseInt(Math.random() * 20) + 5) : Number(n) || 1))); emit('ink:burst'); },
+  pause: function(){ config.PAUSED = true; emit('ink:pausechange', { paused: true }); },
+  resume: function(){ config.PAUSED = false; emit('ink:pausechange', { paused: false }); },
   get paused(){ return !!config.PAUSED; },
   get config(){ return config; },
   setConfig: function(key, value){
@@ -1593,4 +1626,5 @@ const inkFluid = {
   }
 };
 window.inkFluid = inkFluid;
+emit('ink:ready');
 })();

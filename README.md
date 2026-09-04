@@ -4,7 +4,9 @@ Standalone WebGL fluid ink background with tunable dials.
 
 > **Live demo:** https://mkmlman.github.io/ink/
 
-Move the pointer to paint. `Space` bursts, `P` pauses.
+Move the pointer (or drag on touch) to paint. Use the **Burst** and **Pause**
+controls, or `Space` to burst and `P` to pause. Dial changes persist locally in
+the browser.
 
 ## Files
 
@@ -94,6 +96,15 @@ inkDials.reset();
 - Pointer / touch handlers ignore `#fluid-dialers`, topbar, footer, and form controls, so dragging a slider never paints behind it and the mobile dial strip keeps native scroll.
 - Missing WebGL hides the canvas with a console warning instead of throwing;
   a lost GL context pauses, and restores via reload.
+
+## Troubleshooting
+
+- **Black page / no ink:** WebGL is disabled or blocked — check the console for
+  the `ink:` warning. Corporate policies and some privacy extensions disable it.
+- **Opened via `file://`:** serve over http(s) (`npm run dev`) — the dithering
+  texture won't load from `file://`, and ES module imports forbid it entirely.
+- **Dials don't persist:** private browsing blocks `localStorage` — ink falls
+  back to defaults silently.
 
 ## Dev
 

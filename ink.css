@@ -1,258 +1,303 @@
-/* ink — fluid background + dial panel */
+/* ink — full-bleed fluid canvas and interaction chrome */
 :root {
-  --ink-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --bg: #080909;
+  --bg-raised: #0d0f0f;
+  --text: #f1f3f0;
+  --muted: #9a9f9b;
+  --muted-strong: #c5cbc6;
+  --line: rgba(237, 244, 239, 0.14);
+  --line-soft: rgba(237, 244, 239, 0.09);
+  --line-strong: rgba(237, 244, 239, 0.23);
+  --accent: #dff8e3;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Full-bleed canvas behind chrome (topbar blurs over it) */
+* { box-sizing: border-box; }
+html, body { width: 100%; height: 100%; margin: 0; }
+html { background: var(--bg); color-scheme: dark; }
+body {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+button, a, input { -webkit-tap-highlight-color: transparent; }
+button, a { font: inherit; }
+
+/* Full-bleed canvas behind the interface. */
+.experience { position: fixed; inset: 0; z-index: 0; }
 .fluid-canvas {
   position: fixed;
   inset: 0;
   z-index: 0;
+  display: block;
   width: 100vw;
   height: 100vh;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 1s ease;
+  transition: opacity 0.8s var(--ease-out);
 }
 @supports (height: 100dvh) {
   .fluid-canvas { height: 100dvh; }
 }
 .fluid-canvas.is-visible { opacity: 1; }
-@media (prefers-reduced-motion: reduce) {
-  .fluid-canvas { display: none !important; }
-  /* sliders tune a hidden sim — remove the panel too so it can't confuse */
-  .fluid-dialers, .dialers-toggle { display: none !important; }
-}
-@media print {
-  .fluid-canvas { display: none !important; }
-}
 
-/* Panel toggle (lives in topbar; wired by dials.js) */
-.dialers-toggle {
-  appearance: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 34px;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.04);
-  color: #b9b9bb;
-  font-family: var(--mono, var(--ink-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace));
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: color 0.14s, border-color 0.14s, background 0.14s;
-  white-space: nowrap;
-}
-.dialers-toggle:hover { color: #fff; border-color: rgba(255,255,255,0.24); background: rgba(255,255,255,0.08); }
-.dialers-toggle:focus-visible { outline: 2px solid rgba(255,255,255,0.6); outline-offset: 2px; }
-.dialers-toggle[aria-expanded="false"] { opacity: 0.85; }
-
-/* Fluid dialers — vertical slider column on the right */
-.fluid-dialers {
+.experience::after {
   position: fixed;
-  right: 14px;
-  top: 50%;
-  z-index: 220;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 14px;
-  padding: 16px 12px 14px;
-  width: 176px;
-  max-height: min(88vh, 620px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.14) transparent;
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
-  background: rgba(0,0,0,0.88);
-  box-shadow: 0 8px 28px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.06) inset;
-  transform: translateY(-50%);
-  transition: opacity 0.22s ease, transform 0.22s ease;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-.fluid-dialers::-webkit-scrollbar { width: 4px; }
-.fluid-dialers::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 999px; }
-.fluid-dialers[hidden] { display: none !important; }
-@media (prefers-reduced-motion: reduce) {
-  .fluid-dialers { transition: none; }
-}
-.fluid-dialers::before {
-  content: "FLUID";
-  font-family: var(--mono, var(--ink-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace));
-  font-size: 0.52rem;
-  letter-spacing: 0.18em;
-  color: #6e6e70;
-  line-height: 1;
-  margin-bottom: 2px;
-  text-align: center;
-}
-.dial {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 6px;
-  width: 100%;
-  flex-shrink: 0;
-}
-.dial-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-}
-.dial-label {
-  font-family: var(--mono, var(--ink-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace));
-  font-size: 0.52rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #8a8a8c;
-  line-height: 1;
-  white-space: nowrap;
-}
-.dial-value {
-  font-family: var(--mono, var(--ink-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace));
-  font-size: 0.58rem;
-  letter-spacing: 0.02em;
-  color: #d0d0d2;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  min-height: 0.58rem;
-  text-align: right;
-}
-/* Visual track only — the native range input below handles all interaction */
-.dial-knob {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 100%;
-  height: 28px;
-  border: 0;
-  background: transparent;
-  position: relative;
-  padding: 6px 0;
-  flex-shrink: 0;
-  --dial-pct: 0%;
-  border-radius: 999px;
+  inset: 0;
+  z-index: 1;
+  content: "";
   pointer-events: none;
+  background: radial-gradient(circle at 22% 52%, rgba(255, 255, 255, 0.035), transparent 34%), linear-gradient(90deg, rgba(5, 7, 7, 0.12), transparent 48%, rgba(5, 7, 7, 0.2));
 }
-.dial-knob-face {
-  position: absolute;
+
+/* Header */
+.topbar {
+  position: fixed;
+  top: 0;
   left: 0;
   right: 0;
-  top: 50%;
-  height: 3px;
-  background: rgba(255,255,255,0.18);
-  border-radius: 999px;
-  transform: translateY(-50%);
-  overflow: visible;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 68px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--line-soft);
+  background: rgba(8, 9, 9, 0.72);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
-.dial-knob-face::before {
-  content: "";
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: var(--dial-pct);
-  background: #f2f2f3;
-  border-radius: 999px;
-  pointer-events: none;
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  color: var(--text);
+  text-decoration: none;
 }
-.dial-knob-face::after {
-  content: "";
-  position: absolute;
-  left: var(--dial-pct);
-  top: 50%;
-  width: 14px; height: 14px;
-  border-radius: 50%;
-  background: #fff;
-  border: 1px solid #0a0a0c;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 1px 6px rgba(0,0,0,0.5);
-  pointer-events: none;
-}
-.dial:hover .dial-knob-face { background: rgba(255,255,255,0.24); }
-.dial-indicator { display: none; }
-/* Native range overlay — browser handles drag / touch / keyboard */
-.dial input[type="range"] {
-  position: absolute;
-  left: 0; right: 0;
-  bottom: 0;
-  height: 28px;
-  margin: 0;
-  padding: 0;
-  -webkit-appearance: none;
-  appearance: none;
-  background: transparent;
-  opacity: 0;
-  cursor: ew-resize;
-  z-index: 3;
-  display: block !important;
-  touch-action: none;
-}
-.dial:has(input[type="range"]:focus-visible) .dial-knob {
-  outline: 1px solid rgba(255,255,255,0.55);
-  outline-offset: 2px;
-  border-radius: 999px;
-}
-.dial-reset {
-  appearance: none;
-  align-self: center;
-  width: 100%;
-  height: 28px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.04);
-  color: #8d8d8f;
-  font-family: var(--mono, var(--ink-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace));
-  font-size: 0.58rem;
-  letter-spacing: 0.08em;
+.brand-mark { display: block; width: 28px; height: 28px; flex: 0 0 auto; }
+.brand-word {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  line-height: 1;
+}
+.brand-note {
+  margin-left: 2px;
+  padding-left: 12px;
+  border-left: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.59rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.topbar-actions { display: flex; align-items: center; gap: 6px; }
+.ui-action, .dialers-toggle, .gh-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--muted);
+  background: transparent;
   cursor: pointer;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  margin-top: 4px;
-  transition: color 0.14s, border-color 0.14s, background 0.14s;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
 }
-.dial-reset:hover { color: #fff; border-color: rgba(255,255,255,0.20); background: rgba(255,255,255,0.08); }
-.dial-reset:focus-visible { outline: 2px solid rgba(255,255,255,0.55); outline-offset: 2px; }
-@media (max-width: 860px) {
-  .fluid-dialers { right: 10px; width: 160px; padding: 14px 10px 12px; gap: 14px; }
+.ui-action, .dialers-toggle {
+  padding: 0 12px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
-@media (max-width: 560px) {
-  .fluid-dialers {
-    right: 8px;
-    left: 8px;
-    top: auto;
-    bottom: calc(52px + env(safe-area-inset-bottom));
-    transform: none;
-    flex-direction: row;
-    align-items: center;
-    width: auto;
-    max-width: none;
-    padding: 14px 12px 16px;
-    gap: 16px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
-    border-radius: 16px;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-x;
-    background: rgba(0,0,0,0.92);
-    opacity: 1 !important;
-    visibility: visible !important;
-  }
-  .fluid-dialers::before { display: none; }
-  .dial { min-width: 132px; width: 132px; flex-shrink: 0; }
-  .dial-knob { height: 44px; padding: 15px 0; }
-  .dial-knob-face { height: 4px; background: rgba(255,255,255,0.28); }
-  .dial-knob-face::after { width: 16px; height: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.6); }
+.ui-action svg, .dialers-toggle svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.25; }
+.ui-action kbd, .shortcut-guide kbd {
+  padding: 3px 5px;
+  border: 1px solid var(--line);
+  border-bottom-color: var(--line-strong);
+  border-radius: 5px;
+  color: var(--muted-strong);
+  font: inherit;
+  font-size: 0.55rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.ui-action:hover, .dialers-toggle:hover, .gh-link:hover { color: var(--text); border-color: var(--line); background: rgba(237, 244, 239, 0.07); transform: translateY(-1px); }
+.ui-action:active, .dialers-toggle:active, .gh-link:active { transform: translateY(0); }
+.ui-action:disabled { cursor: not-allowed; opacity: 0.42; transform: none; }
+.ui-action:focus-visible, .dialers-toggle:focus-visible, .gh-link:focus-visible, .brand:focus-visible, .dial-reset:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.pause-icon { display: block; }
+.play-icon { display: none; }
+#pause-toggle[aria-pressed="true"] .pause-icon { display: none; }
+#pause-toggle[aria-pressed="true"] .play-icon { display: block; }
+.dialers-toggle { border-color: var(--line); color: var(--text); background: rgba(237, 244, 239, 0.06); }
+.dialers-toggle[aria-expanded="false"] { color: var(--muted); background: transparent; }
+.gh-link { width: 40px; padding: 0; text-decoration: none; }
+.gh-link svg { width: 17px; height: 17px; }
+
+/* Orientation and first-use guidance */
+.welcome {
+  position: fixed;
+  left: clamp(22px, 5vw, 78px);
+  bottom: clamp(76px, 11vh, 112px);
+  z-index: 4;
+  max-width: 390px;
+  pointer-events: none;
+  transition: opacity 0.45s ease, transform 0.6s var(--ease-out);
+}
+.has-interaction .welcome { opacity: 0; transform: translateY(12px); }
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.61rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(223, 248, 227, 0.09); }
+.welcome h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(2.65rem, 4.2vw, 4.8rem);
+  font-weight: 300;
+  letter-spacing: -0.065em;
+  line-height: 0.93;
+}
+.welcome h1 em { color: var(--accent); font-style: normal; }
+.welcome-copy { margin: 20px 0 0; color: var(--muted-strong); font-size: 0.92rem; line-height: 1.5; }
+.shortcut-guide { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 22px; color: var(--muted); font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.02em; text-transform: uppercase; }
+.shortcut-guide span { display: inline-flex; align-items: center; gap: 7px; }
+.runtime-status { margin: 15px 0 0; color: var(--muted); font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.05em; }
+body[data-runtime="unavailable"] .runtime-status, body[data-runtime="paused"] .runtime-status { color: #f0c7a4; }
+body[data-runtime="reduced-motion"] .runtime-status { color: var(--muted-strong); }
+
+/* Control card */
+.fluid-dialers {
+  position: fixed;
+  top: 50%;
+  right: 24px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  width: min(360px, calc(100vw - 48px));
+  max-height: min(76vh, 680px);
+  padding: 20px 20px 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(10, 12, 12, 0.88);
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.42), 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  transform: translateY(-50%);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  transition: opacity 0.22s ease, transform 0.22s var(--ease-out);
+}
+.fluid-dialers[hidden] { display: none !important; }
+.panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding-bottom: 18px; border-bottom: 1px solid var(--line-soft); }
+.panel-head .eyebrow { margin: 0 0 7px; font-size: 0.55rem; }
+.panel-head h2 { margin: 0; color: var(--text); font-size: 1.03rem; font-weight: 500; letter-spacing: -0.025em; }
+.save-state { padding-top: 2px; color: var(--muted); font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.04em; white-space: nowrap; }
+.save-state[data-state="saving"] { color: var(--muted-strong); }
+.save-state[data-state="error"] { color: #f0c7a4; }
+.control-sections { display: flex; flex-direction: column; gap: 19px; min-height: 0; padding: 18px 1px 19px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(237, 244, 239, 0.2) transparent; }
+.control-sections::-webkit-scrollbar { width: 4px; }
+.control-sections::-webkit-scrollbar-thumb { border-radius: 999px; background: rgba(237, 244, 239, 0.18); }
+.control-section h3 { margin: 0 0 12px; color: var(--muted); font-family: var(--mono); font-size: 0.57rem; font-weight: 600; letter-spacing: 0.14em; line-height: 1; text-transform: uppercase; }
+.dial-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 19px 18px; }
+.dial { position: relative; display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+.dial-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.dial-label { overflow: hidden; color: var(--muted-strong); font-family: var(--mono); font-size: 0.59rem; letter-spacing: 0.08em; line-height: 1; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.dial-value { min-height: 0.59rem; color: var(--text); font-family: var(--mono); font-size: 0.62rem; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; line-height: 1; text-align: right; }
+.dial-knob { position: relative; width: 100%; height: 22px; padding: 6px 0; border-radius: 999px; pointer-events: none; --dial-pct: 0%; }
+.dial-knob-face { position: absolute; top: 50%; right: 0; left: 0; height: 4px; border-radius: 999px; background: rgba(237, 244, 239, 0.18); transform: translateY(-50%); }
+.dial-knob-face::before { position: absolute; top: 0; bottom: 0; left: 0; width: var(--dial-pct); content: ""; border-radius: inherit; background: var(--accent); }
+.dial-knob-face::after { position: absolute; top: 50%; left: var(--dial-pct); width: 15px; height: 15px; content: ""; border: 1px solid rgba(8, 9, 9, 0.9); border-radius: 50%; background: var(--text); box-shadow: 0 2px 9px rgba(0, 0, 0, 0.58); transform: translate(-50%, -50%); transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.dial:hover .dial-knob-face::after { box-shadow: 0 2px 12px rgba(223, 248, 227, 0.28); transform: translate(-50%, -50%) scale(1.1); }
+.dial input[type="range"] { position: absolute; right: 0; bottom: 0; left: 0; z-index: 3; display: block !important; width: 100%; height: 30px; margin: 0; padding: 0; appearance: none; border: 0; background: transparent; cursor: ew-resize; opacity: 0; touch-action: none; }
+.dial input[type="range"]:focus-visible { outline: none; }
+.dial:has(input[type="range"]:focus-visible) .dial-knob { outline: 2px solid var(--accent); outline-offset: 4px; }
+.panel-foot { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding-top: 14px; border-top: 1px solid var(--line-soft); color: var(--muted); font-family: var(--mono); font-size: 0.54rem; letter-spacing: 0.03em; }
+.dial-reset { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 30px; padding: 0 9px; border: 1px solid var(--line); border-radius: 8px; color: var(--muted-strong); background: rgba(237, 244, 239, 0.04); cursor: pointer; font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.03em; white-space: nowrap; transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease; }
+.dial-reset svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.2; }
+.dial-reset:hover { color: var(--text); border-color: var(--line-strong); background: rgba(237, 244, 239, 0.09); }
+.dial-reset:disabled { cursor: not-allowed; opacity: 0.45; }
+.fluid-dialers[data-state="error"] { border-color: rgba(240, 199, 164, 0.3); }
+.fluid-dialers[data-state="error"] .dial { opacity: 0.45; }
+
+/* Footer */
+.site-footer { position: fixed; right: 0; bottom: 0; left: 0; z-index: 10; display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 40px; padding: 8px 14px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line-soft); color: var(--muted); background: rgba(8, 9, 9, 0.7); font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.08em; text-transform: uppercase; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.site-footer a { color: var(--muted); text-decoration: none; transition: color 0.18s ease; }
+.site-footer a:hover { color: var(--text); }
+.site-footer a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.no-script { position: fixed; top: 50%; right: 20px; left: 20px; z-index: 40; margin: 0; color: var(--muted-strong); font-family: var(--mono); font-size: 0.8rem; text-align: center; }
+
+@media (max-width: 900px) {
+  .topbar { padding-right: 16px; padding-left: 16px; }
+  .fluid-dialers { right: 16px; width: min(342px, calc(100vw - 32px)); }
+}
+
+@media (max-width: 760px) {
+  .topbar { min-height: 60px; padding-top: calc(9px + env(safe-area-inset-top)); padding-bottom: 9px; }
+  .brand-mark { width: 27px; height: 27px; }
+  .brand-note { display: none; }
+  .topbar-actions { gap: 3px; }
+  .ui-action, .dialers-toggle, .gh-link { min-height: 40px; }
+  .ui-action, .dialers-toggle { padding: 0 9px; }
+  .welcome { right: 18px; bottom: calc(132px + env(safe-area-inset-bottom)); left: 18px; max-width: 330px; }
+  .welcome h1 { font-size: clamp(2.45rem, 12vw, 3.5rem); }
+  .welcome-copy { margin-top: 16px; font-size: 0.86rem; }
+  .shortcut-guide { margin-top: 17px; }
+  .fluid-dialers { top: auto; right: 10px; bottom: calc(51px + env(safe-area-inset-bottom)); left: 10px; display: flex; flex-direction: row; align-items: center; gap: 22px; width: auto; max-height: none; padding: 14px 14px 13px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; border-radius: 17px; transform: none; touch-action: pan-x; }
+  .fluid-dialers::-webkit-scrollbar { display: none; }
+  .panel-head, .control-section h3, .panel-foot > span { display: none; }
+  .control-sections, .control-section, .dial-grid { display: contents; }
+  .control-sections { overflow: visible; }
+  .dial { min-width: 148px; gap: 10px; }
+  .dial-label { font-size: 0.58rem; }
+  .dial-knob { height: 28px; padding: 9px 0; }
+  .dial-knob-face { height: 4px; }
+  .dial-knob-face::after { width: 17px; height: 17px; }
   .dial input[type="range"] { height: 44px; }
-  .dial-reset { width: auto; padding: 0 18px; height: 44px; margin-top: 0; flex-shrink: 0; }
+  .panel-foot { display: contents; }
+  .dial-reset { min-width: 142px; height: 44px; margin-left: 2px; padding: 0 16px; border-radius: 10px; }
+  .site-footer { min-height: 40px; font-size: 0.52rem; }
+}
+
+@media (max-width: 450px) {
+  .action-text, .ui-action kbd { display: none; }
+  .ui-action, .dialers-toggle { width: 40px; padding: 0; }
+  .dialers-toggle span { display: none; }
+  .gh-link { width: 40px; }
+  .shortcut-guide { gap: 10px; font-size: 0.56rem; }
+  .site-footer { gap: 7px; letter-spacing: 0.045em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fluid-canvas { display: none !important; }
+  .fluid-dialers, .dialers-toggle { display: none !important; }
+  .welcome, .has-interaction .welcome { opacity: 1; transform: none; transition: none; }
+  .welcome h1 em { color: var(--muted-strong); }
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}
+
+@media print {
+  .fluid-canvas, .fluid-dialers, .topbar-actions { display: none !important; }
+  .topbar, .site-footer { position: static; background: none; }
 }

@@ -10,10 +10,33 @@
       var fluid = window.inkFluid;
       if (!fluid || !fluid.config) {
         if (ATTEMPTS++ < 40) return setTimeout(init, 100);
+        BOX.dataset.state = 'error';
+        var unavailableStatus = document.getElementById('dial-status');
+        if (unavailableStatus) {
+          unavailableStatus.textContent = 'Unavailable';
+          unavailableStatus.dataset.state = 'error';
+        }
+        BOX.querySelectorAll('input, button').forEach(function(control){ control.disabled = true; });
         return;
       }
       var config = fluid.config;
       var STORAGE_KEY = 'ink:fluid-dials-v1';
+      var statusEl = document.getElementById('dial-status');
+
+      function setStatus(text, state) {
+        if (!statusEl) return;
+        statusEl.textContent = text;
+        if (state) statusEl.dataset.state = state;
+        else statusEl.removeAttribute('data-state');
+      }
+
+      if (fluid.available === false) {
+        BOX.dataset.state = 'error';
+        setStatus('Unavailable', 'error');
+        BOX.querySelectorAll('input, button').forEach(function(control){ control.disabled = true; });
+        return;
+      }
+      BOX.dataset.state = 'ready';
 
       var MAP = {
         radius:      { cfg:'SPLAT_RADIUS',          inputId:'dial-radius',       min:0.10, max:0.80,  step:0.05, def:0.40 },
@@ -43,10 +66,16 @@
       }
       function saveStored(){
         clearTimeout(persistTimer);
+        setStatus('Saving…', 'saving');
         persistTimer = setTimeout(function(){
           var obj = {};
           Object.keys(dials).forEach(function(k){ obj[k] = dials[k].value; });
-          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); } catch (e) {}
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+            setStatus('Saved locally');
+          } catch (e) {
+            setStatus('Session only', 'error');
+          }
         }, 120);
       }
       function pctFor(value, min, max){
@@ -109,6 +138,7 @@
       if (resetBtn) {
         resetBtn.addEventListener('click', function(){
           Object.keys(MAP).forEach(function(k){ if (dials[k]) setDial(k, MAP[k].def); });
+          setStatus('Defaults restored');
         });
       }
 
