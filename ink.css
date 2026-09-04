@@ -123,7 +123,7 @@ button, a { font: inherit; }
   white-space: nowrap;
 }
 .ui-action svg, .dialers-toggle svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.25; }
-.ui-action kbd, .shortcut-guide kbd {
+.ui-action kbd {
   padding: 3px 5px;
   border: 1px solid var(--line);
   border-bottom-color: var(--line-strong);
@@ -153,9 +153,16 @@ button, a { font: inherit; }
   left: clamp(22px, 5vw, 78px);
   bottom: clamp(76px, 11vh, 112px);
   z-index: 4;
+  padding: 21px 24px 23px;
   max-width: 390px;
+  border: 1px solid rgba(237, 244, 239, 0.12);
+  border-radius: 20px;
+  background: rgba(8, 9, 9, 0.4);
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.05) inset;
   pointer-events: none;
   transition: opacity 0.45s ease, transform 0.6s var(--ease-out);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 .has-interaction .welcome { opacity: 0; transform: translateY(12px); }
 .eyebrow {
@@ -182,8 +189,6 @@ button, a { font: inherit; }
 }
 .welcome h1 em { color: var(--accent); font-style: normal; }
 .welcome-copy { margin: 20px 0 0; color: var(--muted-strong); font-size: 0.92rem; line-height: 1.5; }
-.shortcut-guide { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 22px; color: var(--muted); font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.02em; text-transform: uppercase; }
-.shortcut-guide span { display: inline-flex; align-items: center; gap: 7px; }
 .runtime-status { margin: 15px 0 0; color: var(--muted); font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.05em; }
 body[data-runtime="unavailable"] .runtime-status, body[data-runtime="paused"] .runtime-status { color: #f0c7a4; }
 body[data-runtime="reduced-motion"] .runtime-status { color: var(--muted-strong); }
@@ -233,7 +238,7 @@ body[data-runtime="reduced-motion"] .runtime-status { color: var(--muted-strong)
 .dial input[type="range"] { position: absolute; right: 0; bottom: 0; left: 0; z-index: 3; display: block !important; width: 100%; height: 30px; margin: 0; padding: 0; appearance: none; border: 0; background: transparent; cursor: ew-resize; opacity: 0; touch-action: none; }
 .dial input[type="range"]:focus-visible { outline: none; }
 .dial:has(input[type="range"]:focus-visible) .dial-knob { outline: 2px solid var(--accent); outline-offset: 4px; }
-.panel-foot { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding-top: 14px; border-top: 1px solid var(--line-soft); color: var(--muted); font-family: var(--mono); font-size: 0.54rem; letter-spacing: 0.03em; }
+.panel-foot { display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding-top: 14px; border-top: 1px solid var(--line-soft); color: var(--muted); font-family: var(--mono); font-size: 0.54rem; letter-spacing: 0.03em; }
 .dial-reset { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 30px; padding: 0 9px; border: 1px solid var(--line); border-radius: 8px; color: var(--muted-strong); background: rgba(237, 244, 239, 0.04); cursor: pointer; font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.03em; white-space: nowrap; transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease; }
 .dial-reset svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.2; }
 .dial-reset:hover { color: var(--text); border-color: var(--line-strong); background: rgba(237, 244, 239, 0.09); }
@@ -260,16 +265,16 @@ body[data-runtime="reduced-motion"] .runtime-status { color: var(--muted-strong)
   .topbar-actions { gap: 3px; }
   .ui-action, .dialers-toggle, .gh-link { min-height: 40px; }
   .ui-action, .dialers-toggle { padding: 0 9px; }
-  .welcome { right: 18px; bottom: calc(132px + env(safe-area-inset-bottom)); left: 18px; max-width: 330px; }
+  .welcome { right: 18px; bottom: calc(132px + env(safe-area-inset-bottom)); left: 18px; max-width: 360px; padding: 18px 20px 20px; border-radius: 18px; }
   .welcome h1 { font-size: clamp(2.45rem, 12vw, 3.5rem); }
   .welcome-copy { margin-top: 16px; font-size: 0.86rem; }
-  .shortcut-guide { margin-top: 17px; }
-  .fluid-dialers { top: auto; right: 10px; bottom: calc(51px + env(safe-area-inset-bottom)); left: 10px; display: flex; flex-direction: row; align-items: center; gap: 22px; width: auto; max-height: none; padding: 14px 14px 13px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; border-radius: 17px; transform: none; touch-action: pan-x; }
+  .fluid-dialers { top: auto; right: 10px; bottom: calc(51px + env(safe-area-inset-bottom)); left: 10px; display: flex; flex-direction: row; align-items: center; gap: 22px; width: auto; max-height: none; padding: 14px 14px 13px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; border-radius: 17px; scroll-snap-type: x proximity; transform: none; touch-action: pan-x; }
+  .fluid-dialers::after { position: absolute; top: 0; right: 0; bottom: 0; width: 24px; content: ""; border-radius: 0 17px 17px 0; background: linear-gradient(90deg, rgba(10, 12, 12, 0), rgba(10, 12, 12, 0.96)); pointer-events: none; }
   .fluid-dialers::-webkit-scrollbar { display: none; }
-  .panel-head, .control-section h3, .panel-foot > span { display: none; }
+  .panel-head, .control-section h3 { display: none; }
   .control-sections, .control-section, .dial-grid { display: contents; }
   .control-sections { overflow: visible; }
-  .dial { min-width: 148px; gap: 10px; }
+  .dial { min-width: 148px; gap: 10px; scroll-snap-align: start; }
   .dial-label { font-size: 0.58rem; }
   .dial-knob { height: 28px; padding: 9px 0; }
   .dial-knob-face { height: 4px; }
@@ -281,11 +286,11 @@ body[data-runtime="reduced-motion"] .runtime-status { color: var(--muted-strong)
 }
 
 @media (max-width: 450px) {
-  .action-text, .ui-action kbd { display: none; }
-  .ui-action, .dialers-toggle { width: 40px; padding: 0; }
+  .ui-action kbd { display: none; }
+  .ui-action { width: auto; min-width: 40px; padding: 0 8px; }
+  .dialers-toggle { width: 40px; padding: 0; }
   .dialers-toggle span { display: none; }
   .gh-link { width: 40px; }
-  .shortcut-guide { gap: 10px; font-size: 0.56rem; }
   .site-footer { gap: 7px; letter-spacing: 0.045em; }
 }
 

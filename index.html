@@ -11,7 +11,7 @@
   <meta property="og:type" content="website">
   <title>ink — fluid canvas</title>
   <link rel="icon" href="ink-icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="ink.css?v=1.2.2">
+  <link rel="stylesheet" href="ink.css?v=1.3.0">
 </head>
 <body>
   <header class="topbar">
@@ -27,12 +27,12 @@
     </a>
 
     <nav class="topbar-actions" aria-label="Canvas actions">
-      <button class="ui-action" id="burst-button" type="button" aria-label="Add a burst of ink" title="Add a burst of ink (Space)">
+      <button class="ui-action" id="burst-button" type="button" aria-label="Add a burst of ink" aria-keyshortcuts="Space" title="Add a burst of ink (Space)">
         <svg aria-hidden="true" viewBox="0 0 16 16"><path d="M8 1.5v4M8 10.5v4M1.5 8h4M10.5 8h4M3.4 3.4l2.8 2.8M9.8 9.8l2.8 2.8M12.6 3.4 9.8 6.2M6.2 9.8 3.4 12.6"/></svg>
         <span class="action-text">Burst</span>
         <kbd>Space</kbd>
       </button>
-      <button class="ui-action" id="pause-toggle" type="button" aria-label="Pause the simulation" aria-pressed="false" title="Pause the simulation (P)">
+      <button class="ui-action" id="pause-toggle" type="button" aria-label="Pause the simulation" aria-keyshortcuts="P" aria-pressed="false" title="Pause the simulation (P)">
         <svg class="pause-icon" aria-hidden="true" viewBox="0 0 16 16"><path d="M5 3.5v9M11 3.5v9"/></svg>
         <svg class="play-icon" aria-hidden="true" viewBox="0 0 16 16"><path d="m6 3.5 5.5 4.5L6 12.5z"/></svg>
         <span class="action-text">Pause</span>
@@ -54,11 +54,7 @@
       <p class="eyebrow"><span class="live-dot" aria-hidden="true"></span> Live canvas</p>
       <h1 id="welcome-title">Move through<br><em>the color.</em></h1>
       <p class="welcome-copy">Drag anywhere to release ink into the flow.</p>
-      <div class="shortcut-guide" aria-label="Keyboard shortcuts">
-        <span><kbd>Space</kbd> burst ink</span>
-        <span><kbd>P</kbd> pause motion</span>
-      </div>
-      <p class="runtime-status" id="runtime-status" role="status" aria-live="polite">WebGL ready</p>
+      <p class="runtime-status" id="runtime-status" role="status" aria-live="polite">Loading canvas…</p>
     </section>
   </main>
 
@@ -68,7 +64,7 @@
         <p class="eyebrow">Live tuning</p>
         <h2 id="controls-title">Fluid controls</h2>
       </div>
-      <span class="save-state" id="dial-status" role="status" aria-live="polite">Saved locally</span>
+      <span class="save-state" id="dial-status" role="status" aria-live="polite">Saved</span>
     </div>
 
     <div class="control-sections">
@@ -102,16 +98,15 @@
     </div>
 
     <div class="panel-foot">
-      <span>Changes save in this browser</span>
       <button class="dial-reset" id="dial-reset" type="button"><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M3 6.5A5 5 0 1 1 3.8 11M3 3v3.5h3.5"/></svg> Reset defaults</button>
     </div>
   </aside>
 
   <noscript><p class="no-script">ink needs JavaScript and WebGL for the fluid canvas.</p></noscript>
-  <footer class="site-footer">© 2026 <span aria-hidden="true">·</span> <a href="LICENSE">MIT License</a> <span aria-hidden="true">·</span> <a href="https://github.com/mkmlman/ink" target="_blank" rel="noreferrer">Source on GitHub</a></footer>
+  <footer class="site-footer">© 2026 <span aria-hidden="true">·</span> <a href="LICENSE">MIT License</a></footer>
 
-  <script src="fluid.js?v=1.2.2" defer></script>
-  <script src="dials.js?v=1.2.2" defer></script>
+  <script src="fluid.js?v=1.3.0" defer></script>
+  <script src="dials.js?v=1.3.0" defer></script>
   <script>
     document.documentElement.setAttribute('data-theme', 'dark');
 
@@ -125,6 +120,7 @@
 
       const setRuntime = (state, message) => {
         body.dataset.runtime = state;
+        runtimeStatus.hidden = state === 'ready';
         if (message) runtimeStatus.textContent = message;
       };
 
@@ -141,7 +137,7 @@
       window.addEventListener('ink:burst', markInteraction);
       window.addEventListener('ink:ready', () => {
         canvas.classList.add('is-visible');
-        setRuntime('ready', 'WebGL ready');
+        setRuntime('ready');
       });
       window.addEventListener('ink:unavailable', () => {
         setRuntime('unavailable', 'WebGL is unavailable — the canvas is disabled.');
@@ -154,7 +150,7 @@
       window.addEventListener('ink:pausechange', (event) => syncPause(Boolean(event.detail && event.detail.paused)));
       reducedMotion.addEventListener?.('change', (event) => {
         if (event.matches) setRuntime('reduced-motion', 'Motion is disabled by your system settings.');
-        else if (window.inkFluid?.available !== false) setRuntime('ready', 'WebGL ready');
+        else if (window.inkFluid?.available !== false) setRuntime('ready');
       });
 
       burstButton.addEventListener('click', () => {

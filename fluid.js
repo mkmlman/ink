@@ -1405,8 +1405,22 @@ window.addEventListener('mousedown', e => {
 });
 
 window.addEventListener('mousemove', e => {
-    if (isUIEvent(e)) return;
     let pointer = pointers[0];
+    if (isUIEvent(e)) {
+        // Keep the next canvas stroke from jumping across the controls.
+        // UI movement is intentionally not painted, but it should still
+        // update the pointer's origin so re-entering the canvas feels calm.
+        let uiPosX = scaleByPixelRatio(e.clientX !== undefined ? e.clientX : e.offsetX);
+        let uiPosY = scaleByPixelRatio(e.clientY !== undefined ? e.clientY : e.offsetY);
+        pointer.texcoordX = uiPosX / canvas.width;
+        pointer.texcoordY = 1.0 - uiPosY / canvas.height;
+        pointer.prevTexcoordX = pointer.texcoordX;
+        pointer.prevTexcoordY = pointer.texcoordY;
+        pointer.deltaX = 0;
+        pointer.deltaY = 0;
+        pointer.moved = false;
+        return;
+    }
     if (!pointer.down) {
         // hover-paint: track position so the next move has a valid delta,
         // but only emit a splat once the pointer is down or already moving.

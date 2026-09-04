@@ -72,7 +72,7 @@
           Object.keys(dials).forEach(function(k){ obj[k] = dials[k].value; });
           try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-            setStatus('Saved locally');
+            setStatus('Saved');
           } catch (e) {
             setStatus('Session only', 'error');
           }
