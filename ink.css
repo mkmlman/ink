@@ -151,7 +151,6 @@ button, a { font: inherit; }
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.ui-action:hover, .dialers-toggle:hover, .gh-link:hover { color: var(--text); border-color: var(--line); background: rgba(237, 244, 239, 0.07); transform: translateY(-1px); }
 .ui-action:active, .dialers-toggle:active, .gh-link:active { transform: translateY(0); }
 .ui-action:disabled { cursor: not-allowed; opacity: 0.42; transform: none; }
 .ui-action:focus-visible, .dialers-toggle:focus-visible, .gh-link:focus-visible, .brand:focus-visible, .dial-reset:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
@@ -251,14 +250,12 @@ body[data-runtime="reduced-motion"] .runtime-status { color: var(--muted-strong)
 .dial-knob-face { position: absolute; top: 50%; right: 0; left: 0; height: 4px; border-radius: 999px; background: rgba(237, 244, 239, 0.18); transform: translateY(-50%); }
 .dial-knob-face::before { position: absolute; top: 0; bottom: 0; left: 0; width: var(--dial-pct); content: ""; border-radius: inherit; background: var(--accent); }
 .dial-knob-face::after { position: absolute; top: 50%; left: var(--dial-pct); width: 15px; height: 15px; content: ""; border: 1px solid rgba(8, 9, 9, 0.9); border-radius: 50%; background: var(--text); box-shadow: 0 2px 9px rgba(0, 0, 0, 0.58); transform: translate(-50%, -50%); transition: transform 0.15s ease, box-shadow 0.15s ease; }
-.dial:hover .dial-knob-face::after { box-shadow: 0 2px 12px rgba(223, 248, 227, 0.28); transform: translate(-50%, -50%) scale(1.1); }
 .dial input[type="range"] { position: absolute; right: 0; bottom: 0; left: 0; z-index: 3; display: block !important; width: 100%; height: 30px; margin: 0; padding: 0; appearance: none; border: 0; background: transparent; cursor: ew-resize; opacity: 0; touch-action: none; }
 .dial input[type="range"]:focus-visible { outline: none; }
 .dial:has(input[type="range"]:focus-visible) .dial-knob { outline: 2px solid var(--accent); outline-offset: 4px; }
 .panel-foot { display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding-top: 14px; border-top: 1px solid var(--line-soft); color: var(--muted); font-family: var(--mono); font-size: 0.54rem; letter-spacing: 0.03em; }
 .dial-reset { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 30px; padding: 0 9px; border: 1px solid var(--line); border-radius: 8px; color: var(--muted-strong); background: rgba(237, 244, 239, 0.04); cursor: pointer; font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.03em; white-space: nowrap; transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease; }
 .dial-reset svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.2; }
-.dial-reset:hover { color: var(--text); border-color: var(--line-strong); background: rgba(237, 244, 239, 0.09); }
 .dial-reset:disabled { cursor: not-allowed; opacity: 0.45; }
 .fluid-dialers[data-state="error"] { border-color: rgba(240, 199, 164, 0.3); }
 .fluid-dialers[data-state="error"] .dial { opacity: 0.45; }
@@ -266,7 +263,6 @@ body[data-runtime="reduced-motion"] .runtime-status { color: var(--muted-strong)
 /* Footer */
 .site-footer { position: fixed; right: 0; bottom: 0; left: 0; z-index: 10; display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 40px; padding: 8px 14px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line-soft); color: var(--muted); background: rgba(8, 9, 9, 0.7); font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.08em; text-transform: uppercase; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
 .site-footer a { color: var(--muted); text-decoration: none; transition: color 0.18s ease; }
-.site-footer a:hover { color: var(--text); }
 .site-footer a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .no-script { position: fixed; top: 50%; right: 20px; left: 20px; z-index: 40; margin: 0; color: var(--muted-strong); font-family: var(--mono); font-size: 0.8rem; text-align: center; }
 
@@ -291,7 +287,7 @@ body[data-runtime="reduced-motion"] .runtime-status { color: var(--muted-strong)
   .panel-head { display: flex; align-items: center; gap: 16px; padding-bottom: 13px; }
   .panel-head .eyebrow { display: block; margin-bottom: 6px; font-size: 0.53rem; }
   .panel-head h2 { font-size: 0.98rem; }
-  .control-sections { gap: 21px; padding: 15px 2px 18px; overflow-x: hidden; overflow-y: auto; scrollbar-width: thin; }
+  .control-sections { gap: 21px; padding: 15px 2px 18px; overflow-x: hidden; overflow-y: auto; scrollbar-width: thin; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
   .control-section h3 { display: block; margin-bottom: 11px; font-size: 0.55rem; }
   .dial-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 16px; }
   .dial { min-width: 0; gap: 9px; }
@@ -319,6 +315,14 @@ body[data-runtime="reduced-motion"] .runtime-status { color: var(--muted-strong)
   .topbar-actions { gap: 1px; }
   .ui-action { width: 40px; padding: 0; }
   .ui-action .action-text { display: none; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .brand:hover { border-color: rgba(223, 248, 227, 0.26); }
+  .ui-action:hover, .dialers-toggle:hover, .gh-link:hover { color: var(--text); border-color: var(--line); background: rgba(237, 244, 239, 0.07); transform: translateY(-1px); }
+  .dial:hover .dial-knob-face::after { box-shadow: 0 2px 12px rgba(223, 248, 227, 0.28); transform: translate(-50%, -50%) scale(1.1); }
+  .dial-reset:hover { color: var(--text); border-color: var(--line-strong); background: rgba(237, 244, 239, 0.09); }
+  .site-footer a:hover { color: var(--text); }
 }
 
 @media (prefers-reduced-motion: reduce) {
