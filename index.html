@@ -11,7 +11,7 @@
   <meta property="og:type" content="website">
   <title>ink — fluid canvas</title>
   <link rel="icon" href="ink-icon.svg?v=1.6.0" type="image/svg+xml">
-  <link rel="stylesheet" href="ink.css?v=1.7.1">
+  <link rel="stylesheet" href="ink.css?v=1.7.7">
 </head>
 <body>
   <header class="topbar">
@@ -23,6 +23,7 @@
         <circle cx="15.2" cy="17.4" r="1.1" fill="var(--bg)" opacity=".9"/>
       </svg>
       <span class="brand-word">ink</span>
+      <span class="brand-dot" aria-hidden="true"></span>
       <span class="brand-note">fluid study</span>
     </a>
 
@@ -51,7 +52,6 @@
   <main class="experience" aria-label="Interactive ink canvas">
     <canvas class="fluid-canvas" id="fluid" aria-hidden="true"></canvas>
     <section class="welcome" aria-labelledby="welcome-title">
-      <p class="eyebrow"><span class="live-dot" aria-hidden="true"></span> Live canvas</p>
       <h1 id="welcome-title">Move through<br><em>the color.</em></h1>
       <p class="welcome-copy">Drag anywhere to release ink into the flow.</p>
       <p class="runtime-status" id="runtime-status" role="status" aria-live="polite">Loading canvas…</p>
@@ -133,6 +133,7 @@
 
       const markInteraction = () => body.classList.add('has-interaction');
       window.addEventListener('pointerdown', markInteraction, { once: true, passive: true });
+      window.addEventListener('pointermove', markInteraction, { once: true, passive: true });
       window.addEventListener('touchstart', markInteraction, { once: true, passive: true });
       window.addEventListener('ink:burst', markInteraction);
       window.addEventListener('ink:ready', () => {
@@ -147,7 +148,11 @@
       window.addEventListener('ink:contextlost', () => {
         setRuntime('paused', 'The canvas paused after losing its graphics context.');
       });
-      window.addEventListener('ink:pausechange', (event) => syncPause(Boolean(event.detail && event.detail.paused)));
+      window.addEventListener('ink:pausechange', (event) => {
+        const paused = Boolean(event.detail && event.detail.paused);
+        syncPause(paused);
+        body.dataset.paused = paused ? 'true' : 'false';
+      });
       reducedMotion.addEventListener?.('change', (event) => {
         if (event.matches) setRuntime('reduced-motion', 'Motion is disabled by your system settings.');
         else if (window.inkFluid?.available !== false) setRuntime('ready');

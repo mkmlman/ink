@@ -1,4 +1,11 @@
 /* ink — full-bleed fluid canvas and interaction chrome */
+@font-face {
+  font-family: 'Departure Mono';
+  src: url('https://earendil.com/static/fonts/DepartureMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 :root {
   --bg: #080909;
   --bg-raised: #0d0f0f;
@@ -9,7 +16,7 @@
   --line-soft: rgba(237, 244, 239, 0.09);
   --line-strong: rgba(237, 244, 239, 0.23);
   --accent: #dff8e3;
-  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --mono: 'Departure Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   --sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -74,9 +81,9 @@ button, a { font: inherit; }
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-height: 40px;
-  padding: 6px 13px 6px 7px;
+  padding: 5px 11px 5px 6px;
   border: 1px solid var(--line);
   border-radius: 15px;
   color: var(--text);
@@ -84,46 +91,54 @@ button, a { font: inherit; }
   text-decoration: none;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.06) inset;
   pointer-events: auto;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px) saturate(1.35);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  animation: topbar-in 0.7s var(--ease-out) backwards;
 }
-.brand-mark { display: block; width: 29px; height: 29px; flex: 0 0 auto; color: var(--accent); }
+.brand-mark { display: block; width: 24px; height: 24px; flex: 0 0 auto; color: var(--accent); }
+.brand-dot { width: 6px; height: 6px; flex: 0 0 auto; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(223, 248, 227, 0.09); animation: brand-pulse 2.4s ease-in-out infinite; }
+@keyframes brand-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+body[data-paused="true"] .brand-dot, body[data-runtime="unavailable"] .brand-dot { background: #f0c7a4; box-shadow: 0 0 0 4px rgba(240, 199, 164, 0.1); animation: none; }
+@keyframes topbar-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
 .brand-word {
   font-family: var(--mono);
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 .brand-note {
-  margin-left: 2px;
-  padding-left: 12px;
-  border-left: 1px solid var(--line);
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 0.59rem;
+  font-size: 0.55rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 .topbar-actions {
   display: flex;
   align-items: center;
   gap: 4px;
+  min-height: 40px;
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: rgba(8, 9, 9, 0.78);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.06) inset;
   pointer-events: auto;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px) saturate(1.35);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  animation: topbar-in 0.7s var(--ease-out) 0.08s backwards;
 }
+.topbar-actions > * + * { position: relative; }
+.topbar-actions > * + *::before { position: absolute; top: 7px; bottom: 7px; left: -2.5px; width: 1px; content: ""; background: var(--line-soft); pointer-events: none; }
 .ui-action, .dialers-toggle, .gh-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 36px;
+  gap: 7px;
+  min-height: 30px;
   border: 1px solid transparent;
   border-radius: 10px;
   color: var(--muted);
@@ -132,53 +147,48 @@ button, a { font: inherit; }
   transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
 }
 .ui-action, .dialers-toggle {
-  padding: 0 12px;
+  padding: 0 10px;
   font-family: var(--mono);
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   white-space: nowrap;
 }
-.ui-action svg, .dialers-toggle svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.25; }
+.ui-action svg, .dialers-toggle svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.25; }
 .ui-action kbd {
-  padding: 3px 5px;
+  padding: 2px 4px;
   border: 1px solid var(--line);
   border-bottom-color: var(--line-strong);
   border-radius: 5px;
-  color: var(--muted-strong);
+  color: var(--muted);
   font: inherit;
-  font-size: 0.55rem;
+  font-size: 0.52rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.ui-action:active, .dialers-toggle:active, .gh-link:active { transform: translateY(0); }
+.ui-action:active, .dialers-toggle:active, .gh-link:active { transform: translateY(0) scale(0.96); }
 .ui-action:disabled { cursor: not-allowed; opacity: 0.42; transform: none; }
 .ui-action:focus-visible, .dialers-toggle:focus-visible, .gh-link:focus-visible, .brand:focus-visible, .dial-reset:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .pause-icon { display: block; }
 .play-icon { display: none; }
 #pause-toggle[aria-pressed="true"] .pause-icon { display: none; }
 #pause-toggle[aria-pressed="true"] .play-icon { display: block; }
+#pause-toggle[aria-pressed="true"] { color: #f0c7a4; border-color: rgba(240, 199, 164, 0.32); background: rgba(240, 199, 164, 0.09); }
 .dialers-toggle { border-color: rgba(223, 248, 227, 0.26); color: var(--accent); background: rgba(223, 248, 227, 0.09); }
 .dialers-toggle[aria-expanded="false"] { color: var(--muted); background: transparent; }
-.gh-link { width: 40px; padding: 0; text-decoration: none; }
-.gh-link svg { width: 17px; height: 17px; }
+.gh-link { width: 34px; padding: 0; text-decoration: none; }
+.gh-link svg { width: 16px; height: 16px; }
 
-/* Orientation and first-use guidance */
+/* Orientation and first-use guidance — floating hero type, no card chrome */
 .welcome {
   position: fixed;
   left: clamp(22px, 5vw, 78px);
   bottom: clamp(76px, 11vh, 112px);
   z-index: 4;
-  padding: 21px 24px 23px;
-  max-width: 390px;
-  border: 1px solid rgba(237, 244, 239, 0.12);
-  border-radius: 20px;
-  background: rgba(8, 9, 9, 0.4);
-  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.05) inset;
+  max-width: 560px;
+  padding: 0;
   pointer-events: none;
   transition: opacity 0.45s ease, transform 0.6s var(--ease-out);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 .has-interaction .welcome { opacity: 0; transform: translateY(12px); }
 .eyebrow {
@@ -186,26 +196,34 @@ button, a { font: inherit; }
   align-items: center;
   gap: 8px;
   margin: 0 0 14px;
-  color: var(--muted);
+  color: var(--muted-strong);
   font-family: var(--mono);
   font-size: 0.61rem;
   font-weight: 600;
   letter-spacing: 0.16em;
   line-height: 1;
   text-transform: uppercase;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
 }
-.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(223, 248, 227, 0.09); }
 .welcome h1 {
   margin: 0;
   color: var(--text);
-  font-size: clamp(2.65rem, 4.2vw, 4.8rem);
-  font-weight: 300;
-  letter-spacing: -0.065em;
-  line-height: 0.93;
+  font-family: var(--mono);
+  font-size: clamp(1.2rem, 0.95rem + 1.4vw, 2rem);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-wrap: balance;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.45), 0 2px 44px rgba(0, 0, 0, 0.35);
 }
-.welcome h1 em { color: var(--accent); font-style: normal; }
-.welcome-copy { margin: 20px 0 0; color: var(--muted-strong); font-size: 0.92rem; line-height: 1.5; }
-.runtime-status { margin: 15px 0 0; color: var(--muted); font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.05em; }
+.welcome h1 em {
+  color: var(--accent);
+  font-style: normal;
+  font-weight: 400;
+}
+.welcome-copy { margin: 20px 0 0; color: var(--text); font-family: var(--mono); font-size: 0.8rem; line-height: 1.6; text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55); }
+.runtime-status { margin: 15px 0 0; color: var(--muted-strong); font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.05em; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6); }
 body[data-runtime="unavailable"] .runtime-status, body[data-runtime="paused"] .runtime-status { color: #f0c7a4; }
 body[data-runtime="reduced-motion"] .runtime-status { color: var(--muted-strong); }
 
@@ -275,15 +293,23 @@ a.foot-pill { pointer-events: auto; color: var(--muted); text-decoration: none; 
 
 @media (max-width: 760px) {
   .topbar { top: calc(10px + env(safe-area-inset-top)); right: 12px; left: 12px; min-height: 0; }
-  .brand-mark { width: 27px; height: 27px; }
+  .brand-mark { width: 23px; height: 23px; }
   .brand-note { display: none; }
-  .brand { padding-right: 11px; }
-  .topbar-actions { gap: 2px; padding: 3px; }
-  .ui-action, .dialers-toggle, .gh-link { min-height: 40px; }
+  .brand { min-height: 44px; padding-right: 11px; }
+  .topbar-actions { gap: 4px; min-height: 44px; padding: 3px; }
+  .ui-action, .dialers-toggle, .gh-link { min-height: 36px; }
   .ui-action, .dialers-toggle { padding: 0 9px; }
-  .welcome { right: 18px; bottom: calc(132px + env(safe-area-inset-bottom)); left: 18px; max-width: 360px; padding: 18px 20px 20px; border-radius: 18px; }
-  .welcome h1 { font-size: clamp(2.45rem, 12vw, 3.5rem); }
-  .welcome-copy { margin-top: 16px; font-size: 0.86rem; }
+  .welcome { right: 18px; bottom: calc(132px + env(safe-area-inset-bottom)); left: 18px; max-width: 360px; padding: 0; }
+  .welcome::before {
+    content: "";
+    position: absolute;
+    inset: -28px -18px;
+    z-index: -1;
+    background: radial-gradient(ellipse at 30% 60%, rgba(0, 0, 0, 0.42), transparent 70%);
+    pointer-events: none;
+  }
+  .welcome h1 { font-size: 1.375rem; text-shadow: 0 1px 16px rgba(0, 0, 0, 0.65), 0 2px 40px rgba(0, 0, 0, 0.5); }
+  .welcome-copy { margin-top: 16px; font-size: 0.86rem; text-shadow: 0 1px 12px rgba(0, 0, 0, 0.75); }
   body:has(.fluid-dialers:not([hidden])) .welcome { bottom: calc(min(58vh, 430px) + 60px + env(safe-area-inset-bottom)); }
   .fluid-dialers { top: auto; right: 12px; bottom: calc(51px + env(safe-area-inset-bottom)); left: 12px; width: auto; max-height: min(58vh, 430px); padding: 16px 16px 12px; overflow: hidden; border-radius: 20px; transform: none; }
   .panel-head { display: flex; align-items: center; gap: 16px; padding-bottom: 13px; }
@@ -305,25 +331,26 @@ a.foot-pill { pointer-events: auto; color: var(--muted); text-decoration: none; 
 }
 
 @media (max-width: 450px) {
+  .brand-word { font-size: 0.65rem; letter-spacing: 0.12em; }
   .ui-action kbd { display: none; }
-  .ui-action { width: auto; min-width: 40px; padding: 0 8px; }
-  .dialers-toggle { width: 40px; padding: 0; }
+  .ui-action { width: 36px; padding: 0; }
+  .ui-action .action-text { display: none; }
+  .dialers-toggle { width: 36px; padding: 0; }
   .dialers-toggle span { display: none; }
-  .gh-link { width: 40px; }
+  .gh-link { width: 36px; }
   .site-footer { gap: 8px; }
   .foot-pill { letter-spacing: 0.045em; }
 }
 
 @media (max-width: 360px) {
   .topbar { gap: 8px; }
-  .topbar-actions { gap: 1px; }
-  .ui-action { width: 40px; padding: 0; }
-  .ui-action .action-text { display: none; }
+  .brand-word { display: none; }
+  .brand { padding-right: 9px; }
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .brand:hover { border-color: rgba(223, 248, 227, 0.26); }
-  .ui-action:hover, .dialers-toggle:hover, .gh-link:hover { color: var(--text); border-color: var(--line); background: rgba(237, 244, 239, 0.07); transform: translateY(-1px); }
+  .brand:hover { border-color: rgba(223, 248, 227, 0.26); box-shadow: 0 16px 38px rgba(0, 0, 0, 0.32), 0 1px 0 rgba(255, 255, 255, 0.06) inset; }
+  .ui-action:hover, .dialers-toggle:hover, .gh-link:hover { color: var(--text); border-color: var(--line); background: rgba(237, 244, 239, 0.07); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); transform: translateY(-1px); }
   .dial:hover .dial-knob-face::after { box-shadow: 0 2px 12px rgba(223, 248, 227, 0.28); transform: translate(-50%, -50%) scale(1.1); }
   .dial-reset:hover { color: var(--text); border-color: var(--line-strong); background: rgba(237, 244, 239, 0.09); }
   .site-footer a:hover { color: var(--text); }
