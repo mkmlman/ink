@@ -861,12 +861,12 @@ function resolveDitherUrl () {
             } catch (e) {}
         }
         if (src) {
-            try { return new URL('LDR_LLL1_0.png', src).toString(); } catch (e) {}
+            try { return new URL('bloom-dither.png', src).toString(); } catch (e) {}
             const i = src.lastIndexOf('/');
-            if (i >= 0) return src.slice(0, i + 1) + 'LDR_LLL1_0.png';
+            if (i >= 0) return src.slice(0, i + 1) + 'bloom-dither.png';
         }
     } catch (e) {}
-    return 'LDR_LLL1_0.png';
+    return 'bloom-dither.png';
 }
 
 const blurProgram            = new Program(blurVertexShader, blurShader);

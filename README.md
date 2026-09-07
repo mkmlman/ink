@@ -13,7 +13,7 @@ the browser.
 - `src/fluid.js` — WebGL fluid simulation with a WebGL1 fallback (auto-starts on `<canvas id="fluid">`)
 - `src/dials.js` — 10-slider panel wired to `#fluid-dialers` (persists to `localStorage ink:fluid-dials-v1`)
 - `src/ink.css` — full-bleed canvas + responsive control dock
-- `src/LDR_LLL1_0.png` — dithering texture
+- `src/bloom-dither.png` — dithering texture
 - `index.html` — demo page (published to GitHub Pages from the repo root)
 
 ## Quick embed (classic)
@@ -33,13 +33,13 @@ import 'https://unpkg.com/ink@latest/src/fluid.js';
 import 'https://unpkg.com/ink@latest/src/dials.js';
 ```
 
-Keep `fluid.js` before `dials.js`. The dithering LUT (`LDR_LLL1_0.png`) resolves
+Keep `fluid.js` before `dials.js`. The dithering LUT (`bloom-dither.png`) resolves
 relative to `fluid.js` itself, so CDN embeds work — no need to host it next to
 the page. Override when needed:
 
 ```html
-<canvas class="fluid-canvas" id="fluid" data-texture="/assets/LDR_LLL1_0.png"></canvas>
-<script>window.inkDitherUrl = '/assets/LDR_LLL1_0.png';</script>
+<canvas class="fluid-canvas" id="fluid" data-texture="/assets/bloom-dither.png"></canvas>
+<script>window.inkDitherUrl = '/assets/bloom-dither.png';</script>
 ```
 
 If the texture 404s (or CORS blocks it), ink warns and continues without
