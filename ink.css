@@ -260,14 +260,16 @@ body[data-runtime="reduced-motion"] .runtime-status { color: var(--muted-strong)
 .fluid-dialers[data-state="error"] { border-color: rgba(240, 199, 164, 0.3); }
 .fluid-dialers[data-state="error"] .dial { opacity: 0.45; }
 
-/* Footer */
-.site-footer { position: fixed; right: 0; bottom: 0; left: 0; z-index: 10; display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 40px; padding: 8px 14px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line-soft); color: var(--muted); background: rgba(8, 9, 9, 0.7); font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.08em; text-transform: uppercase; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
-.site-footer a { color: var(--muted); text-decoration: none; transition: color 0.18s ease; }
+/* Footer — corner pills matching the header glass */
+.site-footer { position: fixed; right: 22px; bottom: calc(14px + env(safe-area-inset-bottom)); left: 22px; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 12px; pointer-events: none; }
+.foot-pill { display: inline-flex; align-items: center; gap: 9px; padding: 9px 18px; border: 1px solid var(--line); border-radius: 16px; color: var(--muted); background: rgba(8, 9, 9, 0.78); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.06) inset; font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+a.foot-pill { pointer-events: auto; color: var(--muted); text-decoration: none; transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease, transform 0.18s ease; }
 .site-footer a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .no-script { position: fixed; top: 50%; right: 20px; left: 20px; z-index: 40; margin: 0; color: var(--muted-strong); font-family: var(--mono); font-size: 0.8rem; text-align: center; }
 
 @media (max-width: 900px) {
   .topbar { right: 16px; left: 16px; }
+  .site-footer { right: 16px; left: 16px; }
   .fluid-dialers { right: 16px; width: min(342px, calc(100vw - 32px)); }
 }
 
@@ -298,7 +300,8 @@ body[data-runtime="reduced-motion"] .runtime-status { color: var(--muted-strong)
   .dial input[type="range"] { height: 38px; }
   .panel-foot { display: flex; align-items: center; justify-content: flex-end; padding-top: 11px; }
   .dial-reset { min-width: 132px; height: 36px; margin-left: 0; padding: 0 13px; border-radius: 10px; }
-  .site-footer { min-height: 40px; font-size: 0.52rem; }
+  .site-footer { right: 12px; left: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); }
+  .foot-pill { padding: 8px 14px; font-size: 0.52rem; }
 }
 
 @media (max-width: 450px) {
@@ -307,7 +310,8 @@ body[data-runtime="reduced-motion"] .runtime-status { color: var(--muted-strong)
   .dialers-toggle { width: 40px; padding: 0; }
   .dialers-toggle span { display: none; }
   .gh-link { width: 40px; }
-  .site-footer { gap: 7px; letter-spacing: 0.045em; }
+  .site-footer { gap: 8px; }
+  .foot-pill { letter-spacing: 0.045em; }
 }
 
 @media (max-width: 360px) {
@@ -323,6 +327,7 @@ body[data-runtime="reduced-motion"] .runtime-status { color: var(--muted-strong)
   .dial:hover .dial-knob-face::after { box-shadow: 0 2px 12px rgba(223, 248, 227, 0.28); transform: translate(-50%, -50%) scale(1.1); }
   .dial-reset:hover { color: var(--text); border-color: var(--line-strong); background: rgba(237, 244, 239, 0.09); }
   .site-footer a:hover { color: var(--text); }
+  .foot-link:hover { color: var(--text); border-color: var(--line); background: rgba(237, 244, 239, 0.07); transform: translateY(-1px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -335,5 +340,5 @@ body[data-runtime="reduced-motion"] .runtime-status { color: var(--muted-strong)
 
 @media print {
   .fluid-canvas, .fluid-dialers, .topbar-actions { display: none !important; }
-  .topbar, .site-footer { position: static; background: none; }
+  .topbar, .site-footer, .foot-pill { position: static; background: none; border-color: transparent; box-shadow: none; transform: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
