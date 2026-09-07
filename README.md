@@ -10,27 +10,27 @@ the browser.
 
 ## Files
 
-- `fluid.js` — WebGL fluid simulation with a WebGL1 fallback (auto-starts on `<canvas id="fluid">`)
-- `dials.js` — 10-slider panel wired to `#fluid-dialers` (persists to `localStorage ink:fluid-dials-v1`)
-- `ink.css` — full-bleed canvas + responsive control dock
-- `LDR_LLL1_0.png` — dithering texture
-- `index.html` — minimal black demo
+- `src/fluid.js` — WebGL fluid simulation with a WebGL1 fallback (auto-starts on `<canvas id="fluid">`)
+- `src/dials.js` — 10-slider panel wired to `#fluid-dialers` (persists to `localStorage ink:fluid-dials-v1`)
+- `src/ink.css` — full-bleed canvas + responsive control dock
+- `src/LDR_LLL1_0.png` — dithering texture
+- `index.html` — demo page (published to GitHub Pages from the repo root)
 
 ## Quick embed (classic)
 
 ```html
-<link rel="stylesheet" href="ink.css">
+<link rel="stylesheet" href="src/ink.css">
 <canvas class="fluid-canvas" id="fluid"></canvas>
 <!-- optional panel; copy the #fluid-dialers block from index.html -->
-<script src="fluid.js" defer></script>
-<script src="dials.js" defer></script>
+<script src="src/fluid.js" defer></script>
+<script src="src/dials.js" defer></script>
 ```
 
 ESM side-effect import also works (same globals, no named exports):
 
 ```js
-import 'https://unpkg.com/ink@latest/fluid.js';
-import 'https://unpkg.com/ink@latest/dials.js';
+import 'https://unpkg.com/ink@latest/src/fluid.js';
+import 'https://unpkg.com/ink@latest/src/dials.js';
 ```
 
 Keep `fluid.js` before `dials.js`. The dithering LUT (`LDR_LLL1_0.png`) resolves
