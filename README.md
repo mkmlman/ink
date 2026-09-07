@@ -11,7 +11,7 @@ the browser.
 ## Files
 
 - `fluid.js` — WebGL fluid simulation with a WebGL1 fallback (auto-starts on `<canvas id="fluid">`)
-- `dials.js` — 10-slider panel wired to `#fluid-dialers` (persists to `localStorage ink:fluid-dials-v1`)
+- `dials.js` — 10-slider panel wired to `#fluid-dialers` (persists to `localStorage ink:fluid-dials-v2`)
 - `ink.css` — full-bleed canvas + responsive control dock
 - `LDR_LLL1_0.png` — dithering texture
 - `index.html` — minimal black demo
@@ -75,13 +75,13 @@ inkDials.reset();
 | --- | --- | --- |
 | `SPLAT_RADIUS` | `0.40` | dial `radius` |
 | `CURL` | `4` | dial `curl` (`CURL_STRENGTH` aliases it) |
-| `DENSITY_SLIDER` | via dial | maps to `DENSITY_DISSIPATION = 1 - v*0.02` |
+| `DENSITY_SLIDER` | via dial | maps to `DENSITY_DISSIPATION = 0.05^(v/5)` (dial 3 → ~0.17) |
 | `PRESSURE_DISSIPATION` | `0.08` | also derives `PRESSURE` |
 | `VELOCITY_DISSIPATION` | `0` | dial `velocity` |
 | `PRESSURE_ITERATIONS` | `16` | dial `iterations` |
 | `SPLAT_FORCE` | `12000` | dial `splatForce` |
 | `BRIGHTNESS` | `3` | dial `brightness` |
-| `IDLE_INJECTION` | `0` | dial `idle`; random ambient splats when > 0 |
+| `IDLE_INJECTION` | `0.25` | dial `idle`; random ambient splats when > 0 |
 | `BLOOM_INTENSITY` | `0.30` | dial `bloom` |
 | `BLOOM` / `SHADING` / `SUNRAYS` | `true` | toggle keywords |
 | `SIM_RESOLUTION` / `DYE_RESOLUTION` | `256` / `1024` (`512` on mobile) | re-inits buffers |
