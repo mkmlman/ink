@@ -20,7 +20,7 @@
         return;
       }
       var config = fluid.config;
-      var STORAGE_KEY = 'ink:fluid-dials-v2'; // v2: persistence remap + ambient-motion default
+      var STORAGE_KEY = 'ink:fluid-dials-v1';
       var statusEl = document.getElementById('dial-status');
 
       function setStatus(text, state) {
@@ -41,13 +41,13 @@
       var MAP = {
         radius:      { cfg:'SPLAT_RADIUS',          inputId:'dial-radius',       min:0.10, max:0.80,  step:0.05, def:0.40 },
         curl:        { cfg:'CURL',                  inputId:'dial-curl',         min:0,    max:8,     step:0.5,  def:4 },
-        density:     { cfg:'DENSITY_SLIDER',        inputId:'dial-density',      min:0,    max:5,     step:0.25, def:3 },
+        density:     { cfg:'DENSITY_SLIDER',        inputId:'dial-density',      min:0,    max:5,     step:0.25, def:4 },
         pressureDiss:{ cfg:'PRESSURE_DISSIPATION',  inputId:'dial-pressureDiss', min:0,    max:0.20,  step:0.01, def:0.08 },
         velocity:    { cfg:'VELOCITY_DISSIPATION',  inputId:'dial-velocity',     min:0,    max:1,     step:0.05, def:0 },
         iterations:  { cfg:'PRESSURE_ITERATIONS',   inputId:'dial-iterations',   min:4,    max:32,    step:1,    def:16 },
         splatForce:  { cfg:'SPLAT_FORCE',           inputId:'dial-splatForce',   min:2000, max:20000, step:500,  def:12000 },
         brightness:  { cfg:'BRIGHTNESS',            inputId:'dial-brightness',   min:0,    max:5,     step:0.25, def:3 },
-        idle:        { cfg:'IDLE_INJECTION',        inputId:'dial-idle',         min:0,    max:2,     step:0.25, def:0.25 },
+        idle:        { cfg:'IDLE_INJECTION',        inputId:'dial-idle',         min:0,    max:2,     step:0.25, def:0 },
         bloom:       { cfg:'BLOOM_INTENSITY',       inputId:'dial-bloom',        min:0,    max:1.2,   step:0.05, def:0.30 }
       };
       var dials = {};

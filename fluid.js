@@ -25,7 +25,7 @@ function emit (name, detail) {
 let config = {
     SIM_RESOLUTION: 256,
     DYE_RESOLUTION: 1024,
-    DENSITY_DISSIPATION: 0.166, // matches default dial 3 via DENSITY_SLIDER map below
+    DENSITY_DISSIPATION: 1.0,
     VELOCITY_DISSIPATION: 0.0,
     PRESSURE_DISSIPATION: 0.08,
     PRESSURE: 0.8,
@@ -34,7 +34,7 @@ let config = {
     SPLAT_RADIUS: 0.40,
     SPLAT_FORCE: 12000,
     BRIGHTNESS: 3.0,
-    IDLE_INJECTION: 0.25, // gentle ambient splats so a fresh link never sits dead
+    IDLE_INJECTION: 0,
     SHADING: true,
     COLORFUL: true,
     COLOR_UPDATE_SPEED: 10,
@@ -1367,14 +1367,10 @@ function blur (target, temp, iterations) {
     }
 }
 
-// Pointer strokes get a modest HDR boost (bursts use 10x) so drags stay
-// visible: at 1x they sit below the bloom threshold and read as dead.
-const POINTER_COLOR_BOOST = 2.5;
 function splatPointer (pointer) {
     let dx = pointer.deltaX * config.SPLAT_FORCE;
     let dy = pointer.deltaY * config.SPLAT_FORCE;
-    const c = pointer.color;
-    splat(pointer.texcoordX, pointer.texcoordY, dx, dy, { r: c.r * POINTER_COLOR_BOOST, g: c.g * POINTER_COLOR_BOOST, b: c.b * POINTER_COLOR_BOOST });
+    splat(pointer.texcoordX, pointer.texcoordY, dx, dy, pointer.color);
 }
 
 function multipleSplats (amount) {
@@ -1648,16 +1644,7 @@ function applySingleConfig (key, value) {
     if (key === 'CURL_STRENGTH' || key === 'CURL') { config.CURL = value; }
     else if (key === 'PRESSURE_DISSIPATION') { config.PRESSURE_DISSIPATION = value; config.PRESSURE = Math.max(0, Math.min(1, 1 - value * 2)); }
     else if (key === 'VELOCITY_DISSIPATION') { config.VELOCITY_DISSIPATION = value; }
-    else if (key === 'DENSITY_SLIDER') {
-        // Slider 0..5 -> dissipation 1.0 (gone in ~1s) down to 0.05
-        // (~14s half-life at 60fps). Exponential so each step feels even.
-        // Default 3 -> ~0.17 (~4s half-life): lively but bounded, so
-        // ambient pulses fade instead of ratcheting the canvas to white.
-        // The old linear map bottomed out at 0.9, so even max persistence
-        // faded in seconds.
-        const v = Math.max(0, Math.min(5, +value || 0));
-        config.DENSITY_DISSIPATION = Math.pow(0.05, v / 5);
-    }
+    else if (key === 'DENSITY_SLIDER') { config.DENSITY_DISSIPATION = 1 - value * 0.02; }
     else config[key] = value;
     if (key === 'BLOOM' || key === 'SHADING' || key === 'SUNRAYS') updateKeywords();
     if (key === 'SIM_RESOLUTION' || key === 'DYE_RESOLUTION') initFramebuffers();
