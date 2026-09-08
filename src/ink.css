@@ -1,5 +1,12 @@
 /* ink — full-bleed fluid canvas and interaction chrome */
-/* Mono stack: Departure Mono when installed locally, otherwise system mono. No webfont downloads. */
+/* Departure Mono by Helena Zhang, SIL OFL 1.1 (see fonts/OFL.txt), self-hosted. */
+@font-face {
+  font-family: 'Departure Mono';
+  src: url('fonts/DepartureMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 :root {
   --bg: #080909;
   --bg-raised: #0d0f0f;

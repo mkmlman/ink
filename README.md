@@ -14,6 +14,7 @@ the browser.
 - `src/dials.js` — 10-slider panel wired to `#fluid-dialers` (persists to `localStorage ink:fluid-dials-v1`)
 - `src/ink.css` — full-bleed canvas + responsive control dock
 - `src/bloom-dither.png` — dithering texture
+- `src/fonts/DepartureMono-Regular.woff2` — self-hosted mono font (SIL OFL 1.1, see `src/fonts/OFL.txt`)
 - `index.html` — demo page (published to GitHub Pages from the repo root)
 - `about.html` — “How it works” explainer linked from the demo footer
 
