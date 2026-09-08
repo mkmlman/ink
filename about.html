@@ -11,10 +11,10 @@
   <meta property="og:type" content="website">
   <title>How it works</title>
   <link rel="icon" href="src/ink-icon.svg?v=1.6.0" type="image/svg+xml">
-  <link rel="stylesheet" href="src/ink.css?v=1.7.15">
+  <link rel="stylesheet" href="src/ink.css?v=1.7.17">
   <noscript><style>.reveal,.about-hero>*{opacity:1!important;transform:none!important}</style></noscript>
 </head>
-<body>
+<body class="page-about">
   <div class="read-progress" aria-hidden="true"></div>
   <div class="about-aurora" aria-hidden="true"></div>
   <header class="topbar">
@@ -140,7 +140,7 @@
       <h2 id="about-fade">Dissipation <a class="anchor" href="#about-fade" aria-label="Link to this section">#</a></h2>
       <p>Advection applies dissipation every frame, so dye and velocity decay toward zero. At defaults, a splash is mostly gone within a few seconds. Ink persistence sets density dissipation as <code>1 − v × 0.02</code>, so higher values decay more slowly.</p>
       <figure class="figure">
-        <svg class="diagram graph" viewBox="0 0 560 240" role="img" aria-label="Graph of splash brightness over twenty seconds for default and maximum persistence">
+        <svg class="diagram graph" viewBox="0 0 560 240" role="img" aria-label="Graph of splash brightness over twenty seconds for default and maximum persistence" xmlns:xlink="http://www.w3.org/1999/xlink">
           <line x1="44" y1="10" x2="44" y2="190" stroke="rgba(237,244,239,.18)"/>
           <line x1="44" y1="190" x2="544" y2="190" stroke="rgba(237,244,239,.18)"/>
           <line x1="44" y1="145" x2="544" y2="145" stroke="rgba(237,244,239,.07)"/>
@@ -149,7 +149,7 @@
           <path id="curveDefault" class="graph-draw" pathLength="100" d="M44,14 C80,110 110,160 160,180 C220,192 350,190 544,190" fill="none" stroke="#6b706c" stroke-width="1.5" opacity="0.85"/>
           <path id="curveMax" class="graph-draw graph-max" pathLength="100" d="M44,14 C120,80 180,130 260,160 C340,182 430,188 544,190" fill="none" stroke="#dff8e3" stroke-width="2.5"/>
           <circle r="4.5" fill="#dff8e3">
-            <animateMotion dur="12s" repeatCount="indefinite"><mpath href="#curveMax"/></animateMotion>
+            <animateMotion dur="12s" repeatCount="indefinite"><mpath href="#curveMax" xlink:href="#curveMax"/></animateMotion>
           </circle>
           <circle cx="44" cy="14" r="3.5" fill="#dff8e3"/>
           <text x="36" y="16" text-anchor="end" class="diagram-tick">100</text>

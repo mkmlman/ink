@@ -288,8 +288,10 @@ a.foot-pill { pointer-events: auto; color: var(--muted); text-decoration: none; 
 
 /* About page — field-notes explainer: hero, TOC, anchored sections, figures */
 html:has(.about-main) { scroll-behavior: smooth; }
-body:has(.about-main) { overflow-y: auto; background: var(--bg); }
-body:has(.about-main)::before {
+/* Class-first selectors: older Safari ignores :has(), so .page-about carries
+   the critical layout and :has() is only an enhancement. */
+body:has(.about-main), body.page-about { overflow-y: auto; background: var(--bg); }
+body:has(.about-main)::before, body.page-about::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -883,11 +885,19 @@ body:has(.about-main)::before {
   .cta-band { padding: 38px 22px 34px; }
   .figure { padding: 16px 14px 12px; }
   .pipe-chip { padding: 7px 13px; font-size: 0.6rem; }
-  body:has(.about-main) .site-footer { position: static; margin: 0 12px calc(20px + env(safe-area-inset-bottom)); }
+  .toc li { padding: 10px; }
+  body:has(.about-main) .site-footer, body.page-about .site-footer { position: static; flex-wrap: wrap; justify-content: center; margin: 0 12px calc(20px + env(safe-area-inset-bottom)); }
 }
 
 @media (max-width: 450px) {
   .brand-word { font-size: 0.65rem; letter-spacing: 0.12em; }
+  /* Pipeline becomes a vertical flow so chips never wrap mid-arrow. */
+  .pipeline { flex-direction: column; gap: 8px; }
+  .pipe-arrow { transform: rotate(90deg); }
+  /* SVG labels are authored for 560 units wide; scale type up as the diagram shrinks. */
+  .diagram-label { font-size: 15px; }
+  .diagram-tick { font-size: 14px; }
+  .diagram-legend { font-size: 15px; }
   .ui-action kbd { display: none; }
   .ui-action { width: 36px; padding: 0; }
   .ui-action .action-text { display: none; }
