@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="How the fluid canvas works, in plain words — plus how to play it.">
+  <meta name="theme-color" content="#080909">
+  <meta name="color-scheme" content="dark">
+  <meta property="og:title" content="How it works">
+  <meta property="og:description" content="A pool of ink that never dries — explained in plain words.">
+  <meta property="og:type" content="website">
+  <title>How it works</title>
+  <link rel="icon" href="src/ink-icon.svg?v=1.6.0" type="image/svg+xml">
+  <link rel="stylesheet" href="src/ink.css?v=1.7.9">
+</head>
+<body>
+  <div class="read-progress" aria-hidden="true"></div>
+  <div class="about-aurora" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Back to the canvas">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="9" fill="currentColor"/>
+        <path d="M16 5.5C14.6 7.8 10.2 13.2 10.2 18.2A5.8 5.8 0 0016 26.5a5.8 5.8 0 005.8-8.3C21.8 13.2 17.4 7.8 16 5.5z" fill="var(--bg)"/>
+        <path d="M16 10.2c-.5.9-2.1 3.2-2.1 5.1a2.1 2.1 0 104.2 0c0-1.9-1.6-4.2-2.1-5.1z" fill="var(--bg)" opacity=".55"/>
+        <circle cx="15.2" cy="17.4" r="1.1" fill="var(--bg)" opacity=".9"/>
+      </svg>
+      <span class="brand-word">ink</span>
+      <span class="brand-dot" aria-hidden="true"></span>
+      <span class="brand-note">fluid study</span>
+    </a>
+
+    <nav class="topbar-actions" aria-label="Page actions">
+      <a class="ui-action" href="./">
+        <svg aria-hidden="true" viewBox="0 0 16 16"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg>
+        <span class="action-text">Canvas</span>
+      </a>
+    </nav>
+  </header>
+
+  <main class="about-main" aria-labelledby="about-title">
+    <header class="about-hero reveal">
+      <p class="hero-eyebrow"><span class="hero-drop" aria-hidden="true"></span>ink · field notes nº 01</p>
+      <h1 id="about-title">A pool of ink that <em>never dries</em></h1>
+      <p class="lede">Drag once across the canvas. A ribbon of color trails your cursor, curls in on itself, then lets go — as if it had never been there. Nothing is recorded. Nothing plays back. Here is what happens sixty times a second, and how to play it well.</p>
+      <ul class="hero-meta" aria-label="About this page">
+        <li>4 min read</li>
+        <li>plain words</li>
+        <li>runs on-device</li>
+      </ul>
+    </header>
+
+    <details class="toc reveal" open>
+      <summary>Table of contents</summary>
+      <ul>
+        <li><a href="#about-use">How to play it</a> <span class="toc-meta">start here</span></li>
+        <li><a href="#about-loop">How the animation works</a> <span class="toc-meta">5 passes</span></li>
+        <li><a href="#about-motion">Where the motion comes from</a> <span class="toc-meta">spoon + brush</span></li>
+        <li><a href="#about-fade">Why it fades</a> <span class="toc-meta">20 seconds</span></li>
+        <li><a href="#about-glow">Why it glows</a> <span class="toc-meta">light pass</span></li>
+        <li><a href="#about-dials">The dials, in plain words</a> <span class="toc-meta">10 dials</span></li>
+        <li><a href="#about-where">Where does it run?</a> <span class="toc-meta">your chip</span></li>
+        <li><a href="#about-faq">Common questions</a> <span class="toc-meta">4 answers</span></li>
+      </ul>
+    </details>
+
+    <section class="reveal" aria-labelledby="about-use">
+      <p class="sec-kicker">01 — Play</p>
+      <h2 id="about-use">How to play it <a class="anchor" href="#about-use" aria-label="Link to this section">#</a></h2>
+      <p>Three gestures cover everything. Learn these and the rest is doodling.</p>
+      <div class="use-grid">
+        <article class="use-card">
+          <svg class="use-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17c3-1 4-6 7-6s3 4 5 4 4-3 6-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="3" cy="17" r="1.6" fill="currentColor"/></svg>
+          <h3>Drag to paint</h3>
+          <p>Press and move anywhere. <strong>Slow</strong> draws a thick ribbon; <strong>fast</strong> throws it far. Two slow circles beat ten fast scribbles.</p>
+        </article>
+        <article class="use-card">
+          <svg class="use-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <h3>Wake the water</h3>
+          <p>Press <kbd>Space</kbd> or <strong>Burst</strong> for eight random stamps. Press <kbd>P</kbd> or <strong>Pause</strong> to freeze mid-frame, again to resume.</p>
+        </article>
+        <article class="use-card">
+          <svg class="use-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16M8 5v4M15 10v4M10 15v4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <h3>Tune the mood</h3>
+          <p>Open <strong>Controls</strong>. Start with <code>Curl</code> and <code>Ink persistence</code> — they change everything. <strong>Reset</strong> is always one click away.</p>
+        </article>
+      </div>
+      <p class="tip"><span class="tip-label">Tip</span> On phones, one finger stirs exactly like a cursor. If the pool looks sleepy, it is — drag once and it wakes.</p>
+    </section>
+
+    <section class="reveal" aria-labelledby="about-loop">
+      <p class="sec-kicker">02 — Loop</p>
+      <h2 id="about-loop">How the animation works <a class="anchor" href="#about-loop" aria-label="Link to this section">#</a></h2>
+      <p>Every frame is painted five times. Each pass reads the one before it, like water running through five sieves:</p>
+      <figure class="figure">
+        <div class="pipeline" aria-hidden="true">
+          <span class="pipe-chip" style="--d:0s">stir</span><span class="pipe-arrow">→</span><span class="pipe-chip" style="--d:.4s">swirl</span><span class="pipe-arrow">→</span><span class="pipe-chip" style="--d:.8s">settle</span><span class="pipe-arrow">→</span><span class="pipe-chip" style="--d:1.2s">drift</span><span class="pipe-arrow">→</span><span class="pipe-chip" style="--d:1.6s">glow</span>
+        </div>
+        <figcaption><span class="fig-no">FIG_001</span><span class="fig-title">[ one frame of water ]</span></figcaption>
+      </figure>
+      <ol class="steps">
+        <li><strong>Stir.</strong> Your cursor pours motion and color into the pool.</li>
+        <li><strong>Swirl.</strong> The water finds where it is curling and curls harder there. That is where eddies come from.</li>
+        <li><strong>Settle.</strong> Pressure is evened out, so the liquid flows instead of clumping.</li>
+        <li><strong>Drift.</strong> Water and ink both ride the current one step forward, spending a little energy on the way.</li>
+        <li><strong>Glow.</strong> Light, bloom and a little grain finish the frame, then it reaches your screen.</li>
+      </ol>
+      <p>Then the whole thing runs again. No video file, no recording. Close the tab mid-swirl and that exact pattern is gone forever.</p>
+    </section>
+
+    <section class="reveal" aria-labelledby="about-motion">
+      <p class="sec-kicker">03 — Touch</p>
+      <h2 id="about-motion">Where the motion comes from <a class="anchor" href="#about-motion" aria-label="Link to this section">#</a></h2>
+      <p>Your cursor does two jobs at once. It is a <strong>spoon</strong> and a <strong>paintbrush</strong> — each move stamps a push in the direction of travel, and a dab of color where you are.</p>
+      <figure class="figure">
+        <svg class="diagram" viewBox="0 0 560 200" role="img" aria-label="Diagram of a brush stamp: a circle for the brush radius with an arrow for the push direction">
+          <circle cx="280" cy="100" r="62" fill="none" stroke="#dff8e3" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.8">
+            <animate attributeName="r" values="62;70;62" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <defs>
+            <marker id="pushArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,1 L9,5 L0,9 z" fill="#f0c7a4"/>
+            </marker>
+          </defs>
+          <circle cx="280" cy="100" r="4" fill="#dff8e3"/>
+          <line x1="280" y1="100" x2="392" y2="52" stroke="#f0c7a4" stroke-width="2" marker-end="url(#pushArrow)"/>
+          <circle r="5" fill="#f0c7a4">
+            <animateMotion dur="1.8s" repeatCount="indefinite" path="M280,100 L392,52"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.15;.85;1" dur="1.8s" repeatCount="indefinite"/>
+          </circle>
+          <text x="280" y="182" text-anchor="middle" class="diagram-label">brush radius</text>
+          <text x="398" y="46" text-anchor="middle" class="diagram-label">your push</text>
+          <text x="280" y="124" text-anchor="middle" class="diagram-label">dab of color</text>
+        </svg>
+        <figcaption><span class="fig-no">FIG_002</span><span class="fig-title">[ one stamp of the brush ]</span></figcaption>
+      </figure>
+      <p>The <strong>Burst</strong> button — or the <kbd>Space</kbd> key — casts random stamps across the pool without the cursor. <strong>Pause</strong>, or <kbd>P</kbd>, freezes the loop mid-frame; press again to resume.</p>
+    </section>
+
+    <section class="reveal" aria-labelledby="about-fade">
+      <p class="sec-kicker">04 — Fade</p>
+      <h2 id="about-fade">Why it fades <a class="anchor" href="#about-fade" aria-label="Link to this section">#</a></h2>
+      <p>Every frame spends a little energy — the cost of the drift step. At the default settings a splash is half gone in about a second, and settled a few seconds later. Raise persistence and it lingers. Either way, it settles.</p>
+      <figure class="figure">
+        <svg class="diagram graph" viewBox="0 0 560 240" role="img" aria-label="Graph of splash brightness over twenty seconds for default and maximum persistence">
+          <line x1="44" y1="10" x2="44" y2="190" stroke="rgba(237,244,239,.18)"/>
+          <line x1="44" y1="190" x2="544" y2="190" stroke="rgba(237,244,239,.18)"/>
+          <line x1="44" y1="145" x2="544" y2="145" stroke="rgba(237,244,239,.07)"/>
+          <line x1="44" y1="100" x2="544" y2="100" stroke="rgba(237,244,239,.07)"/>
+          <line x1="44" y1="55" x2="544" y2="55" stroke="rgba(237,244,239,.07)"/>
+          <path id="curveDefault" class="graph-draw" pathLength="100" d="M44,14 C90,120 120,165 170,182 C230,192 330,190 544,190" fill="none" stroke="#9a9f9b" stroke-width="2"/>
+          <path id="curveMax" class="graph-draw" pathLength="100" d="M44,14 C110,95 160,140 230,168 C300,186 400,190 544,190" fill="none" stroke="#dff8e3" stroke-width="2"/>
+          <circle r="4.5" fill="#dff8e3">
+            <animateMotion dur="5s" repeatCount="indefinite"><mpath href="#curveMax"/></animateMotion>
+          </circle>
+          <circle cx="44" cy="14" r="3.5" fill="#dff8e3"/>
+          <text x="36" y="16" text-anchor="end" class="diagram-tick">100</text>
+          <text x="36" y="104" text-anchor="end" class="diagram-tick">50</text>
+          <text x="44" y="208" text-anchor="middle" class="diagram-tick">0s</text>
+          <text x="294" y="208" text-anchor="middle" class="diagram-tick">10s</text>
+          <text x="544" y="208" text-anchor="middle" class="diagram-tick">20s</text>
+          <circle cx="222" cy="30" r="3" fill="#9a9f9b"/><text x="232" y="34" class="diagram-legend">default</text>
+          <circle cx="222" cy="52" r="3" fill="#dff8e3"/><text x="232" y="56" class="diagram-legend">max persistence</text>
+        </svg>
+        <figcaption><span class="fig-no">FIG_003</span><span class="fig-title">[ twenty seconds of fading ]</span></figcaption>
+        <div class="gauge" role="img" aria-label="Ink level draining over time">
+          <span class="gauge-label">ink level</span>
+          <span class="gauge-track"><span class="gauge-fill"></span></span>
+        </div>
+      </figure>
+      <p>The vanishing is part of the piece: the canvas is always clearing itself for the next stroke.</p>
+    </section>
+
+    <section class="reveal" aria-labelledby="about-glow">
+      <p class="sec-kicker">05 — Light</p>
+      <h2 id="about-glow">Why it glows <a class="anchor" href="#about-glow" aria-label="Link to this section">#</a></h2>
+      <p>The water itself is matte. All light is added in the final pass: bright areas <strong>bloom</strong> outward, faint shafts cross the pool, and a little grain keeps smooth gradients from separating into bands.</p>
+      <figure class="figure glow-figure">
+        <div class="glow-demo" id="glow-demo" tabindex="0" role="application" aria-label="Interactive light-pass demo. Move your pointer or use arrow keys to move the light.">
+          <span class="glow-orb glow-orb-a" aria-hidden="true"></span>
+          <span class="glow-orb glow-orb-b" aria-hidden="true"></span>
+          <span class="glow-shaft" aria-hidden="true"></span>
+          <span class="glow-grain" aria-hidden="true"></span>
+          <span class="glow-hint" aria-hidden="true">drag me</span>
+        </div>
+        <figcaption><span class="fig-no">FIG_004</span><span class="fig-title">[ the light pass — drag it ]</span></figcaption>
+        <div class="glow-controls">
+          <label class="glow-slider" for="glow-amount">
+            <span class="glow-slider-head"><span>glow</span><output id="glow-value" for="glow-amount">0.70</output></span>
+            <input type="range" id="glow-amount" min="0" max="120" step="5" value="70">
+          </label>
+          <div class="glow-toggles" role="group" aria-label="Light layers">
+            <button class="glow-toggle" id="glow-shafts" type="button" aria-pressed="true"><span class="swatch swatch-shaft" aria-hidden="true"></span>shafts</button>
+            <button class="glow-toggle" id="glow-grain-btn" type="button" aria-pressed="true"><span class="swatch swatch-grain" aria-hidden="true"></span>grain</button>
+          </div>
+        </div>
+        <ul class="glow-key" aria-label="Light layers">
+          <li><span class="swatch swatch-bloom" aria-hidden="true"></span>bloom — bright cores spill outward</li>
+        </ul>
+      </figure>
+      <p>Turn <code>Glow</code> to zero and the pool goes flat and inky. Push it up and the same stroke turns neon.</p>
+    </section>
+
+    <section class="reveal" aria-labelledby="about-dials">
+      <p class="sec-kicker">06 — Tune</p>
+      <h2 id="about-dials">The dials, in plain words <a class="anchor" href="#about-dials" aria-label="Link to this section">#</a></h2>
+      <p>Ten sliders, three moods. You cannot break anything — <strong>Reset</strong> brings the pool back.</p>
+      <div class="dial-cards">
+        <article class="dial-card">
+          <h3>Brush</h3>
+          <p class="dial-card-sub">your hand</p>
+          <dl>
+            <div><dt><code>Radius</code></dt><dd>the size of your brush</dd></div>
+            <div><dt><code>Brush force</code></dt><dd>how hard you stir</dd></div>
+            <div><dt><code>Brightness</code></dt><dd>how vivid the ink is</dd></div>
+          </dl>
+        </article>
+        <article class="dial-card">
+          <h3>Flow</h3>
+          <p class="dial-card-sub">the water</p>
+          <dl>
+            <div><dt><code>Curl</code></dt><dd>how much it swirls on its own</dd></div>
+            <div><dt><code>Velocity loss</code></dt><dd>friction — how fast motion settles</dd></div>
+            <div><dt><code>Ink persistence</code></dt><dd>how long trails linger</dd></div>
+            <div><dt><code>Ambient motion</code></dt><dd>stirs itself, stays alive untouched</dd></div>
+          </dl>
+        </article>
+        <article class="dial-card">
+          <h3>Simulation</h3>
+          <p class="dial-card-sub">the engine room</p>
+          <dl>
+            <div><dt><code>Pressure loss</code></dt><dd>how carefully water is calculated</dd></div>
+            <div><dt><code>Pressure steps</code></dt><dd>more steps, smoother, hungrier</dd></div>
+            <div><dt><code>Glow</code></dt><dd>how much the color shines</dd></div>
+          </dl>
+        </article>
+      </div>
+      <p class="recipe"><span class="tip-label">Try this</span> <code>Curl</code> 6 · <code>Ink persistence</code> max · <code>Ambient motion</code> 1 — then hands off. The pool dreams by itself.</p>
+    </section>
+
+    <aside class="callout reveal" aria-label="Performance note">
+      <p class="callout-label">Note</p>
+      <p class="callout-text">On phones the pool is calculated at half size and the screen is capped — the same water, just painted with broader strokes, so it stays smooth in your pocket.</p>
+    </aside>
+
+    <section class="reveal" aria-labelledby="about-where">
+      <p class="sec-kicker">07 — Home</p>
+      <h2 id="about-where">Where does it run? <a class="anchor" href="#about-where" aria-label="Link to this section">#</a></h2>
+      <p>Entirely on your own device — the water is calculated on your graphics chip, frame by frame, as you watch. Nothing you paint is uploaded anywhere, and your dial settings never leave this browser.</p>
+    </section>
+
+    <section class="reveal" aria-labelledby="about-faq">
+      <p class="sec-kicker">08 — Answers</p>
+      <h2 id="about-faq">Common questions <a class="anchor" href="#about-faq" aria-label="Link to this section">#</a></h2>
+      <details class="faq" open>
+        <summary>Will my painting be saved?</summary>
+        <p>No. Every frame is calculated live, so reloading starts a fresh pool. Dial positions are remembered in this browser; paintings are not.</p>
+      </details>
+      <details class="faq">
+        <summary>Why did the page go dark?</summary>
+        <p>The ink has settled — it always does. Drag anywhere, or press Burst, and the water wakes again.</p>
+      </details>
+      <details class="faq">
+        <summary>Does it work on phones?</summary>
+        <p>Yes. The pool runs smaller with capped resolution, and a finger stirs exactly like a cursor.</p>
+      </details>
+      <details class="faq">
+        <summary>Is anything uploaded?</summary>
+        <p>Nothing. There is no account, no server, no analytics watching your strokes. The whole thing lives in this tab.</p>
+      </details>
+    </section>
+
+    <section class="cta-band reveal" aria-labelledby="cta-title">
+      <p class="cta-kicker">your turn</p>
+      <h2 id="cta-title">Open the canvas, stress less</h2>
+      <p>The water is already moving. Go stir it.</p>
+      <a class="cta-button" href="./">Start painting <span aria-hidden="true">→</span></a>
+    </section>
+  </main>
+
+  <footer class="site-footer"><span class="foot-pill">© 2016</span><a class="foot-pill foot-link" href="./">Canvas</a><a class="foot-pill foot-link" href="LICENSE">MIT License</a></footer>
+  <script>
+    try {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.querySelectorAll('svg.diagram').forEach(function (s) { s.pauseAnimations(); });
+      }
+    } catch (e) {}
+    try {
+      // Fresh loads and reloads (no anchor) always begin at the top instead
+      // of wherever the browser remembered. Back-button visits keep their
+      // native position, and anchored visits still jump to the section.
+      if (!location.hash) {
+        var navType = '';
+        try { navType = performance.getEntriesByType('navigation')[0].type; } catch (e) {}
+        if (navType === 'back_forward') {
+          // Returning via back/forward: hand control back so the browser
+          // restores the remembered position (the 'manual' value persists
+          // per history entry, so it must be explicitly reverted).
+          try { history.scrollRestoration = 'auto'; } catch (e) {}
+        } else {
+          if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+          var toTop = function () { window.scrollTo(0, 0); };
+          toTop();
+          document.addEventListener('DOMContentLoaded', toTop);
+          addEventListener('load', toTop);
+          addEventListener('pageshow', function (e) { if (!e.persisted) toTop(); });
+        }
+      }
+    } catch (e) {}
+    try {
+      var bar = document.querySelector('.read-progress');
+      var tick = function () {
+        var h = document.documentElement;
+        var max = h.scrollHeight - h.clientHeight;
+        bar.style.transform = 'scaleX(' + (max > 0 ? h.scrollTop / max : 0) + ')';
+      };
+      addEventListener('scroll', tick, { passive: true });
+      tick();
+    } catch (e) {}
+    try {
+      // Gentle reveal-on-scroll; disabled automatically under reduced motion
+      // via CSS (elements stay visible, observer just adds a no-op class).
+      var els = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window && els.length) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); }
+          });
+        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
+        els.forEach(function (el) { io.observe(el); });
+      } else {
+        els.forEach(function (el) { el.classList.add('is-in'); });
+      }
+    } catch (e) {}
+    try {
+      // FIG_004 playground: pointer/keys move the bloom, slider sets glow,
+      // toggles peel shafts and grain off the light pass.
+      var demo = document.getElementById('glow-demo');
+      var glowInput = document.getElementById('glow-amount');
+      var glowValue = document.getElementById('glow-value');
+      var shaftsBtn = document.getElementById('glow-shafts');
+      var grainBtn = document.getElementById('glow-grain-btn');
+      if (demo) {
+        var gx = 0.5, gy = 0.42;
+        var setPos = function (nx, ny) {
+          gx = Math.min(1, Math.max(0, nx));
+          gy = Math.min(1, Math.max(0, ny));
+          demo.style.setProperty('--gx', gx.toFixed(3));
+          demo.style.setProperty('--gy', gy.toFixed(3));
+          demo.classList.add('is-live');
+        };
+        var posFromEvent = function (e) {
+          var r = demo.getBoundingClientRect();
+          if (!r.width || !r.height) return;
+          setPos((e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
+        };
+        var dragging = false;
+        demo.addEventListener('pointerdown', function (e) {
+          dragging = true;
+          try { demo.setPointerCapture(e.pointerId); } catch (err) {}
+          posFromEvent(e);
+        });
+        demo.addEventListener('pointermove', function (e) {
+          if (e.pointerType === 'mouse' || dragging) posFromEvent(e);
+        });
+        demo.addEventListener('pointerup', function () { dragging = false; });
+        demo.addEventListener('pointercancel', function () { dragging = false; });
+        demo.addEventListener('keydown', function (e) {
+          var step = 0.04, handled = true;
+          if (e.key === 'ArrowLeft') setPos(gx - step, gy);
+          else if (e.key === 'ArrowRight') setPos(gx + step, gy);
+          else if (e.key === 'ArrowUp') setPos(gx, gy - step);
+          else if (e.key === 'ArrowDown') setPos(gx, gy + step);
+          else handled = false;
+          if (handled) e.preventDefault();
+        });
+        var setGlow = function () {
+          var v = Number(glowInput.value) / 100;
+          demo.style.setProperty('--glow', v.toFixed(2));
+          glowValue.textContent = v.toFixed(2);
+          glowInput.style.setProperty('--fill', glowInput.value + '%');
+        };
+        glowInput.addEventListener('input', setGlow);
+        setGlow();
+        var wireToggle = function (btn, key) {
+          btn.addEventListener('click', function () {
+            var on = btn.getAttribute('aria-pressed') !== 'true';
+            btn.setAttribute('aria-pressed', String(on));
+            demo.setAttribute('data-' + key, on ? 'on' : 'off');
+          });
+        };
+        wireToggle(shaftsBtn, 'shafts');
+        wireToggle(grainBtn, 'grain');
+      }
+    } catch (e) {}
+  </script>
+</body>
+</html>

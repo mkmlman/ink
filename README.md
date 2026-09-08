@@ -15,6 +15,7 @@ the browser.
 - `src/ink.css` — full-bleed canvas + responsive control dock
 - `src/bloom-dither.png` — dithering texture
 - `index.html` — demo page (published to GitHub Pages from the repo root)
+- `about.html` — “How it works” explainer linked from the demo footer
 
 ## Quick embed (classic)
 
