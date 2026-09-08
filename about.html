@@ -11,7 +11,7 @@
   <meta property="og:type" content="website">
   <title>How it works</title>
   <link rel="icon" href="src/ink-icon.svg?v=1.6.0" type="image/svg+xml">
-  <link rel="stylesheet" href="src/ink.css?v=1.7.10">
+  <link rel="stylesheet" href="src/ink.css?v=1.7.13">
   <noscript><style>.reveal,.about-hero>*{opacity:1!important;transform:none!important}</style></noscript>
 </head>
 <body>
@@ -146,10 +146,10 @@
           <line x1="44" y1="145" x2="544" y2="145" stroke="rgba(237,244,239,.07)"/>
           <line x1="44" y1="100" x2="544" y2="100" stroke="rgba(237,244,239,.07)"/>
           <line x1="44" y1="55" x2="544" y2="55" stroke="rgba(237,244,239,.07)"/>
-          <path id="curveDefault" class="graph-draw" pathLength="100" d="M44,14 C90,120 120,165 170,182 C230,192 330,190 544,190" fill="none" stroke="#9a9f9b" stroke-width="2"/>
-          <path id="curveMax" class="graph-draw" pathLength="100" d="M44,14 C110,95 160,140 230,168 C300,186 400,190 544,190" fill="none" stroke="#dff8e3" stroke-width="2"/>
+          <path id="curveDefault" class="graph-draw" pathLength="100" d="M44,14 C80,110 110,160 160,180 C220,192 350,190 544,190" fill="none" stroke="#6b706c" stroke-width="1.5" opacity="0.85"/>
+          <path id="curveMax" class="graph-draw graph-max" pathLength="100" d="M44,14 C120,80 180,130 260,160 C340,182 430,188 544,190" fill="none" stroke="#dff8e3" stroke-width="2.5"/>
           <circle r="4.5" fill="#dff8e3">
-            <animateMotion dur="5s" repeatCount="indefinite"><mpath href="#curveMax"/></animateMotion>
+            <animateMotion dur="12s" repeatCount="indefinite"><mpath href="#curveMax"/></animateMotion>
           </circle>
           <circle cx="44" cy="14" r="3.5" fill="#dff8e3"/>
           <text x="36" y="16" text-anchor="end" class="diagram-tick">100</text>
@@ -157,7 +157,7 @@
           <text x="44" y="208" text-anchor="middle" class="diagram-tick">0s</text>
           <text x="294" y="208" text-anchor="middle" class="diagram-tick">10s</text>
           <text x="544" y="208" text-anchor="middle" class="diagram-tick">20s</text>
-          <circle cx="222" cy="30" r="3" fill="#9a9f9b"/><text x="232" y="34" class="diagram-legend">default</text>
+          <circle cx="222" cy="30" r="3" fill="#6b706c"/><text x="232" y="34" class="diagram-legend">default</text>
           <circle cx="222" cy="52" r="3" fill="#dff8e3"/><text x="232" y="56" class="diagram-legend">max persistence</text>
         </svg>
         <figcaption><span class="fig-no">Figure 3</span><span class="fig-title">Dye brightness over 20 seconds</span></figcaption>
@@ -410,13 +410,21 @@
           if (handled) e.preventDefault();
         });
         var setGlow = function () {
-          var v = Number(glowInput.value) / 100;
+          var min = Number(glowInput.min || 0);
+          var max = Number(glowInput.max || 100);
+          var raw = Number(glowInput.value);
+          var p = max > min ? (raw - min) / (max - min) : 0;
+          var v = raw / 100;
           glow = v;
           demo.style.setProperty('--glow', v.toFixed(2));
           glowValue.textContent = v.toFixed(2);
-          glowInput.style.setProperty('--fill', glowInput.value + '%');
+          // Fill the track up to the knob center (half-thumb inset each end).
+          var w = glowInput.clientWidth || 0;
+          var px = (8 + p * Math.max(0, w - 16)).toFixed(1) + 'px';
+          glowInput.style.setProperty('--fill', px);
         };
         glowInput.addEventListener('input', setGlow);
+        try { addEventListener('resize', setGlow); } catch (err) {}
         setGlow();
         var wireToggle = function (btn, key) {
           btn.addEventListener('click', function () {

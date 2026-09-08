@@ -1,11 +1,5 @@
 /* ink — full-bleed fluid canvas and interaction chrome */
-@font-face {
-  font-family: 'Departure Mono';
-  src: url('https://earendil.com/static/fonts/DepartureMono-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
+/* Mono stack: Departure Mono when installed locally, otherwise system mono. No webfont downloads. */
 :root {
   --bg: #080909;
   --bg-raised: #0d0f0f;
@@ -549,6 +543,7 @@ body:has(.about-main)::before {
 .fig-title { color: var(--muted); font-size: 0.66rem; letter-spacing: 0.04em; }
 .diagram { display: block; width: 100%; height: auto; }
 .graph-draw { stroke-dasharray: 100; stroke-dashoffset: 100; animation: drawIn 2.4s var(--ease-out) 0.3s forwards; }
+.graph-max { filter: drop-shadow(0 0 6px rgba(223, 248, 227, 0.45)); }
 @keyframes drawIn { to { stroke-dashoffset: 0; } }
 .diagram-label { fill: var(--muted-strong); font-family: var(--mono); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
 .diagram-tick { fill: var(--muted); font-family: var(--mono); font-size: 12px; }
@@ -681,10 +676,10 @@ body:has(.about-main)::before {
   cursor: ew-resize;
 }
 .glow-slider input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 999px; background: linear-gradient(90deg, var(--accent) var(--fill, 70%), rgba(237, 244, 239, 0.18) var(--fill, 70%)); }
-.glow-slider input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -6px; border: 1px solid rgba(8, 9, 9, 0.9); border-radius: 50%; background: var(--text); box-shadow: 0 2px 9px rgba(0, 0, 0, 0.58); }
+.glow-slider input[type="range"]::-webkit-slider-thumb { box-sizing: border-box; -webkit-appearance: none; width: 16px; height: 16px; margin-top: -6px; border: 1px solid rgba(8, 9, 9, 0.9); border-radius: 50%; background: var(--text); box-shadow: 0 2px 9px rgba(0, 0, 0, 0.58); }
 .glow-slider input[type="range"]::-moz-range-track { height: 4px; border-radius: 999px; background: rgba(237, 244, 239, 0.18); }
 .glow-slider input[type="range"]::-moz-range-progress { height: 4px; border-radius: 999px; background: var(--accent); }
-.glow-slider input[type="range"]::-moz-range-thumb { width: 15px; height: 15px; border: 1px solid rgba(8, 9, 9, 0.9); border-radius: 50%; background: var(--text); }
+.glow-slider input[type="range"]::-moz-range-thumb { box-sizing: border-box; width: 15px; height: 15px; border: 1px solid rgba(8, 9, 9, 0.9); border-radius: 50%; background: var(--text); }
 .glow-slider input[type="range"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
 .glow-toggles { display: flex; flex-wrap: wrap; gap: 8px; }
 .glow-toggle {
