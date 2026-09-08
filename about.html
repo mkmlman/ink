@@ -3,15 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="How the fluid canvas works, in plain words — plus how to play it.">
+  <meta name="description" content="How the ink fluid simulation works: input, solver passes, dissipation, post-processing, and settings.">
   <meta name="theme-color" content="#080909">
   <meta name="color-scheme" content="dark">
   <meta property="og:title" content="How it works">
-  <meta property="og:description" content="A pool of ink that never dries — explained in plain words.">
+  <meta property="og:description" content="Input, solver passes, dissipation, and settings behind the ink fluid simulation.">
   <meta property="og:type" content="website">
   <title>How it works</title>
   <link rel="icon" href="src/ink-icon.svg?v=1.6.0" type="image/svg+xml">
-  <link rel="stylesheet" href="src/ink.css?v=1.7.9">
+  <link rel="stylesheet" href="src/ink.css?v=1.7.10">
+  <noscript><style>.reveal,.about-hero>*{opacity:1!important;transform:none!important}</style></noscript>
 </head>
 <body>
   <div class="read-progress" aria-hidden="true"></div>
@@ -39,78 +40,77 @@
 
   <main class="about-main" aria-labelledby="about-title">
     <header class="about-hero reveal">
-      <p class="hero-eyebrow"><span class="hero-drop" aria-hidden="true"></span>ink · field notes nº 01</p>
-      <h1 id="about-title">A pool of ink that <em>never dries</em></h1>
-      <p class="lede">Drag once across the canvas. A ribbon of color trails your cursor, curls in on itself, then lets go — as if it had never been there. Nothing is recorded. Nothing plays back. Here is what happens sixty times a second, and how to play it well.</p>
+      <p class="hero-eyebrow"><span class="hero-drop" aria-hidden="true"></span>ink · documentation</p>
+      <h1 id="about-title">How ink works</h1>
+      <p class="lede">ink is a real-time 2D fluid simulation rendered in WebGL. Pointer input writes velocity and dye into the simulation; a solver advances both every frame while dissipation fades them out. This page documents the pipeline, the inputs, and every setting.</p>
       <ul class="hero-meta" aria-label="About this page">
-        <li>4 min read</li>
-        <li>plain words</li>
-        <li>runs on-device</li>
+        <li>WebGL2</li>
+        <li>no backend</li>
+        <li>MIT licensed</li>
       </ul>
     </header>
 
     <details class="toc reveal" open>
       <summary>Table of contents</summary>
       <ul>
-        <li><a href="#about-use">How to play it</a> <span class="toc-meta">start here</span></li>
-        <li><a href="#about-loop">How the animation works</a> <span class="toc-meta">5 passes</span></li>
-        <li><a href="#about-motion">Where the motion comes from</a> <span class="toc-meta">spoon + brush</span></li>
-        <li><a href="#about-fade">Why it fades</a> <span class="toc-meta">20 seconds</span></li>
-        <li><a href="#about-glow">Why it glows</a> <span class="toc-meta">light pass</span></li>
-        <li><a href="#about-dials">The dials, in plain words</a> <span class="toc-meta">10 dials</span></li>
-        <li><a href="#about-where">Where does it run?</a> <span class="toc-meta">your chip</span></li>
-        <li><a href="#about-faq">Common questions</a> <span class="toc-meta">4 answers</span></li>
+        <li><a href="#about-use">Usage</a></li>
+        <li><a href="#about-loop">Simulation loop</a></li>
+        <li><a href="#about-motion">Input</a></li>
+        <li><a href="#about-fade">Dissipation</a></li>
+        <li><a href="#about-glow">Post-processing</a></li>
+        <li><a href="#about-dials">Settings</a></li>
+        <li><a href="#about-where">Runtime environment</a></li>
+        <li><a href="#about-faq">FAQ</a></li>
       </ul>
     </details>
 
     <section class="reveal" aria-labelledby="about-use">
-      <p class="sec-kicker">01 — Play</p>
-      <h2 id="about-use">How to play it <a class="anchor" href="#about-use" aria-label="Link to this section">#</a></h2>
-      <p>Three gestures cover everything. Learn these and the rest is doodling.</p>
+      <h2 id="about-use">Usage <a class="anchor" href="#about-use" aria-label="Link to this section">#</a></h2>
       <div class="use-grid">
         <article class="use-card">
+          <span class="use-step" aria-hidden="true">01</span>
           <svg class="use-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17c3-1 4-6 7-6s3 4 5 4 4-3 6-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="3" cy="17" r="1.6" fill="currentColor"/></svg>
-          <h3>Drag to paint</h3>
-          <p>Press and move anywhere. <strong>Slow</strong> draws a thick ribbon; <strong>fast</strong> throws it far. Two slow circles beat ten fast scribbles.</p>
+          <h3>Paint</h3>
+          <p>Drag anywhere on the canvas. Pointer velocity sets the force of each splat: slow drags produce wide ribbons, fast drags throw dye further.</p>
         </article>
         <article class="use-card">
+          <span class="use-step" aria-hidden="true">02</span>
           <svg class="use-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-          <h3>Wake the water</h3>
-          <p>Press <kbd>Space</kbd> or <strong>Burst</strong> for eight random stamps. Press <kbd>P</kbd> or <strong>Pause</strong> to freeze mid-frame, again to resume.</p>
+          <h3>Burst and pause</h3>
+          <p><strong>Burst</strong> (<kbd>Space</kbd>) injects eight random splats. <strong>Pause</strong> (<kbd>P</kbd>) halts the simulation loop; press again to resume.</p>
         </article>
         <article class="use-card">
+          <span class="use-step" aria-hidden="true">03</span>
           <svg class="use-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16M8 5v4M15 10v4M10 15v4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-          <h3>Tune the mood</h3>
-          <p>Open <strong>Controls</strong>. Start with <code>Curl</code> and <code>Ink persistence</code> — they change everything. <strong>Reset</strong> is always one click away.</p>
+          <h3>Adjust</h3>
+          <p>The <strong>Controls</strong> panel exposes ten settings (see <a href="#about-dials">Settings</a>). Changes persist in this browser. <strong>Reset</strong> restores defaults.</p>
         </article>
       </div>
-      <p class="tip"><span class="tip-label">Tip</span> On phones, one finger stirs exactly like a cursor. If the pool looks sleepy, it is — drag once and it wakes.</p>
+      <p class="tip"><span class="tip-label">Note</span> Touch input works the same as cursor input — drag with one finger.</p>
     </section>
 
     <section class="reveal" aria-labelledby="about-loop">
-      <p class="sec-kicker">02 — Loop</p>
-      <h2 id="about-loop">How the animation works <a class="anchor" href="#about-loop" aria-label="Link to this section">#</a></h2>
-      <p>Every frame is painted five times. Each pass reads the one before it, like water running through five sieves:</p>
+      <h2 id="about-loop">Simulation loop <a class="anchor" href="#about-loop" aria-label="Link to this section">#</a></h2>
+      <p>Each frame advances the simulation through the following passes, in order:</p>
       <figure class="figure">
         <div class="pipeline" aria-hidden="true">
-          <span class="pipe-chip" style="--d:0s">stir</span><span class="pipe-arrow">→</span><span class="pipe-chip" style="--d:.4s">swirl</span><span class="pipe-arrow">→</span><span class="pipe-chip" style="--d:.8s">settle</span><span class="pipe-arrow">→</span><span class="pipe-chip" style="--d:1.2s">drift</span><span class="pipe-arrow">→</span><span class="pipe-chip" style="--d:1.6s">glow</span>
+          <span class="pipe-chip" style="--d:0s">splat</span><span class="pipe-arrow">→</span><span class="pipe-chip" style="--d:.4s">vorticity</span><span class="pipe-arrow">→</span><span class="pipe-chip" style="--d:.8s">pressure</span><span class="pipe-arrow">→</span><span class="pipe-chip" style="--d:1.2s">advect</span><span class="pipe-arrow">→</span><span class="pipe-chip" style="--d:1.6s">display</span>
         </div>
-        <figcaption><span class="fig-no">FIG_001</span><span class="fig-title">[ one frame of water ]</span></figcaption>
+        <figcaption><span class="fig-no">Figure 1</span><span class="fig-title">One simulation frame</span></figcaption>
       </figure>
       <ol class="steps">
-        <li><strong>Stir.</strong> Your cursor pours motion and color into the pool.</li>
-        <li><strong>Swirl.</strong> The water finds where it is curling and curls harder there. That is where eddies come from.</li>
-        <li><strong>Settle.</strong> Pressure is evened out, so the liquid flows instead of clumping.</li>
-        <li><strong>Drift.</strong> Water and ink both ride the current one step forward, spending a little energy on the way.</li>
-        <li><strong>Glow.</strong> Light, bloom and a little grain finish the frame, then it reaches your screen.</li>
+        <li><strong>Splat.</strong> Pointer deltas are written into the velocity and dye fields, scaled by brush force and radius.</li>
+        <li><strong>Vorticity.</strong> Curl is computed from the velocity field and fed back in, scaled by the Curl setting. This is what forms eddies.</li>
+        <li><strong>Pressure solve.</strong> Divergence is computed, then a Jacobi solver (Pressure steps iterations) derives the pressure field, which is subtracted from velocity to keep the flow divergence-free.</li>
+        <li><strong>Advect.</strong> Velocity and dye move along the velocity field. Velocity loss and density dissipation remove energy here.</li>
+        <li><strong>Display.</strong> Bloom, sunrays, and dithering composite over the dye field for output.</li>
       </ol>
-      <p>Then the whole thing runs again. No video file, no recording. Close the tab mid-swirl and that exact pattern is gone forever.</p>
+      <p>Reloading the page resets the simulation. Dial positions are the only persisted state.</p>
     </section>
 
     <section class="reveal" aria-labelledby="about-motion">
-      <p class="sec-kicker">03 — Touch</p>
-      <h2 id="about-motion">Where the motion comes from <a class="anchor" href="#about-motion" aria-label="Link to this section">#</a></h2>
-      <p>Your cursor does two jobs at once. It is a <strong>spoon</strong> and a <strong>paintbrush</strong> — each move stamps a push in the direction of travel, and a dab of color where you are.</p>
+      <h2 id="about-motion">Input <a class="anchor" href="#about-motion" aria-label="Link to this section">#</a></h2>
+      <p>Each pointer movement writes one splat: a velocity impulse along the direction of travel, plus dye at the pointer position. Radius and force come from the Brush settings. Stroke color is picked at random for every stroke.</p>
       <figure class="figure">
         <svg class="diagram" viewBox="0 0 560 200" role="img" aria-label="Diagram of a brush stamp: a circle for the brush radius with an arrow for the push direction">
           <circle cx="280" cy="100" r="62" fill="none" stroke="#dff8e3" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.8">
@@ -131,15 +131,14 @@
           <text x="398" y="46" text-anchor="middle" class="diagram-label">your push</text>
           <text x="280" y="124" text-anchor="middle" class="diagram-label">dab of color</text>
         </svg>
-        <figcaption><span class="fig-no">FIG_002</span><span class="fig-title">[ one stamp of the brush ]</span></figcaption>
+        <figcaption><span class="fig-no">Figure 2</span><span class="fig-title">One input splat: radius, direction, dye</span></figcaption>
       </figure>
-      <p>The <strong>Burst</strong> button — or the <kbd>Space</kbd> key — casts random stamps across the pool without the cursor. <strong>Pause</strong>, or <kbd>P</kbd>, freezes the loop mid-frame; press again to resume.</p>
+      <p>Burst writes eight splats at random positions. Pause halts the loop without clearing state.</p>
     </section>
 
     <section class="reveal" aria-labelledby="about-fade">
-      <p class="sec-kicker">04 — Fade</p>
-      <h2 id="about-fade">Why it fades <a class="anchor" href="#about-fade" aria-label="Link to this section">#</a></h2>
-      <p>Every frame spends a little energy — the cost of the drift step. At the default settings a splash is half gone in about a second, and settled a few seconds later. Raise persistence and it lingers. Either way, it settles.</p>
+      <h2 id="about-fade">Dissipation <a class="anchor" href="#about-fade" aria-label="Link to this section">#</a></h2>
+      <p>Advection applies dissipation every frame, so dye and velocity decay toward zero. At defaults, a splash is mostly gone within a few seconds. Ink persistence sets density dissipation as <code>1 − v × 0.02</code>, so higher values decay more slowly.</p>
       <figure class="figure">
         <svg class="diagram graph" viewBox="0 0 560 240" role="img" aria-label="Graph of splash brightness over twenty seconds for default and maximum persistence">
           <line x1="44" y1="10" x2="44" y2="190" stroke="rgba(237,244,239,.18)"/>
@@ -161,28 +160,27 @@
           <circle cx="222" cy="30" r="3" fill="#9a9f9b"/><text x="232" y="34" class="diagram-legend">default</text>
           <circle cx="222" cy="52" r="3" fill="#dff8e3"/><text x="232" y="56" class="diagram-legend">max persistence</text>
         </svg>
-        <figcaption><span class="fig-no">FIG_003</span><span class="fig-title">[ twenty seconds of fading ]</span></figcaption>
+        <figcaption><span class="fig-no">Figure 3</span><span class="fig-title">Dye brightness over 20 seconds</span></figcaption>
         <div class="gauge" role="img" aria-label="Ink level draining over time">
           <span class="gauge-label">ink level</span>
           <span class="gauge-track"><span class="gauge-fill"></span></span>
         </div>
       </figure>
-      <p>The vanishing is part of the piece: the canvas is always clearing itself for the next stroke.</p>
+      <p>Dissipation is what clears the canvas for the next stroke.</p>
     </section>
 
     <section class="reveal" aria-labelledby="about-glow">
-      <p class="sec-kicker">05 — Light</p>
-      <h2 id="about-glow">Why it glows <a class="anchor" href="#about-glow" aria-label="Link to this section">#</a></h2>
-      <p>The water itself is matte. All light is added in the final pass: bright areas <strong>bloom</strong> outward, faint shafts cross the pool, and a little grain keeps smooth gradients from separating into bands.</p>
+      <h2 id="about-glow">Post-processing <a class="anchor" href="#about-glow" aria-label="Link to this section">#</a></h2>
+      <p>The solver output is matte. Light is added after the fact: Glow sets bloom intensity over bright dye, a sunrays pass adds directional shafts, and a dither texture (<code>bloom-dither.png</code>) breaks up gradient banding.</p>
       <figure class="figure glow-figure">
-        <div class="glow-demo" id="glow-demo" tabindex="0" role="application" aria-label="Interactive light-pass demo. Move your pointer or use arrow keys to move the light.">
+        <div class="glow-demo" id="glow-demo" tabindex="0" role="group" aria-label="Interactive light-pass demo. Drag across the pool, or focus it and use the arrow keys to move the light." aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight">
           <span class="glow-orb glow-orb-a" aria-hidden="true"></span>
           <span class="glow-orb glow-orb-b" aria-hidden="true"></span>
           <span class="glow-shaft" aria-hidden="true"></span>
           <span class="glow-grain" aria-hidden="true"></span>
-          <span class="glow-hint" aria-hidden="true">drag me</span>
+          <span class="glow-hint" aria-hidden="true">drag · arrow keys</span>
         </div>
-        <figcaption><span class="fig-no">FIG_004</span><span class="fig-title">[ the light pass — drag it ]</span></figcaption>
+        <figcaption><span class="fig-no">Figure 4</span><span class="fig-title">Post-processing layers. Drag to move the light.</span></figcaption>
         <div class="glow-controls">
           <label class="glow-slider" for="glow-amount">
             <span class="glow-slider-head"><span>glow</span><output id="glow-value" for="glow-amount">0.70</output></span>
@@ -194,90 +192,86 @@
           </div>
         </div>
         <ul class="glow-key" aria-label="Light layers">
-          <li><span class="swatch swatch-bloom" aria-hidden="true"></span>bloom — bright cores spill outward</li>
+          <li><span class="swatch swatch-bloom" aria-hidden="true"></span>bloom — intensity-scaled blur of bright dye</li>
         </ul>
       </figure>
-      <p>Turn <code>Glow</code> to zero and the pool goes flat and inky. Push it up and the same stroke turns neon.</p>
+      <p>Setting Glow to 0 removes the bloom contribution.</p>
     </section>
 
     <section class="reveal" aria-labelledby="about-dials">
-      <p class="sec-kicker">06 — Tune</p>
-      <h2 id="about-dials">The dials, in plain words <a class="anchor" href="#about-dials" aria-label="Link to this section">#</a></h2>
-      <p>Ten sliders, three moods. You cannot break anything — <strong>Reset</strong> brings the pool back.</p>
+      <h2 id="about-dials">Settings <a class="anchor" href="#about-dials" aria-label="Link to this section">#</a></h2>
+      <p>Ten settings in three groups. Reset restores defaults.</p>
       <div class="dial-cards">
         <article class="dial-card">
           <h3>Brush</h3>
-          <p class="dial-card-sub">your hand</p>
+          <p class="dial-card-sub">input</p>
           <dl>
-            <div><dt><code>Radius</code></dt><dd>the size of your brush</dd></div>
-            <div><dt><code>Brush force</code></dt><dd>how hard you stir</dd></div>
-            <div><dt><code>Brightness</code></dt><dd>how vivid the ink is</dd></div>
+            <div><dt><code>Radius</code></dt><dd>radius of each input splat (<code>SPLAT_RADIUS</code>)</dd></div>
+            <div><dt><code>Brush force</code></dt><dd>velocity impulse per splat (<code>SPLAT_FORCE</code>)</dd></div>
+            <div><dt><code>Brightness</code></dt><dd>dye intensity per splat (<code>BRIGHTNESS</code>)</dd></div>
           </dl>
         </article>
         <article class="dial-card">
           <h3>Flow</h3>
-          <p class="dial-card-sub">the water</p>
+          <p class="dial-card-sub">fluid</p>
           <dl>
-            <div><dt><code>Curl</code></dt><dd>how much it swirls on its own</dd></div>
-            <div><dt><code>Velocity loss</code></dt><dd>friction — how fast motion settles</dd></div>
-            <div><dt><code>Ink persistence</code></dt><dd>how long trails linger</dd></div>
-            <div><dt><code>Ambient motion</code></dt><dd>stirs itself, stays alive untouched</dd></div>
+            <div><dt><code>Curl</code></dt><dd>vorticity confinement strength (<code>CURL</code>)</dd></div>
+            <div><dt><code>Velocity loss</code></dt><dd>velocity dissipation per frame (<code>VELOCITY_DISSIPATION</code>)</dd></div>
+            <div><dt><code>Ink persistence</code></dt><dd>inverse dye dissipation; higher lasts longer (<code>DENSITY_DISSIPATION</code>)</dd></div>
+            <div><dt><code>Ambient motion</code></dt><dd>background splat rate with no input (<code>IDLE_INJECTION</code>)</dd></div>
           </dl>
         </article>
         <article class="dial-card">
           <h3>Simulation</h3>
-          <p class="dial-card-sub">the engine room</p>
+          <p class="dial-card-sub">solver</p>
           <dl>
-            <div><dt><code>Pressure loss</code></dt><dd>how carefully water is calculated</dd></div>
-            <div><dt><code>Pressure steps</code></dt><dd>more steps, smoother, hungrier</dd></div>
-            <div><dt><code>Glow</code></dt><dd>how much the color shines</dd></div>
+            <div><dt><code>Pressure loss</code></dt><dd>pressure dissipation per solve (<code>PRESSURE_DISSIPATION</code>)</dd></div>
+            <div><dt><code>Pressure steps</code></dt><dd>Jacobi iterations; higher is smoother and more expensive (<code>PRESSURE_ITERATIONS</code>)</dd></div>
+            <div><dt><code>Glow</code></dt><dd>bloom intensity (<code>BLOOM_INTENSITY</code>)</dd></div>
           </dl>
         </article>
       </div>
-      <p class="recipe"><span class="tip-label">Try this</span> <code>Curl</code> 6 · <code>Ink persistence</code> max · <code>Ambient motion</code> 1 — then hands off. The pool dreams by itself.</p>
+      <p class="recipe"><span class="tip-label">Example</span> <code>Curl</code> 6, <code>Ink persistence</code> at maximum, <code>Ambient motion</code> at 1 produces continuous flow with no input.</p>
     </section>
 
     <aside class="callout reveal" aria-label="Performance note">
       <p class="callout-label">Note</p>
-      <p class="callout-text">On phones the pool is calculated at half size and the screen is capped — the same water, just painted with broader strokes, so it stays smooth in your pocket.</p>
+      <p class="callout-text">On mobile, dye resolution is 512 (1024 on desktop) and pixel ratio is capped, trading detail for frame rate.</p>
     </aside>
 
     <section class="reveal" aria-labelledby="about-where">
-      <p class="sec-kicker">07 — Home</p>
-      <h2 id="about-where">Where does it run? <a class="anchor" href="#about-where" aria-label="Link to this section">#</a></h2>
-      <p>Entirely on your own device — the water is calculated on your graphics chip, frame by frame, as you watch. Nothing you paint is uploaded anywhere, and your dial settings never leave this browser.</p>
+      <h2 id="about-where">Runtime environment <a class="anchor" href="#about-where" aria-label="Link to this section">#</a></h2>
+      <p>The simulation runs entirely in the browser on WebGL2, with a WebGL1 fallback. No painting data leaves the device. Dial positions persist in <code>localStorage</code> (<code>ink:fluid-dials-v1</code>); simulation state is never stored.</p>
     </section>
 
     <section class="reveal" aria-labelledby="about-faq">
-      <p class="sec-kicker">08 — Answers</p>
-      <h2 id="about-faq">Common questions <a class="anchor" href="#about-faq" aria-label="Link to this section">#</a></h2>
+      <h2 id="about-faq">FAQ <a class="anchor" href="#about-faq" aria-label="Link to this section">#</a></h2>
       <details class="faq" open>
-        <summary>Will my painting be saved?</summary>
-        <p>No. Every frame is calculated live, so reloading starts a fresh pool. Dial positions are remembered in this browser; paintings are not.</p>
+        <summary>Is my painting saved?</summary>
+        <p>No. Reloading resets the simulation. Only dial positions persist, in <code>localStorage</code>.</p>
       </details>
       <details class="faq">
-        <summary>Why did the page go dark?</summary>
-        <p>The ink has settled — it always does. Drag anywhere, or press Burst, and the water wakes again.</p>
+        <summary>Why did the canvas go dark?</summary>
+        <p>Dissipation clears dye over time. Drag anywhere or trigger Burst to add more.</p>
       </details>
       <details class="faq">
         <summary>Does it work on phones?</summary>
-        <p>Yes. The pool runs smaller with capped resolution, and a finger stirs exactly like a cursor.</p>
+        <p>Yes, at reduced dye resolution with a capped pixel ratio.</p>
       </details>
       <details class="faq">
         <summary>Is anything uploaded?</summary>
-        <p>Nothing. There is no account, no server, no analytics watching your strokes. The whole thing lives in this tab.</p>
+        <p>No. There is no account, no server component, and no analytics on input.</p>
       </details>
     </section>
 
     <section class="cta-band reveal" aria-labelledby="cta-title">
-      <p class="cta-kicker">your turn</p>
-      <h2 id="cta-title">Open the canvas, stress less</h2>
-      <p>The water is already moving. Go stir it.</p>
-      <a class="cta-button" href="./">Start painting <span aria-hidden="true">→</span></a>
+      <h2 id="cta-title">Back to the canvas</h2>
+      <p>Return to the live simulation.</p>
+      <a class="cta-button" href="./">Open the canvas <span aria-hidden="true">→</span></a>
     </section>
   </main>
 
-  <footer class="site-footer"><span class="foot-pill">© 2016</span><a class="foot-pill foot-link" href="./">Canvas</a><a class="foot-pill foot-link" href="LICENSE">MIT License</a></footer>
+  <footer class="site-footer"><span class="foot-pill">© 2026</span><a class="foot-pill foot-link" href="./">Canvas</a><a class="foot-pill foot-link" href="LICENSE">MIT License</a></footer>
   <script>
     try {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -332,7 +326,7 @@
       }
     } catch (e) {}
     try {
-      // FIG_004 playground: pointer/keys move the bloom, slider sets glow,
+      // Figure 4 playground: pointer/keys move the bloom, slider sets glow,
       // toggles peel shafts and grain off the light pass.
       var demo = document.getElementById('glow-demo');
       var glowInput = document.getElementById('glow-amount');
@@ -340,19 +334,61 @@
       var shaftsBtn = document.getElementById('glow-shafts');
       var grainBtn = document.getElementById('glow-grain-btn');
       if (demo) {
-        var gx = 0.5, gy = 0.42;
-        var setPos = function (nx, ny) {
-          gx = Math.min(1, Math.max(0, nx));
-          gy = Math.min(1, Math.max(0, ny));
-          demo.style.setProperty('--gx', gx.toFixed(3));
-          demo.style.setProperty('--gy', gy.toFixed(3));
-          demo.classList.add('is-live');
+        var orbA = demo.querySelector('.glow-orb-a');
+        var tx = 0.5, ty = 0.42, cx = 0.5, cy = 0.42, glow = 0.7;
+        var live = false, rafId = 0, inView = true;
+        var reduceMotion = false;
+        try { reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (err) {}
+        var goLive = function () {
+          if (!live) { live = true; demo.classList.add('is-live'); }
+        };
+        var setTarget = function (nx, ny) {
+          tx = Math.min(1, Math.max(0, nx));
+          ty = Math.min(1, Math.max(0, ny));
+          goLive();
         };
         var posFromEvent = function (e) {
           var r = demo.getBoundingClientRect();
           if (!r.width || !r.height) return;
-          setPos((e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
+          setTarget((e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
         };
+        // Compositor-only motion: lerp toward the target each frame and place
+        // the orb with transform, so pointer input never triggers layout.
+        var frame = function (now) {
+          rafId = 0;
+          if (!live && !reduceMotion) {
+            var t = now / 1000;
+            tx = 0.5 + 0.18 * Math.sin(t * 0.6);
+            ty = 0.42 + 0.12 * Math.sin(t * 0.9 + 1.3);
+          }
+          cx += (tx - cx) * 0.16;
+          cy += (ty - cy) * 0.16;
+          var w = demo.clientWidth, h = demo.clientHeight;
+          if (w > 0 && h > 0) {
+            var s = 0.6 + glow * 0.7;
+            orbA.style.transform = 'translate(' + (cx * w - 60).toFixed(1) + 'px,' + (cy * h - 60).toFixed(1) + 'px) scale(' + s.toFixed(3) + ')';
+          }
+          kick();
+        };
+        var kick = function () {
+          if (!rafId && inView && !document.hidden && 'requestAnimationFrame' in window) {
+            rafId = requestAnimationFrame(frame);
+          }
+        };
+        try {
+          if ('IntersectionObserver' in window) {
+            new IntersectionObserver(function (entries) {
+              inView = entries[0].isIntersecting;
+              if (inView) kick();
+              else if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+            }).observe(demo);
+          }
+        } catch (err) {}
+        document.addEventListener('visibilitychange', function () {
+          if (document.hidden) { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } }
+          else kick();
+        });
+        kick();
         var dragging = false;
         demo.addEventListener('pointerdown', function (e) {
           dragging = true;
@@ -366,15 +402,16 @@
         demo.addEventListener('pointercancel', function () { dragging = false; });
         demo.addEventListener('keydown', function (e) {
           var step = 0.04, handled = true;
-          if (e.key === 'ArrowLeft') setPos(gx - step, gy);
-          else if (e.key === 'ArrowRight') setPos(gx + step, gy);
-          else if (e.key === 'ArrowUp') setPos(gx, gy - step);
-          else if (e.key === 'ArrowDown') setPos(gx, gy + step);
+          if (e.key === 'ArrowLeft') setTarget(tx - step, ty);
+          else if (e.key === 'ArrowRight') setTarget(tx + step, ty);
+          else if (e.key === 'ArrowUp') setTarget(tx, ty - step);
+          else if (e.key === 'ArrowDown') setTarget(tx, ty + step);
           else handled = false;
           if (handled) e.preventDefault();
         });
         var setGlow = function () {
           var v = Number(glowInput.value) / 100;
+          glow = v;
           demo.style.setProperty('--glow', v.toFixed(2));
           glowValue.textContent = v.toFixed(2);
           glowInput.style.setProperty('--fill', glowInput.value + '%');

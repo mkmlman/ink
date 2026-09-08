@@ -315,6 +315,14 @@ body:has(.about-main)::before {
 .about-main { position: relative; z-index: 5; max-width: 700px; margin: 0 auto; padding: calc(118px + env(safe-area-inset-top)) 22px 140px; }
 .about-main ::selection { background: rgba(223, 248, 227, 0.22); color: var(--text); }
 .about-hero { margin: 0; }
+/* Hero entrance: container stays put, children cascade in on load */
+.about-hero.reveal { opacity: 1; transform: none; transition: none; }
+.about-hero > * { opacity: 0; transform: translateY(14px); transition: opacity 0.6s ease, transform 0.7s var(--ease-out); }
+.about-hero.is-in > * { opacity: 1; transform: none; }
+.about-hero.is-in > *:nth-child(1) { transition-delay: 0.05s; }
+.about-hero.is-in > *:nth-child(2) { transition-delay: 0.16s; }
+.about-hero.is-in > *:nth-child(3) { transition-delay: 0.28s; }
+.about-hero.is-in > *:nth-child(4) { transition-delay: 0.4s; }
 .hero-eyebrow {
   display: inline-flex;
   align-items: center;
@@ -437,6 +445,7 @@ body:has(.about-main)::before {
 /* How-to-use cards */
 .use-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 22px 0 0; }
 .use-card {
+  position: relative;
   padding: 20px 18px 18px;
   border: 1px solid var(--line);
   border-radius: 15px;
@@ -448,6 +457,7 @@ body:has(.about-main)::before {
 }
 .use-card:hover { border-color: rgba(223, 248, 227, 0.28); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(223, 248, 227, 0.08), 0 1px 0 rgba(255, 255, 255, 0.06) inset; transform: translateY(-3px); }
 .use-card:nth-child(2) { background: linear-gradient(180deg, rgba(240, 199, 164, 0.07), rgba(10, 12, 12, 0.6)); }
+.use-step { position: absolute; top: 16px; right: 16px; color: var(--muted); font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.12em; opacity: 0.7; }
 .use-icon { width: 26px; height: 26px; color: var(--accent); }
 .use-card:nth-child(2) .use-icon { color: #f0c7a4; }
 .use-card h3 { margin: 14px 0 0; }
@@ -603,8 +613,6 @@ body:has(.about-main)::before {
 /* Glow demo — interactive light pass: pointer moves the bloom, slider sets glow */
 .glow-figure { overflow: hidden; }
 .glow-demo {
-  --gx: 0.5;
-  --gy: 0.42;
   --glow: 0.7;
   position: relative;
   height: 190px;
@@ -620,17 +628,15 @@ body:has(.about-main)::before {
 .glow-demo:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .glow-orb { position: absolute; border-radius: 50%; filter: blur(18px); }
 .glow-orb-a {
-  top: calc(var(--gy) * 100%);
-  left: calc(var(--gx) * 100%);
+  top: 0;
+  left: 0;
   width: 120px;
   height: 120px;
   background: radial-gradient(circle, rgba(223, 248, 227, 0.85), rgba(223, 248, 227, 0.12) 60%, transparent 72%);
   opacity: calc(0.35 + var(--glow) * 0.65);
-  transform: translate(-50%, -50%) scale(calc(0.6 + var(--glow) * 0.7));
-  transition: top 0.12s linear, left 0.12s linear, opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.2s ease;
+  will-change: transform;
 }
-.glow-demo:not(.is-live) .glow-orb-a { animation: glowBob 5s ease-in-out infinite alternate; }
-.glow-demo.is-live .glow-orb-a { animation: none; }
 .glow-orb-b { top: 66px; left: 50%; width: 220px; height: 90px; margin-left: -110px; border-radius: 50%; background: radial-gradient(ellipse, rgba(240, 199, 164, 0.28), transparent 70%); filter: blur(24px); animation: glowBob 6.5s ease-in-out infinite alternate-reverse; }
 @keyframes glowBob { from { transform: translateX(-8px) scale(1); opacity: 0.85; } to { transform: translateX(8px) scale(1.06); opacity: 1; } }
 .glow-shaft { position: absolute; inset: -20% -10%; background: conic-gradient(from 200deg at 30% 20%, transparent 0deg, rgba(223, 248, 227, 0.06) 12deg, transparent 24deg, transparent 160deg, rgba(223, 248, 227, 0.05) 172deg, transparent 184deg); animation: shaftSway 9s ease-in-out infinite alternate; }
@@ -674,7 +680,7 @@ body:has(.about-main)::before {
   background: transparent;
   cursor: ew-resize;
 }
-.glow-slider input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 999px; background: linear-gradient(90deg, var(--accent) var(--fill, 58%), rgba(237, 244, 239, 0.18) var(--fill, 58%)); }
+.glow-slider input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 999px; background: linear-gradient(90deg, var(--accent) var(--fill, 70%), rgba(237, 244, 239, 0.18) var(--fill, 70%)); }
 .glow-slider input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -6px; border: 1px solid rgba(8, 9, 9, 0.9); border-radius: 50%; background: var(--text); box-shadow: 0 2px 9px rgba(0, 0, 0, 0.58); }
 .glow-slider input[type="range"]::-moz-range-track { height: 4px; border-radius: 999px; background: rgba(237, 244, 239, 0.18); }
 .glow-slider input[type="range"]::-moz-range-progress { height: 4px; border-radius: 999px; background: var(--accent); }
@@ -885,12 +891,12 @@ body:has(.about-main)::before {
   .cta-band { padding: 38px 22px 34px; }
   .figure { padding: 16px 14px 12px; }
   .pipe-chip { padding: 7px 13px; font-size: 0.6rem; }
-  .reveal { opacity: 1; transform: none; transition: none; }
   body:has(.about-main) .site-footer { position: static; margin: 0 12px calc(20px + env(safe-area-inset-bottom)); }
 }
 
 @media (max-width: 450px) {
   .brand-word { font-size: 0.65rem; letter-spacing: 0.12em; }
+  .toc-meta { display: none; }
   .ui-action kbd { display: none; }
   .ui-action { width: 36px; padding: 0; }
   .ui-action .action-text { display: none; }
@@ -922,6 +928,7 @@ body:has(.about-main)::before {
   .welcome, .has-interaction .welcome { opacity: 1; transform: none; transition: none; }
   .welcome h1 em { color: var(--muted-strong); }
   .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .about-hero > * { opacity: 1 !important; transform: none !important; transition: none !important; }
   .about-aurora, .about-aurora::before, .about-aurora::after, .cta-band::before { display: none !important; }
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 }
