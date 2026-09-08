@@ -11,7 +11,7 @@
   <meta property="og:type" content="website">
   <title>How it works</title>
   <link rel="icon" href="src/ink-icon.svg?v=1.6.0" type="image/svg+xml">
-  <link rel="stylesheet" href="src/ink.css?v=1.7.14">
+  <link rel="stylesheet" href="src/ink.css?v=1.7.15">
   <noscript><style>.reveal,.about-hero>*{opacity:1!important;transform:none!important}</style></noscript>
 </head>
 <body>
@@ -262,11 +262,15 @@
         <summary>Is anything uploaded?</summary>
         <p>No. There is no account, no server component, and no analytics on input.</p>
       </details>
+      <details class="faq">
+        <summary>What if WebGL is unavailable?</summary>
+        <p>The canvas shows a notice and disables its controls. WebGL is usually blocked by browser or device settings — try another browser.</p>
+      </details>
     </section>
 
     <section class="cta-band reveal" aria-labelledby="cta-title">
       <h2 id="cta-title">Back to the canvas</h2>
-      <p>Return to the live simulation.</p>
+      <p>Dial settings carry over; the simulation itself starts fresh.</p>
       <a class="cta-button" href="./">Open the canvas <span aria-hidden="true">→</span></a>
     </section>
   </main>
@@ -435,6 +439,25 @@
         };
         wireToggle(shaftsBtn, 'shafts');
         wireToggle(grainBtn, 'grain');
+      }
+    } catch (e) {}
+    try {
+      // TOC scrollspy: highlight the section currently in view.
+      var tocMap = {};
+      document.querySelectorAll('.toc a[href^="#"]').forEach(function (a) {
+        tocMap[a.getAttribute('href').slice(1)] = a;
+      });
+      if ('IntersectionObserver' in window) {
+        var spy = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            if (!en.isIntersecting) return;
+            var h = en.target.querySelector('h2[id]');
+            if (!h || !tocMap[h.id]) return;
+            Object.keys(tocMap).forEach(function (k) { tocMap[k].removeAttribute('aria-current'); });
+            tocMap[h.id].setAttribute('aria-current', 'true');
+          });
+        }, { rootMargin: '-30% 0px -60% 0px' });
+        document.querySelectorAll('.about-main section').forEach(function (s) { spy.observe(s); });
       }
     } catch (e) {}
   </script>
