@@ -940,3 +940,67 @@ body:has(.about-main)::before, body.page-about::before {
   .reveal { opacity: 1 !important; transform: none !important; }
   .topbar, .site-footer, .foot-pill { position: static; background: none; border-color: transparent; box-shadow: none; transform: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
+
+/* Angry sliders — slingshot thumbs (see src/angry-dials.js) */
+body.is-angry .dial { touch-action: none; cursor: grab; }
+body.is-angry .dial input[type="range"] { pointer-events: none !important; }
+.dial.is-grabbing { cursor: grabbing; }
+.dial .dial-value.is-preview { color: #8383ff; }
+.dial.is-slinging .dial-knob-face::before { opacity: 0; }
+.dial.is-slinging .dial-knob-face::after { opacity: 0; }
+.dial.is-slinging .dial-knob-face { background: rgba(237, 244, 239, 0.14); }
+#angry-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+#angry-overlay.is-live { opacity: 1; }
+.fluid-dialers.is-shaking { animation: angry-shake 0.38s var(--ease-out); }
+.fluid-dialers.is-slamming { animation: angry-slam 0.42s var(--ease-out); }
+@keyframes angry-shake {
+  0% { transform: translateY(-50%) translateX(0); }
+  25% { transform: translateY(-50%) translateX(-4px); }
+  50% { transform: translateY(-50%) translateX(3px); }
+  75% { transform: translateY(-50%) translateX(-2px); }
+  100% { transform: translateY(-50%) translateX(0); }
+}
+@keyframes angry-slam {
+  0% { transform: translateY(-50%) translateX(0) rotate(0deg); }
+  20% { transform: translateY(-50%) translateX(-7px) rotate(-0.4deg); }
+  45% { transform: translateY(-50%) translateX(5px) rotate(0.3deg); }
+  70% { transform: translateY(-50%) translateX(-3px) rotate(-0.15deg); }
+  100% { transform: translateY(-50%) translateX(0) rotate(0deg); }
+}
+@media (max-width: 760px) {
+  @keyframes angry-shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    50% { transform: translateX(3px); }
+    75% { transform: translateX(-2px); }
+    100% { transform: translateX(0); }
+  }
+  @keyframes angry-slam {
+    0% { transform: translateX(0) rotate(0deg); }
+    20% { transform: translateX(-7px) rotate(-0.4deg); }
+    45% { transform: translateX(5px) rotate(0.3deg); }
+    70% { transform: translateX(-3px) rotate(-0.15deg); }
+    100% { transform: translateX(0) rotate(0deg); }
+  }
+}
+.dial.is-impact .dial-knob-face::after {
+  animation: angry-pop 0.34s var(--ease-out);
+}
+@keyframes angry-pop {
+  0% { transform: translate(-50%, -50%) scale(0.4); }
+  60% { transform: translate(-50%, -50%) scale(1.4); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+.dial-label .angry-char { display: inline-block; will-change: transform; }
+@media (prefers-reduced-motion: reduce) {
+  #angry-overlay { display: none !important; }
+  .fluid-dialers.is-shaking, .fluid-dialers.is-slamming { animation: none; }
+  .dial.is-impact .dial-knob-face::after { animation: none; }
+}
