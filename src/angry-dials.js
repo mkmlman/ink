@@ -42,7 +42,26 @@
       overlay.style.height = window.innerHeight + 'px';
     }
     sizeOverlay();
-    window.addEventListener('resize', sizeOverlay, { passive: true });
+    window.addEventListener('resize', function () {
+      sizeOverlay();
+      refreshRect();
+    }, { passive: true });
+    // Keep the cached track rect honest if the page scrolls mid-gesture,
+    // instead of paying for getBoundingClientRect() on every pointermove.
+    window.addEventListener('scroll', refreshRect, { passive: true, capture: true });
+    function refreshRect() {
+      if (!active || active.flying) return;
+      try {
+        var rect = trackRect(active.wrap);
+        if (rect && rect.width > 4) {
+          active.rect = rect;
+          if (!active.slinging) {
+            active.anchorX = valueToX(active.startValue, active.meta, rect);
+            active.anchorY = rect.top + rect.height / 2;
+          }
+        }
+      } catch (e) {}
+    }
 
     var SLING_K = 6.5;      // launch velocity per px of pull
     var GRAVITY = 1700;     // px/s^2
@@ -115,8 +134,17 @@
     }
 
     function draw() {
-      raf = 0;
+      // Pure render: no frame scheduling here. The tick loop drives aiming
+      // frames; flight animations drive their own. Keeps one writer on the
+      // canvas and pacing on requestAnimationFrame, not pointer-event rate.
       if (!active) {
+        overlay.classList.remove('is-live');
+        try { octx.clearRect(0, 0, overlay.width, overlay.height); } catch (e) {}
+        return;
+      }
+      var a = active;
+      if (!a.slinging && !a.flying) {
+        // pure scrub: leave all rendering to the native dial, keep overlay clear
         overlay.classList.remove('is-live');
         try { octx.clearRect(0, 0, overlay.width, overlay.height); } catch (e) {}
         return;
@@ -125,7 +153,6 @@
       octx.save();
       octx.scale(dpr, dpr);
       octx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      var a = active;
       var anchorX = a.anchorX, anchorY = a.anchorY;
       var thumbX = a.thumbX, thumbY = a.thumbY;
 
@@ -177,24 +204,75 @@
         }
       }
 
-      // thumb (angry blue when slinging/flying)
+      // thumb (angry blue when slinging/flying). Halo is two flat fills —
+      // deliberately no shadowBlur: it forces a slow path on full-viewport
+      // canvases and was the main frame-rate killer.
       var R = a.slinging || a.flying ? 11 : 9;
+      var hot = a.slinging || a.flying;
       octx.beginPath();
-      octx.arc(thumbX, thumbY, R + 3, 0, Math.PI * 2);
-      octx.fillStyle = 'rgba(99,99,255,0.18)';
+      octx.arc(thumbX, thumbY, R + 5, 0, Math.PI * 2);
+      octx.fillStyle = hot ? 'rgba(99,99,255,0.16)' : 'rgba(241,243,240,0.10)';
       octx.fill();
       octx.beginPath();
       octx.arc(thumbX, thumbY, R, 0, Math.PI * 2);
-      octx.fillStyle = (a.slinging || a.flying) ? '#5b5bf7' : '#f1f3f0';
-      octx.shadowColor = 'rgba(99,99,255,0.55)';
-      octx.shadowBlur = (a.slinging || a.flying) ? 14 : 0;
+      octx.fillStyle = hot ? '#5b5bf7' : '#f1f3f0';
       octx.fill();
-      octx.shadowBlur = 0;
       octx.restore();
-      if (a.slinging && !a.flying) queueDraw();
     }
-    function queueDraw() {
-      if (!raf) raf = requestAnimationFrame(draw);
+
+    // Shared aim step: clamp the pull, integrate the projectile, pick the
+    // snapped landing. Used by the tick loop every frame and once more on
+    // release, so even a sub-frame flick still launches instead of fizzling.
+    function aim(a) {
+      var px = a.px, py = a.py;
+      var vx0 = px - a.anchorX, vy0 = py - a.anchorY;
+      var len = Math.hypot(vx0, vy0);
+      if (len > MAX_PULL) {
+        px = a.anchorX + vx0 / len * MAX_PULL;
+        py = a.anchorY + vy0 / len * MAX_PULL;
+      }
+      a.thumbX = px; a.thumbY = py;
+      var lvx = (a.anchorX - px) * SLING_K;
+      var lvy = (a.anchorY - py) * SLING_K;
+      a.launchVx = lvx; a.launchVy = lvy;
+      var sim = simulate(px, py, lvx, lvy, a.anchorY);
+      a.traj = sim;
+      if (sim.landIndex > 0) {
+        var lx = clamp(sim.landX, a.rect.left, a.rect.left + a.rect.width);
+        var val = clamp(xToValue(lx, a.meta, a.rect), a.meta.min, a.meta.max);
+        a.landing = val;
+        a.landingX = valueToX(val, a.meta, a.rect);
+      } else {
+        a.landing = null;
+      }
+      if (a.landing != null) setPreview(a.wrap, formatValue(a.landing, a.meta.step, a.meta.min));
+    }
+
+    // Single rAF loop for the aiming phase: reads the latest pointer once
+    // per frame, so scrub commits and sling physics run at display rate
+    // instead of irregular pointer-event rate.
+    function tick() {
+      raf = 0;
+      if (!active || active.flying) return;
+      var a = active;
+      if (a.slinging) {
+        aim(a);
+        draw();
+        raf = requestAnimationFrame(tick);
+      } else {
+        // scrub commit, frame-paced so DOM writes don't pile up per event
+        var dx = a.px - a.startX;
+        var W = a.rect.width || 1;
+        var dv = dx / W * (a.meta.max - a.meta.min);
+        var nv = clamp(snap(a.startValue + dv, a.meta.step, a.meta.min), a.meta.min, a.meta.max);
+        try { api.set(a.key, nv); } catch (err) {}
+      }
+    }
+    function ensureLoop() {
+      if (!raf && active && !active.flying) raf = requestAnimationFrame(tick);
+    }
+    function stopLoop() {
+      if (raf) { try { cancelAnimationFrame(raf); } catch (e) {} raf = 0; }
     }
 
     function setPreview(wrap, text) {
@@ -278,6 +356,7 @@
         startValue: startValue,
         anchorX: anchorX, anchorY: anchorY,
         startX: e.clientX, startY: e.clientY,
+        px: e.clientX, py: e.clientY,
         thumbX: anchorX, thumbY: anchorY,
         slinging: false, flying: false,
         traj: null, landing: null, landingX: 0, launchVx: 0, launchVy: 0,
@@ -285,7 +364,7 @@
       };
       wrap.classList.add('is-grabbing');
       sizeOverlay();
-      queueDraw();
+      draw();
       try { wrap.setPointerCapture(e.pointerId); } catch (err) {}
       e.preventDefault();
     }
@@ -294,61 +373,56 @@
       if (!active) return;
       if (e.pointerId !== undefined && active.pointerId !== undefined && e.pointerId !== active.pointerId) return;
       var a = active;
-      var dx = e.clientX - a.startX;
-      var dy = e.clientY - a.startY;
-      if (Math.abs(dx) + Math.abs(dy) > 3) a.moved = true;
-      // refresh track rect (panel may scroll)
-      var rect = trackRect(a.wrap);
-      if (rect && rect.width > 4) {
-        a.rect = rect;
-        if (!a.slinging && !a.flying) {
-          a.anchorX = valueToX(a.startValue, a.meta, rect);
-          a.anchorY = rect.top + rect.height / 2;
+      // Take the freshest coalesced sample so fast flicks don't alias.
+      var cx = e.clientX, cy = e.clientY;
+      try {
+        if (e.getCoalescedEvents) {
+          var samples = e.getCoalescedEvents();
+          if (samples && samples.length) {
+            var last = samples[samples.length - 1];
+            cx = last.clientX; cy = last.clientY;
+          }
         }
-      }
+      } catch (err) {}
+      a.px = cx; a.py = cy;
+      if (Math.abs(cx - a.startX) + Math.abs(cy - a.startY) > 3) a.moved = true;
       if (a.flying) return;
-      if (!a.slinging && Math.abs(dy) > DETACH) {
+      var dx = cx - a.startX, dy = cy - a.startY;
+      // Detach needs a deliberate off-track yank, not horizontal scrub wobble.
+      if (!a.slinging && Math.abs(dy) > DETACH && Math.abs(dy) > Math.abs(dx) * 0.45) {
         a.slinging = true;
         a.wrap.classList.add('is-slinging');
       }
       if (a.slinging) {
-        // thumb follows pointer, clamped to elastic length
-        var px = e.clientX, py = e.clientY;
-        var vx0 = px - a.anchorX, vy0 = py - a.anchorY;
-        var len = Math.hypot(vx0, vy0);
-        if (len > MAX_PULL) {
-          px = a.anchorX + vx0 / len * MAX_PULL;
-          py = a.anchorY + vy0 / len * MAX_PULL;
+        var pullLen = Math.hypot(cx - a.anchorX, cy - a.anchorY);
+        if (pullLen < 12) {
+          // dragged back onto the track: drop out of the slingshot, resume scrub
+          a.slinging = false;
+          a.wrap.classList.remove('is-slinging');
+          a.traj = null; a.landing = null;
+          try {
+            var cur = api.get(a.key);
+            if (cur != null) {
+              a.startValue = cur;
+              var valEl = a.wrap.querySelector('.dial-value');
+              if (valEl) valEl.textContent = formatValue(cur, a.meta.step, a.meta.min);
+            }
+          } catch (err) {}
+          try { clearPreview(a.wrap); } catch (err) {}
+          a.startX = cx; a.startY = cy;
+          a.thumbX = a.anchorX; a.thumbY = a.anchorY;
+          draw();
+          return;
         }
-        a.thumbX = px; a.thumbY = py;
-        var lvx = (a.anchorX - px) * SLING_K;
-        var lvy = (a.anchorY - py) * SLING_K;
-        a.launchVx = lvx; a.launchVy = lvy;
-        var sim = simulate(px, py, lvx, lvy, a.anchorY);
-        a.traj = sim;
-        if (sim.landIndex > 0) {
-          var lx = clamp(sim.landX, a.rect.left, a.rect.left + a.rect.width);
-          var val = clamp(xToValue(lx, a.meta, a.rect), a.meta.min, a.meta.max);
-          a.landing = val;
-          a.landingX = valueToX(val, a.meta, a.rect);
-        } else {
-          a.landing = null;
-        }
-        if (a.landing != null) setPreview(a.wrap, formatValue(a.landing, a.meta.step, a.meta.min));
-        queueDraw();
-      } else {
-        // normal scrub along track
-        var W = a.rect.width || 1;
-        var dv = dx / W * (a.meta.max - a.meta.min);
-        var nv = clamp(snap(a.startValue + dv, a.meta.step, a.meta.min), a.meta.min, a.meta.max);
-        try { api.set(a.key, nv); } catch (err) {}
       }
+      ensureLoop();
     }
 
     function cleanupActive() {
       if (!active) return;
       var a = active;
       active = null;
+      stopLoop();
       try { a.wrap.classList.remove('is-grabbing', 'is-slinging'); } catch (e) {}
       try { clearPreview(a.wrap); } catch (e) {}
       // restore exact value text from source of truth
@@ -357,17 +431,12 @@
         var el = a.wrap.querySelector('.dial-value');
         if (el && cur != null) el.textContent = formatValue(cur, a.meta.step, a.meta.min);
       } catch (e) {}
-      queueDraw();
-      // after clearing, force one blank frame
-      requestAnimationFrame(function () {
-        if (!active) {
-          overlay.classList.remove('is-live');
-          try { octx.clearRect(0, 0, overlay.width, overlay.height); } catch (e) {}
-        }
-      });
+      draw();
     }
 
     function flyAndLand(a) {
+      stopLoop();
+      if (!a.flying) aim(a); // freshen from the latest pointer: no fizzle on quick flicks
       a.flying = true;
       a.wrap.classList.remove('is-slinging');
       var sim = a.traj;
@@ -394,7 +463,6 @@
         var idx = Math.min(pts.length - 1, Math.floor(t * (pts.length - 1)));
         var p = pts[idx];
         a.thumbX = p.x; a.thumbY = p.y;
-        if (raf) { cancelAnimationFrame(raf); raf = 0; }
         draw();
         if (t < 1) {
           requestAnimationFrame(frame);
@@ -436,11 +504,14 @@
     }
 
     function springBack(a) {
+      stopLoop();
       var sx = a.thumbX, sy = a.thumbY;
       var ex = a.anchorX, ey = a.anchorY;
       var t0 = performance.now(), dur = 230;
       a.flying = true; // reuse thumb rendering, no trail
+      a.slinging = true; // keep the elastic visible on the way home
       a.flightPts = [];
+      a.traj = { pts: [] };
       function frame(now) {
         if (!active || active !== a) return;
         var t = clamp((now - t0) / dur, 0, 1);
@@ -450,11 +521,7 @@
         var k = 1 + (c + 1) * u * u * u + c * u * u;
         a.thumbX = sx + (ex - sx) * k;
         a.thumbY = sy + (ey - sy) * k;
-        if (raf) { cancelAnimationFrame(raf); raf = 0; }
-        // minimal draw: elastic only
-        a.slinging = true; a.traj = { pts: [] };
         draw();
-        a.slinging = true;
         if (t < 1) requestAnimationFrame(frame);
         else { cleanupActive(); }
       }
@@ -504,6 +571,10 @@
       var range = wrap.querySelector('input[type="range"]');
       if (range) {
         range.addEventListener('pointerdown', function (e) { e.stopPropagation(); }, true);
+        try {
+          var hint = range.getAttribute('aria-label') || wrap.getAttribute('data-key') || 'setting';
+          range.title = hint + ' — drag to tune, yank off-track and release to fling';
+        } catch (e) {}
       }
     });
     window.addEventListener('pointermove', onMove, { passive: true });
