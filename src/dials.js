@@ -136,9 +136,31 @@
       if (resetBtn) {
         resetBtn.addEventListener('click', function(){
           Object.keys(MAP).forEach(function(k){ if (dials[k]) setDial(k, MAP[k].def); });
+          // done playing: dock back to the original side card
+          BOX.classList.remove('is-expanded');
+          syncExpand();
           setStatus('Defaults restored');
         });
       }
+
+      // center-stage toggle — the roomy single-column mode for slingshots
+      var expandBtn = document.getElementById('dial-expand');
+      function syncExpand() {
+        if (!expandBtn) return;
+        var staged = BOX.classList.contains('is-expanded');
+        expandBtn.setAttribute('aria-pressed', staged ? 'true' : 'false');
+        var label = staged ? 'Dock controls to the side' : 'Expand controls to center stage';
+        expandBtn.setAttribute('aria-label', label);
+        expandBtn.setAttribute('title', label);
+      }
+      if (expandBtn) {
+        // button state always reflects the actual class list
+        expandBtn.addEventListener('click', function(){
+          BOX.classList.toggle('is-expanded');
+          syncExpand();
+        });
+      }
+      syncExpand();
 
       // collapsible panel — optional #dialers-toggle in host page
       var toggle = document.getElementById('dialers-toggle');
@@ -164,7 +186,11 @@
       var api = {
         set: setDial,
         get: function(k){ return dials[k] ? dials[k].value : null; },
-        reset: function(){ Object.keys(MAP).forEach(function(k){ if (dials[k]) setDial(k, MAP[k].def); }); },
+        reset: function(){
+          Object.keys(MAP).forEach(function(k){ if (dials[k]) setDial(k, MAP[k].def); });
+          BOX.classList.remove('is-expanded');
+          syncExpand();
+        },
         box: BOX
       };
       window.inkDials = api;

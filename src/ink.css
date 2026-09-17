@@ -999,6 +999,95 @@ body.is-angry .dial input[type="range"] { pointer-events: none !important; }
   100% { transform: translate(-50%, -50%) scale(1); }
 }
 .dial-label .angry-char { display: inline-block; will-change: transform; }
+
+/* Panel header side cluster: save status + stage toggle */
+.panel-side { display: inline-flex; align-items: center; gap: 8px; padding-top: 2px; }
+.save-state { padding-top: 0; }
+.panel-expand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted-strong);
+  background: rgba(237, 244, 239, 0.04);
+  cursor: pointer;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+.panel-expand svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.4; }
+.panel-expand .icon-compress { display: none; }
+.panel-expand[aria-pressed="true"] .icon-compress { display: block; }
+.panel-expand[aria-pressed="true"] .icon-expand { display: none; }
+.panel-expand:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* Center-stage mode: roomy single-column playground for slingshots.
+   Geometry adapts per platform — phone sheet, tablet card, desktop stage. */
+@media (min-width: 1101px) {
+  .fluid-dialers.is-expanded {
+    top: calc(50% + 18px);
+    right: auto;
+    left: 50%;
+    width: min(800px, calc(100vw - 96px));
+    max-height: min(78vh, 660px);
+    max-height: min(78dvh, 660px);
+    padding: 26px 28px 20px;
+    transform: translate(-50%, -50%);
+  }
+  .fluid-dialers.is-expanded .dial-grid { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .fluid-dialers.is-expanded .dial-knob { height: 30px; padding: 10px 0; }
+  .fluid-dialers.is-expanded .dial-knob-face::after { width: 18px; height: 18px; }
+  .fluid-dialers.is-expanded .dial input[type="range"] { height: 40px; }
+  .fluid-dialers.is-expanded.is-shaking { animation-name: angry-shake-stage; }
+  .fluid-dialers.is-expanded.is-slamming { animation-name: angry-slam-stage; }
+}
+@media (min-width: 761px) and (max-width: 1100px) {
+  .fluid-dialers.is-expanded {
+    top: calc(50% + 14px);
+    right: auto;
+    left: 50%;
+    width: min(660px, calc(100vw - 64px));
+    max-height: min(80vh, 640px);
+    max-height: min(80dvh, 640px);
+    padding: 24px 24px 18px;
+    transform: translate(-50%, -50%);
+  }
+  .fluid-dialers.is-expanded .dial-grid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .fluid-dialers.is-expanded .dial-knob { height: 28px; padding: 9px 0; }
+  .fluid-dialers.is-expanded .dial-knob-face::after { width: 17px; height: 17px; }
+  .fluid-dialers.is-expanded .dial input[type="range"] { height: 38px; }
+  .fluid-dialers.is-expanded.is-shaking { animation-name: angry-shake-stage; }
+  .fluid-dialers.is-expanded.is-slamming { animation-name: angry-slam-stage; }
+}
+@keyframes angry-shake-stage {
+  0% { transform: translate(-50%, -50%) translateX(0); }
+  25% { transform: translate(-50%, -50%) translateX(-5px); }
+  50% { transform: translate(-50%, -50%) translateX(4px); }
+  75% { transform: translate(-50%, -50%) translateX(-2px); }
+  100% { transform: translate(-50%, -50%) translateX(0); }
+}
+@keyframes angry-slam-stage {
+  0% { transform: translate(-50%, -50%) translateX(0) rotate(0deg); }
+  20% { transform: translate(-50%, -50%) translateX(-8px) rotate(-0.4deg); }
+  45% { transform: translate(-50%, -50%) translateX(6px) rotate(0.3deg); }
+  70% { transform: translate(-50%, -50%) translateX(-3px) rotate(-0.15deg); }
+  100% { transform: translate(-50%, -50%) translateX(0) rotate(0deg); }
+}
+@media (max-width: 760px) {
+  .fluid-dialers.is-expanded {
+    top: auto;
+    bottom: calc(8px + env(safe-area-inset-bottom));
+    max-height: calc(100vh - 150px);
+    max-height: calc(100dvh - 150px);
+    padding-bottom: 14px;
+  }
+  .fluid-dialers.is-expanded .dial-grid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .fluid-dialers.is-expanded .dial-knob { height: 34px; padding: 11px 0; }
+  .fluid-dialers.is-expanded .dial-knob-face { height: 5px; }
+  .fluid-dialers.is-expanded .dial-knob-face::after { width: 20px; height: 20px; }
+  .fluid-dialers.is-expanded .dial input[type="range"] { height: 46px; }
+}
 @media (prefers-reduced-motion: reduce) {
   #angry-overlay { display: none !important; }
   .fluid-dialers.is-shaking, .fluid-dialers.is-slamming { animation: none; }
