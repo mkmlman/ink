@@ -136,9 +136,6 @@
       if (resetBtn) {
         resetBtn.addEventListener('click', function(){
           Object.keys(MAP).forEach(function(k){ if (dials[k]) setDial(k, MAP[k].def); });
-          // done playing: dock back to the original side card
-          BOX.classList.remove('is-expanded');
-          syncExpand();
           setStatus('Defaults restored');
         });
       }
@@ -183,13 +180,13 @@
         });
       }
 
+      setStatus('Saved');
+
       var api = {
         set: setDial,
         get: function(k){ return dials[k] ? dials[k].value : null; },
         reset: function(){
           Object.keys(MAP).forEach(function(k){ if (dials[k]) setDial(k, MAP[k].def); });
-          BOX.classList.remove('is-expanded');
-          syncExpand();
         },
         box: BOX
       };

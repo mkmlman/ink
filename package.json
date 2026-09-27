@@ -9,26 +9,28 @@
     "./fluid": "./src/fluid.js",
     "./dials": "./src/dials.js",
     "./angry-dials": "./src/angry-dials.js",
+    "./about": "./src/about.js",
     "./css": "./src/ink.css"
   },
-  "unpkg": "src/fluid.js",
-  "jsdelivr": "src/fluid.js",
   "sideEffects": [
     "src/fluid.js",
     "src/dials.js",
     "src/angry-dials.js",
+    "src/about.js",
     "src/*.css"
   ],
   "files": [
     "src",
     "index.html",
     "about.html",
+    "404.html",
+    "robots.txt",
     "LICENSE",
     "README.md"
   ],
   "scripts": {
     "dev": "python3 -m http.server 8080",
-    "check": "node --check src/fluid.js && node --check src/dials.js && node --check src/angry-dials.js"
+    "check": "node --check src/fluid.js && node --check src/dials.js && node --check src/angry-dials.js && node --check src/about.js"
   },
   "repository": {
     "type": "git",

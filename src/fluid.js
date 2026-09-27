@@ -25,10 +25,10 @@ function emit (name, detail) {
 let config = {
     SIM_RESOLUTION: 256,
     DYE_RESOLUTION: 1024,
-    DENSITY_DISSIPATION: 1.0,
+    DENSITY_DISSIPATION: 0.68,
     VELOCITY_DISSIPATION: 0.0,
     PRESSURE_DISSIPATION: 0.08,
-    PRESSURE: 0.8,
+    PRESSURE: 0.84,
     PRESSURE_ITERATIONS: 16,
     CURL: 4,
     SPLAT_RADIUS: 0.40,
@@ -36,11 +36,9 @@ let config = {
     BRIGHTNESS: 3.0,
     IDLE_INJECTION: 0,
     SHADING: true,
-    COLORFUL: true,
     COLOR_UPDATE_SPEED: 10,
     PAUSED: false,
     BACK_COLOR: { r: 10, g: 10, b: 10 },
-    TRANSPARENT: false,
     BLOOM: true,
     BLOOM_ITERATIONS: 8,
     BLOOM_RESOLUTION: 256,
@@ -51,17 +49,6 @@ let config = {
     SUNRAYS_RESOLUTION: 196,
     SUNRAYS_WEIGHT: 1.0,
 }
-// sync paper background with host theme when present; default stays dark
-function syncFluidPaper(){
-  var theme = document.documentElement.getAttribute('data-theme');
-  if (theme === 'light') config.BACK_COLOR = { r: 250, g: 249, b: 246 };
-  else config.BACK_COLOR = { r: 10, g: 10, b: 10 };
-}
-syncFluidPaper();
-try {
-  new MutationObserver(syncFluidPaper).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-} catch (e) {}
-
 function pointerPrototype () {
     this.id = -1;
     this.texcoordX = 0;
@@ -72,7 +59,7 @@ function pointerPrototype () {
     this.deltaY = 0;
     this.down = false;
     this.moved = false;
-    this.color = [30, 0, 300];
+    this.color = { r: 0.3, g: 0, b: 0.3 };
 }
 
 let pointers = [];
@@ -411,24 +398,6 @@ const colorShader = compileShader(gl.FRAGMENT_SHADER, `
 
     void main () {
         gl_FragColor = color;
-    }
-`);
-
-const checkerboardShader = compileShader(gl.FRAGMENT_SHADER, `
-    precision highp float;
-    precision highp sampler2D;
-
-    varying vec2 vUv;
-    uniform sampler2D uTexture;
-    uniform float aspectRatio;
-
-    #define SCALE 25.0
-
-    void main () {
-        vec2 uv = floor(vUv * SCALE * vec2(aspectRatio, 1.0));
-        float v = mod(uv.x + uv.y, 2.0);
-        v = v * 0.1 + 0.8;
-        gl_FragColor = vec4(vec3(v), 1.0);
     }
 `);
 
@@ -822,16 +791,9 @@ const blit = (() => {
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
         }
-        // CHECK_FRAMEBUFFER_STATUS();
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
     }
 })();
-
-function CHECK_FRAMEBUFFER_STATUS () {
-    let status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-    if (status != gl.FRAMEBUFFER_COMPLETE)
-        console.trace("Framebuffer error: " + status);
-}
 
 let dye;
 let velocity;
@@ -873,7 +835,6 @@ const blurProgram            = new Program(blurVertexShader, blurShader);
 const copyProgram            = new Program(baseVertexShader, copyShader);
 const clearProgram           = new Program(baseVertexShader, clearShader);
 const colorProgram           = new Program(baseVertexShader, colorShader);
-const checkerboardProgram    = new Program(baseVertexShader, checkerboardShader);
 const bloomPrefilterProgram  = new Program(baseVertexShader, bloomPrefilterShader);
 const bloomBlurProgram       = new Program(baseVertexShader, bloomBlurShader);
 const bloomFinalProgram      = new Program(baseVertexShader, bloomFinalShader);
@@ -1056,7 +1017,7 @@ function createTextureAsync (url) {
     };
 
     let image = new Image();
-    image.crossOrigin = 'anonymous'; // allow CDN-hosted LUT (unpkg/jsdelivr send ACAO:*)
+    image.crossOrigin = 'anonymous'; // allow cross-origin LUT hosting (CDNs send ACAO:*)
     image.onload = () => {
         obj.width = image.width;
         obj.height = image.height;
@@ -1150,8 +1111,6 @@ function resizeCanvas () {
 }
 
 function updateColors (dt) {
-    if (!config.COLORFUL) return;
-
     colorUpdateTimer += dt * config.COLOR_UPDATE_SPEED;
     if (colorUpdateTimer >= 1) {
         colorUpdateTimer = wrap(colorUpdateTimer, 0, 1);
@@ -1250,30 +1209,16 @@ function render (target) {
         blur(sunrays, sunraysTemp, 1);
     }
 
-    if (target == null || !config.TRANSPARENT) {
-        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-        gl.enable(gl.BLEND);
-    }
-    else {
-        gl.disable(gl.BLEND);
-    }
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    gl.enable(gl.BLEND);
 
-    if (!config.TRANSPARENT)
-        drawColor(target, normalizeColor(config.BACK_COLOR));
-    if (target == null && config.TRANSPARENT)
-        drawCheckerboard(target);
+    drawColor(target, normalizeColor(config.BACK_COLOR));
     drawDisplay(target);
 }
 
 function drawColor (target, color) {
     colorProgram.bind();
     gl.uniform4f(colorProgram.uniforms.color, color.r, color.g, color.b, 1);
-    blit(target);
-}
-
-function drawCheckerboard (target) {
-    checkerboardProgram.bind();
-    gl.uniform1f(checkerboardProgram.uniforms.aspectRatio, canvas.width / canvas.height);
     blit(target);
 }
 
@@ -1446,13 +1391,18 @@ window.addEventListener('mousemove', e => {
         pointer.moved = false;
         return;
     }
-    if (!pointer.down) {
-        // hover-paint: track position so the next move has a valid delta,
-        // but only emit a splat once the pointer is down or already moving.
-        // Keep hover-paint for the demo feel while ignoring UI hovers.
-    }
     let posX = scaleByPixelRatio(e.clientX !== undefined ? e.clientX : e.offsetX);
     let posY = scaleByPixelRatio(e.clientY !== undefined ? e.clientY : e.offsetY);
+    if (!pointer.down) {
+        // Hover moves the origin without painting, so re-entering the
+        // canvas never draws a streak across it. Painting requires drag.
+        pointer.prevTexcoordX = pointer.texcoordX = posX / canvas.width;
+        pointer.prevTexcoordY = pointer.texcoordY = 1.0 - posY / canvas.height;
+        pointer.deltaX = 0;
+        pointer.deltaY = 0;
+        pointer.moved = false;
+        return;
+    }
     updatePointerMoveData(pointer, posX, posY);
 });
 
@@ -1464,12 +1414,16 @@ window.addEventListener('touchstart', e => {
     if (isUIEvent(e)) return; // let dialers / topbar scroll & interact natively
     if (e.cancelable) e.preventDefault();
     const touches = e.targetTouches;
-    while (touches.length >= pointers.length)
-        pointers.push(new pointerPrototype());
     for (let i = 0; i < touches.length; i++) {
         let posX = scaleByPixelRatio(touches[i].pageX);
         let posY = scaleByPixelRatio(touches[i].pageY);
-        updatePointerDownData(pointers[i + 1], touches[i].identifier, posX, posY);
+        // Index 0 is the mouse slot (owned by mousemove) — touches reuse
+        // slots 1+ so hover tracking never corrupts an active touch stroke.
+        let pointer = pointers.find(p => p.id == touches[i].identifier)
+            || pointers.find((p, idx) => idx > 0 && !p.down)
+            || (pointers.length < 10 ? new pointerPrototype() : pointers[1 + (i % (pointers.length - 1))]);
+        if (!pointers.includes(pointer)) pointers.push(pointer);
+        updatePointerDownData(pointer, touches[i].identifier, posX, posY);
     }
 }, { passive: false });
 
@@ -1496,8 +1450,23 @@ window.addEventListener('touchend', e => {
     }
 });
 
+function isTypingEvent (e) {
+    try {
+        if (e && e.target && typeof e.target.closest === 'function') {
+            if (e.target.closest('input:not([type="range"]):not([type="button"]):not([type="submit"]), textarea, select, [contenteditable="true"]')) return true;
+        }
+        var tag = e && e.target && e.target.tagName;
+        if (tag === 'TEXTAREA' || tag === 'SELECT') return true;
+        if (tag === 'INPUT') {
+            var t = (e.target.getAttribute && e.target.getAttribute('type')) || e.target.type || '';
+            if (!/^(range|button|submit|checkbox|radio)$/i.test(t)) return true;
+        }
+    } catch (err) {}
+    return false;
+}
+
 window.addEventListener('keydown', e => {
-    if (isUIEvent(e)) return;
+    if (isTypingEvent(e)) return;
     if (e.code === 'KeyP') {
         e.preventDefault();
         config.PAUSED = !config.PAUSED;
@@ -1641,17 +1610,21 @@ function hashCode (s) {
 };
 // public control surface
 function applySingleConfig (key, value) {
-    if (key === 'CURL_STRENGTH' || key === 'CURL') { config.CURL = value; }
+    if (key === 'CURL') { config.CURL = value; }
     else if (key === 'PRESSURE_DISSIPATION') { config.PRESSURE_DISSIPATION = value; config.PRESSURE = Math.max(0, Math.min(1, 1 - value * 2)); }
-    else if (key === 'VELOCITY_DISSIPATION') { config.VELOCITY_DISSIPATION = value; }
-    else if (key === 'DENSITY_SLIDER') { config.DENSITY_DISSIPATION = 1 - value * 0.02; }
+    else if (key === 'VELOCITY_DISSIPATION') { config.VELOCITY_DISSIPATION = value * 2.5; }
+    else if (key === 'DENSITY_SLIDER') { config.DENSITY_DISSIPATION = 2.8 - value * 0.53; }
     else config[key] = value;
     if (key === 'BLOOM' || key === 'SHADING' || key === 'SUNRAYS') updateKeywords();
     if (key === 'SIM_RESOLUTION' || key === 'DYE_RESOLUTION') initFramebuffers();
 }
 const inkFluid = {
   available: true,
-  show: function(){ canvas.hidden = false; canvas.style.display = ''; canvas.classList.add('is-visible'); needsResize = true; if (resizeCanvas()) initFramebuffers(); scheduleUpdate(); },
+  show: function(){
+    try {
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    } catch (e) {}
+    canvas.hidden = false; canvas.style.display = ''; canvas.classList.add('is-visible'); needsResize = true; if (resizeCanvas()) initFramebuffers(); scheduleUpdate(); },
   hide: function(){ canvas.hidden = true; canvas.style.display = 'none'; canvas.classList.remove('is-visible'); if (frameRequest) { cancelAnimationFrame(frameRequest); frameRequest = 0; } },
   splat: function(x,y,dx,dy){ splat(x,y,dx,dy, generateColor()); },
   burst: function(n){ splatStack.push(Math.max(1, Math.min(40, n == null ? (parseInt(Math.random() * 20) + 5) : Number(n) || 1))); emit('ink:burst'); },

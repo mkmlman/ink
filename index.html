@@ -9,9 +9,17 @@
   <meta property="og:title" content="fluid study">
   <meta property="og:description" content="A living WebGL fluid canvas. Move through the color.">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://mkmlman.github.io/ink/">
+  <meta property="og:image" content="https://mkmlman.github.io/ink/src/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ink droplet mark on a dark background">
+  <meta name="twitter:card" content="summary_large_image">
   <title>fluid study</title>
-  <link rel="icon" href="src/ink-icon.svg?v=1.6.0" type="image/svg+xml">
-  <link rel="stylesheet" href="src/ink.css?v=1.7.23">
+  <link rel="icon" href="src/ink-icon.svg" type="image/svg+xml" sizes="any">
+  <link rel="icon" href="src/ink-icon.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="src/apple-touch-icon.png">
+  <link rel="stylesheet" href="src/ink.css">
 </head>
 <body>
   <header class="topbar">
@@ -65,7 +73,7 @@
         <h2 id="controls-title">Fluid controls</h2>
       </div>
       <div class="panel-side">
-        <span class="save-state" id="dial-status" role="status" aria-live="polite">Saved</span>
+        <span class="save-state" id="dial-status" role="status" aria-live="polite">Loading…</span>
         <button class="panel-expand" id="dial-expand" type="button" aria-pressed="false" aria-label="Expand controls to center stage" title="Expand controls to center stage">
           <svg class="icon-compress" aria-hidden="true" viewBox="0 0 16 16"><path d="M6 2.5H2.5V6M10 2.5h3.5V6M6 13.5H2.5V10M10 13.5h3.5V10"/></svg>
           <svg class="icon-expand" aria-hidden="true" viewBox="0 0 16 16"><path d="M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10"/></svg>
@@ -109,14 +117,12 @@
   </aside>
 
   <noscript><p class="no-script">ink needs JavaScript and WebGL for the fluid canvas.</p></noscript>
-  <footer class="site-footer"><span class="foot-pill">© 2026</span><a class="foot-pill foot-link" href="about.html">How it works</a><a class="foot-pill foot-link" href="LICENSE">MIT License</a></footer>
+  <footer class="site-footer"><span class="foot-pill">© 2026</span><a class="foot-pill foot-link" href="about.html">How it works</a><a class="foot-pill foot-link" href="https://github.com/mkmlman/ink/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT License</a></footer>
 
-  <script src="src/fluid.js?v=1.6.0" defer></script>
-  <script src="src/dials.js?v=1.6.2" defer></script>
-  <script src="src/angry-dials.js?v=1.7.18" defer></script>
+  <script src="src/fluid.js" defer></script>
+  <script src="src/dials.js" defer></script>
+  <script src="src/angry-dials.js" defer></script>
   <script>
-    document.documentElement.setAttribute('data-theme', 'dark');
-
     (() => {
       const body = document.body;
       const canvas = document.getElementById('fluid');
@@ -139,9 +145,9 @@
       };
 
       const markInteraction = () => body.classList.add('has-interaction');
+      // Dismiss the hero on committed intent (press, drag, burst) — a mere
+      // hover wiggle shouldn't kill onboarding before it's read.
       window.addEventListener('pointerdown', markInteraction, { once: true, passive: true });
-      window.addEventListener('pointermove', markInteraction, { once: true, passive: true });
-      window.addEventListener('touchstart', markInteraction, { once: true, passive: true });
       window.addEventListener('ink:burst', markInteraction);
       window.addEventListener('ink:ready', () => {
         canvas.classList.add('is-visible');
@@ -178,7 +184,6 @@
 
       syncPause(false);
       if (reducedMotion.matches) setRuntime('reduced-motion', 'Motion is disabled by your system settings.');
-      window.addEventListener('load', () => canvas.classList.add('is-visible'));
     })();
   </script>
 </body>
