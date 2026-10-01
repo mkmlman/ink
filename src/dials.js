@@ -169,7 +169,9 @@
           toggle.setAttribute('aria-label', collapsed ? 'Show fluid controls' : 'Hide fluid controls');
         };
         try {
-          if (localStorage.getItem(COLLAPSE_KEY) === '1') BOX.setAttribute('hidden', '');
+          var collapsedPreference = localStorage.getItem(COLLAPSE_KEY);
+          if (collapsedPreference === '1') BOX.setAttribute('hidden', '');
+          else if (collapsedPreference === '0') BOX.removeAttribute('hidden');
         } catch (e) {}
         syncToggle();
         toggle.addEventListener('click', function(){

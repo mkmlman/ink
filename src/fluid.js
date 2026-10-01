@@ -59,6 +59,7 @@ function pointerPrototype () {
     this.deltaY = 0;
     this.down = false;
     this.moved = false;
+    this.hasPosition = false;
     this.color = { r: 0.3, g: 0, b: 0.3 };
 }
 
@@ -1393,17 +1394,24 @@ window.addEventListener('mousemove', e => {
     }
     let posX = scaleByPixelRatio(e.clientX !== undefined ? e.clientX : e.offsetX);
     let posY = scaleByPixelRatio(e.clientY !== undefined ? e.clientY : e.offsetY);
-    if (!pointer.down) {
-        // Hover moves the origin without painting, so re-entering the
-        // canvas never draws a streak across it. Painting requires drag.
+    if (!pointer.hasPosition) {
+        // Establish the first hover position before painting so entering the
+        // page never draws a streak from the default origin.
         pointer.prevTexcoordX = pointer.texcoordX = posX / canvas.width;
         pointer.prevTexcoordY = pointer.texcoordY = 1.0 - posY / canvas.height;
         pointer.deltaX = 0;
         pointer.deltaY = 0;
         pointer.moved = false;
+        pointer.hasPosition = true;
         return;
     }
     updatePointerMoveData(pointer, posX, posY);
+});
+
+window.addEventListener('mouseout', e => {
+    if (e.relatedTarget) return;
+    pointers[0].hasPosition = false;
+    pointers[0].moved = false;
 });
 
 window.addEventListener('mouseup', () => {
@@ -1482,6 +1490,7 @@ window.addEventListener('keydown', e => {
 function updatePointerDownData (pointer, id, posX, posY) {
     pointer.id = id;
     pointer.down = true;
+    pointer.hasPosition = true;
     pointer.moved = false;
     pointer.texcoordX = posX / canvas.width;
     pointer.texcoordY = 1.0 - posY / canvas.height;

@@ -1,12 +1,10 @@
 # ink
 
-Standalone WebGL fluid ink background with tunable dials.
+An interactive fluid ink canvas to play with, shape, and explore. Drag through the color, experiment with the brush and flow, and watch the motion evolve.
 
-> **Live demo:** https://mkmlman.github.io/ink/
+**Play:** [open the live canvas](https://mkmlman.github.io/ink/). **For developers:** [embed Ink in your site](#embed-in-your-site). It runs in the browser, needs no backend, and is MIT licensed.
 
-Move the pointer (or drag on touch) to paint. Use the **Burst** and **Pause**
-controls, or `Space` to burst and `P` to pause. Dial changes persist locally in
-the browser.
+Move your cursor over the canvas to paint; no click or drag is needed. On touchscreens, drag with one finger. Use the existing controls to tune the brush, flow, and glow; dial changes persist in this browser.
 
 ## Files
 
@@ -23,7 +21,9 @@ the browser.
 - `about.html` — “How it works” explainer linked from the demo footer
 - `404.html`, `robots.txt` — Pages fallback and crawler rules
 
-## Quick embed (classic)
+## Embed in your site
+
+Add the stylesheet, canvas, and two scripts. No build step or server component is required; the simulation runs on the page in the visitor's browser.
 
 ```html
 <link rel="stylesheet" href="https://mkmlman.github.io/ink/src/ink.css">
@@ -100,10 +100,12 @@ inkDials.reset();
   tab is hidden or the canvas is hidden.
 - `prefers-reduced-motion` hides the canvas *and* the dial panel, pauses GL
   work, and follows live changes.
-- Painting requires drag (hover only moves the origin, so re-entering the
-  canvas never streaks). Pointer / touch handlers ignore `#fluid-dialers`,
-  topbar, footer, and form controls, so dragging a slider never paints behind
-  it and the mobile control dock keeps native scrolling.
+- Cursor movement paints without a click. Touch input paints while dragging.
+  Entering the page or returning from outside it resets the stroke origin, so
+  it won't draw a streak from the previous position. Pointer / touch handlers
+  ignore `#fluid-dialers`, topbar, footer, and form controls, so adjusting a
+  slider never paints behind it and the mobile control dock keeps native
+  scrolling.
 - `Space` bursts and `P` pauses from anywhere except text inputs.
 - Missing WebGL hides the canvas with a console warning instead of throwing;
   a lost GL context pauses, and restores via reload.

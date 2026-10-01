@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="ink — a living WebGL fluid canvas with controls for shape, motion, and light.">
+  <meta name="description" content="Move through the color in a playful, interactive fluid ink canvas. Drag, tune the flow, and see where it takes you.">
   <meta name="theme-color" content="#080909">
   <meta name="color-scheme" content="dark">
-  <meta property="og:title" content="fluid study">
-  <meta property="og:description" content="A living WebGL fluid canvas. Move through the color.">
+  <meta property="og:title" content="Ink — move through the color">
+  <meta property="og:description" content="A playful fluid ink canvas. Drag through the color, tune the flow, and explore.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://mkmlman.github.io/ink/">
   <meta property="og:image" content="https://mkmlman.github.io/ink/src/og-image.png">
@@ -15,7 +15,7 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="ink droplet mark on a dark background">
   <meta name="twitter:card" content="summary_large_image">
-  <title>fluid study</title>
+  <title>Ink — move through the color</title>
   <link rel="icon" href="src/ink-icon.svg" type="image/svg+xml" sizes="any">
   <link rel="icon" href="src/ink-icon.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="src/apple-touch-icon.png">
@@ -47,7 +47,7 @@
         <span class="action-text">Pause</span>
         <kbd>P</kbd>
       </button>
-      <button class="dialers-toggle" id="dialers-toggle" type="button" aria-label="Hide fluid controls" aria-expanded="true" aria-controls="fluid-dialers">
+      <button class="dialers-toggle" id="dialers-toggle" type="button" aria-label="Show fluid controls" aria-expanded="false" aria-controls="fluid-dialers">
         <svg aria-hidden="true" viewBox="0 0 16 16"><path d="M2.5 4h11M2.5 8h11M2.5 12h11M5 2.5v3M10.5 6.5v3M7.5 10.5v3"/></svg>
         <span>Controls</span>
       </button>
@@ -61,12 +61,13 @@
     <canvas class="fluid-canvas" id="fluid" aria-hidden="true"></canvas>
     <section class="welcome" aria-labelledby="welcome-title">
       <h1 id="welcome-title">Move through<br><em>the color.</em></h1>
-      <p class="welcome-copy">Drag anywhere to release ink into the flow.</p>
+      <p class="welcome-copy">Move the cursor to release ink into the flow. Tune the brush and motion, then see where it takes you.</p>
+      <a class="welcome-secondary-link" href="https://github.com/mkmlman/ink#embed-in-your-site">Want Ink on your site? See the embed guide <span aria-hidden="true">↗</span></a>
       <p class="runtime-status" id="runtime-status" role="status" aria-live="polite">Loading canvas…</p>
     </section>
   </main>
 
-  <aside class="fluid-dialers" id="fluid-dialers" aria-labelledby="controls-title">
+  <aside class="fluid-dialers" id="fluid-dialers" hidden aria-labelledby="controls-title">
     <div class="panel-head">
       <div>
         <p class="eyebrow">Live tuning</p>
