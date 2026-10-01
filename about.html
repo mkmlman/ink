@@ -85,7 +85,7 @@
           <span class="use-step" aria-hidden="true">02</span>
           <svg class="use-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
           <h3>Burst and pause</h3>
-          <p><strong>Burst</strong> (<kbd>Space</kbd>) injects eight random splats. <strong>Pause</strong> (<kbd>P</kbd>) halts the simulation loop; press again to resume.</p>
+          <p><strong>Burst</strong> (<kbd>Space</kbd>) injects eight random splats. <strong>Pause</strong> (<kbd>P</kbd>) freezes the flow and ignores new input until resumed.</p>
         </article>
         <article class="use-card">
           <span class="use-step" aria-hidden="true">03</span>
@@ -108,9 +108,9 @@
       </figure>
       <ol class="steps">
         <li><strong>Splat.</strong> Pointer deltas are written into the velocity and dye fields, scaled by brush force and radius.</li>
-        <li><strong>Vorticity.</strong> Curl is computed from the velocity field and fed back in, scaled by the Curl setting. This is what forms eddies.</li>
-        <li><strong>Pressure solve.</strong> Divergence is computed, then a Jacobi solver (Pressure steps iterations) derives the pressure field, which is subtracted from velocity to keep the flow divergence-free.</li>
-        <li><strong>Advect.</strong> Velocity and dye move along the velocity field. Velocity loss and density dissipation remove energy here.</li>
+        <li><strong>Vorticity.</strong> Curl is computed from the velocity field and fed back in, scaled by Swirl strength. This is what forms eddies.</li>
+        <li><strong>Pressure solve.</strong> Divergence is computed, then a Jacobi solver (Solver steps iterations) derives the pressure field, which is subtracted from velocity to keep the flow divergence-free.</li>
+        <li><strong>Advect.</strong> Velocity and dye move along the velocity field. Motion fade and ink persistence remove energy here.</li>
         <li><strong>Display.</strong> Bloom, sunrays, and dithering composite over the dye field for output.</li>
       </ol>
       <p>Reloading the page resets the simulation. Dial positions are the only persisted state.</p>
@@ -141,12 +141,12 @@
         </svg>
         <figcaption><span class="fig-no">Figure 2</span><span class="fig-title">One input splat: radius, direction, dye</span></figcaption>
       </figure>
-      <p>Burst writes eight splats at random positions. Pause halts the loop without clearing state.</p>
+      <p>Burst writes eight splats at random positions. Pause freezes the canvas without clearing it; cursor movement and bursts resume when you unpause.</p>
     </section>
 
     <section class="reveal" aria-labelledby="about-fade">
       <h2 id="about-fade">Dissipation <a class="anchor" href="#about-fade" aria-label="Link to this section">#</a></h2>
-      <p>Advection applies dissipation every frame, so dye and velocity decay toward zero. At defaults, a splash is mostly gone within a few seconds. Ink persistence sets density dissipation as <code>2.8 − v × 0.53</code>, so higher values decay much more slowly; Velocity loss scales as <code>v × 2.5</code>.</p>
+      <p>Advection applies dissipation every frame, so dye and velocity decay toward zero. The default ink persistence keeps the opening colors visible longer while they flow; lower settings clear sooner, and higher settings leave longer trails. Ink persistence sets density dissipation as <code>2.8 − v × 0.53</code>; motion fade controls velocity dissipation as <code>v × 2.5</code>.</p>
       <figure class="figure">
         <svg class="diagram graph" viewBox="0 0 560 240" role="img" aria-label="Graph of splash brightness over twenty seconds for default and maximum persistence" xmlns:xlink="http://www.w3.org/1999/xlink">
           <line x1="44" y1="10" x2="44" y2="190" stroke="rgba(237,244,239,.18)"/>
@@ -154,7 +154,7 @@
           <line x1="44" y1="145" x2="544" y2="145" stroke="rgba(237,244,239,.07)"/>
           <line x1="44" y1="100" x2="544" y2="100" stroke="rgba(237,244,239,.07)"/>
           <line x1="44" y1="55" x2="544" y2="55" stroke="rgba(237,244,239,.07)"/>
-          <path id="curveDefault" class="graph-draw" pathLength="100" d="M44,14 C80,110 110,160 160,180 C220,192 350,190 544,190" fill="none" stroke="#6b706c" stroke-width="1.5" opacity="0.85"/>
+          <path id="curveDefault" class="graph-draw" pathLength="100" d="M44,14 C82,76 128,108 196,136 C260,163 337,182 420,188 C470,190 510,190 544,190" fill="none" stroke="#6b706c" stroke-width="1.5" opacity="0.85"/>
           <path id="curveMax" class="graph-draw graph-max" pathLength="100" d="M44,14 C120,80 180,130 260,160 C340,182 430,188 544,190" fill="none" stroke="#dff8e3" stroke-width="2.5"/>
           <circle r="4.5" fill="#dff8e3">
             <animateMotion dur="12s" repeatCount="indefinite"><mpath href="#curveMax" xlink:href="#curveMax"/></animateMotion>
@@ -208,7 +208,7 @@
 
     <section class="reveal" aria-labelledby="about-dials">
       <h2 id="about-dials">Settings <a class="anchor" href="#about-dials" aria-label="Link to this section">#</a></h2>
-      <p>Ten settings in three groups. Reset restores defaults.</p>
+      <p>Ten settings in three groups. Reset controls restores the starting values for all ten dials.</p>
       <div class="dial-cards">
         <article class="dial-card">
           <h3>Brush</h3>
@@ -223,23 +223,23 @@
           <h3>Flow</h3>
           <p class="dial-card-sub">fluid</p>
           <dl>
-            <div><dt><code>Curl</code></dt><dd>vorticity confinement strength (<code>CURL</code>)</dd></div>
-            <div><dt><code>Velocity loss</code></dt><dd>velocity dissipation per frame (<code>VELOCITY_DISSIPATION</code>)</dd></div>
+            <div><dt><code>Swirl strength</code></dt><dd>curl or vorticity confinement strength (<code>CURL</code>)</dd></div>
+            <div><dt><code>Motion fade</code></dt><dd>velocity dissipation per frame (<code>VELOCITY_DISSIPATION</code>)</dd></div>
             <div><dt><code>Ink persistence</code></dt><dd>inverse dye dissipation; higher lasts longer (<code>DENSITY_DISSIPATION</code>)</dd></div>
             <div><dt><code>Ambient motion</code></dt><dd>background splat rate with no input (<code>IDLE_INJECTION</code>)</dd></div>
           </dl>
         </article>
         <article class="dial-card">
-          <h3>Simulation</h3>
+          <h3>Advanced</h3>
           <p class="dial-card-sub">solver</p>
           <dl>
-            <div><dt><code>Pressure loss</code></dt><dd>pressure dissipation per solve (<code>PRESSURE_DISSIPATION</code>)</dd></div>
-            <div><dt><code>Pressure steps</code></dt><dd>Jacobi iterations; higher is smoother and more expensive (<code>PRESSURE_ITERATIONS</code>)</dd></div>
+            <div><dt><code>Pressure damping</code></dt><dd>pressure dissipation per solve (<code>PRESSURE_DISSIPATION</code>)</dd></div>
+            <div><dt><code>Solver steps</code></dt><dd>Jacobi iterations; higher is smoother and more expensive (<code>PRESSURE_ITERATIONS</code>)</dd></div>
             <div><dt><code>Glow</code></dt><dd>bloom intensity (<code>BLOOM_INTENSITY</code>)</dd></div>
           </dl>
         </article>
       </div>
-      <p class="recipe"><span class="tip-label">Example</span> <code>Curl</code> 6, <code>Ink persistence</code> at maximum, <code>Ambient motion</code> at 1 produces continuous flow with no input.</p>
+      <p class="recipe"><span class="tip-label">Example</span> <code>Swirl strength</code> 6, <code>Ink persistence</code> at maximum, <code>Ambient motion</code> at 1 produces continuous flow with no input.</p>
     </section>
 
     <aside class="callout reveal" aria-label="Performance note">
@@ -260,7 +260,7 @@
       </details>
       <details class="faq">
         <summary>Why did the canvas go dark?</summary>
-        <p>Dissipation clears dye over time. Drag anywhere or trigger Burst to add more.</p>
+        <p>Dissipation clears dye over time. Move the cursor or trigger Burst to add more; on touchscreens, drag with one finger.</p>
       </details>
       <details class="faq">
         <summary>Does it work on phones?</summary>

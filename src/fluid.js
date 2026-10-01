@@ -25,7 +25,7 @@ function emit (name, detail) {
 let config = {
     SIM_RESOLUTION: 256,
     DYE_RESOLUTION: 1024,
-    DENSITY_DISSIPATION: 0.68,
+    DENSITY_DISSIPATION: 0.415,
     VELOCITY_DISSIPATION: 0.0,
     PRESSURE_DISSIPATION: 0.08,
     PRESSURE: 0.84,
@@ -93,9 +93,8 @@ if (!gl || !ext || !ext.formatRGBA) {
 // reload (all programs/textures are invalid after a real restore).
 canvas.addEventListener('webglcontextlost', (e) => {
   try { e.preventDefault(); } catch (err) {}
-  config.PAUSED = true;
   emit('ink:contextlost');
-  emit('ink:pausechange', { paused: true });
+  setPaused(true);
   console.warn('ink: WebGL context lost — fluid paused');
 });
 canvas.addEventListener('webglcontextrestored', () => {
@@ -1089,7 +1088,7 @@ function update () {
     if (!config.PAUSED)
         step(dt);
     render(null);
-    scheduleUpdate();
+    if (!config.PAUSED) scheduleUpdate();
 }
 
 function calcDeltaTime () {
@@ -1122,6 +1121,11 @@ function updateColors (dt) {
 }
 
 function applyInputs () {
+    if (config.PAUSED) {
+        clearPendingInputs();
+        return;
+    }
+
     if (splatStack.length > 0)
         multipleSplats(splatStack.pop());
    
@@ -1133,8 +1137,29 @@ function applyInputs () {
         if (p.moved) {
             p.moved = false;
             splatPointer(p);
+            emit('ink:input');
         }
     });
+}
+
+function clearPendingInputs () {
+    splatStack.length = 0;
+    pointers.forEach(p => { p.moved = false; });
+}
+
+function setPaused (paused) {
+    config.PAUSED = !!paused;
+    if (config.PAUSED) {
+        clearPendingInputs();
+        if (frameRequest) {
+            cancelAnimationFrame(frameRequest);
+            frameRequest = 0;
+        }
+    } else {
+        lastUpdateTime = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        scheduleUpdate();
+    }
+    emit('ink:pausechange', { paused: config.PAUSED });
 }
 
 function step (dt) {
@@ -1477,11 +1502,11 @@ window.addEventListener('keydown', e => {
     if (isTypingEvent(e)) return;
     if (e.code === 'KeyP') {
         e.preventDefault();
-        config.PAUSED = !config.PAUSED;
-        emit('ink:pausechange', { paused: config.PAUSED });
+        setPaused(!config.PAUSED);
     }
     if (e.code === 'Space') {
         e.preventDefault();
+        if (config.PAUSED) return;
         splatStack.push(parseInt(Math.random() * 20) + 5);
         emit('ink:burst');
     }
@@ -1508,7 +1533,7 @@ function updatePointerMoveData (pointer, posX, posY) {
     pointer.texcoordY = 1.0 - posY / canvas.height;
     pointer.deltaX = correctDeltaX(pointer.texcoordX - pointer.prevTexcoordX);
     pointer.deltaY = correctDeltaY(pointer.texcoordY - pointer.prevTexcoordY);
-    pointer.moved = Math.abs(pointer.deltaX) > 0 || Math.abs(pointer.deltaY) > 0;
+    pointer.moved = !config.PAUSED && (Math.abs(pointer.deltaX) > 0 || Math.abs(pointer.deltaY) > 0);
 }
 
 function updatePointerUpData (pointer) {
@@ -1635,10 +1660,10 @@ const inkFluid = {
     } catch (e) {}
     canvas.hidden = false; canvas.style.display = ''; canvas.classList.add('is-visible'); needsResize = true; if (resizeCanvas()) initFramebuffers(); scheduleUpdate(); },
   hide: function(){ canvas.hidden = true; canvas.style.display = 'none'; canvas.classList.remove('is-visible'); if (frameRequest) { cancelAnimationFrame(frameRequest); frameRequest = 0; } },
-  splat: function(x,y,dx,dy){ splat(x,y,dx,dy, generateColor()); },
-  burst: function(n){ splatStack.push(Math.max(1, Math.min(40, n == null ? (parseInt(Math.random() * 20) + 5) : Number(n) || 1))); emit('ink:burst'); },
-  pause: function(){ config.PAUSED = true; emit('ink:pausechange', { paused: true }); },
-  resume: function(){ config.PAUSED = false; emit('ink:pausechange', { paused: false }); },
+  splat: function(x,y,dx,dy){ if (config.PAUSED) return; splat(x,y,dx,dy, generateColor()); },
+  burst: function(n){ if (config.PAUSED) return; splatStack.push(Math.max(1, Math.min(40, n == null ? (parseInt(Math.random() * 20) + 5) : Number(n) || 1))); emit('ink:burst'); },
+  pause: function(){ setPaused(true); },
+  resume: function(){ setPaused(false); },
   get paused(){ return !!config.PAUSED; },
   get config(){ return config; },
   setConfig: function(key, value){

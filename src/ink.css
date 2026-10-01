@@ -941,10 +941,24 @@ body.page-about .about-main section { content-visibility: auto; contain-intrinsi
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .experience::before {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    content: "";
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 24% 25%, rgba(169, 91, 190, 0.44), transparent 36%),
+      radial-gradient(ellipse at 72% 34%, rgba(89, 184, 168, 0.40), transparent 34%),
+      radial-gradient(ellipse at 54% 70%, rgba(204, 144, 91, 0.32), transparent 38%),
+      radial-gradient(ellipse at 26% 78%, rgba(84, 111, 197, 0.35), transparent 32%),
+      #080909;
+  }
   .fluid-canvas { display: none !important; }
   .fluid-dialers, .dialers-toggle { display: none !important; }
   .welcome, .has-interaction .welcome { opacity: 1; transform: none; transition: none; }
   .welcome-copy { display: none; }
+  body[data-runtime="reduced-motion"] .welcome-copy { display: block; }
   .welcome h1 em { color: var(--muted-strong); }
   .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
   .about-hero > * { opacity: 1 !important; transform: none !important; transition: none !important; }

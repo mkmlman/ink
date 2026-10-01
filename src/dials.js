@@ -41,7 +41,7 @@
       var MAP = {
         radius:      { cfg:'SPLAT_RADIUS',          inputId:'dial-radius',       min:0.10, max:0.80,  step:0.05, def:0.40 },
         curl:        { cfg:'CURL',                  inputId:'dial-curl',         min:0,    max:8,     step:0.5,  def:4 },
-        density:     { cfg:'DENSITY_SLIDER',        inputId:'dial-density',      min:0,    max:5,     step:0.25, def:4 },
+        density:     { cfg:'DENSITY_SLIDER',        inputId:'dial-density',      min:0,    max:5,     step:0.25, def:4.5 },
         pressureDiss:{ cfg:'PRESSURE_DISSIPATION',  inputId:'dial-pressureDiss', min:0,    max:0.20,  step:0.01, def:0.08 },
         velocity:    { cfg:'VELOCITY_DISSIPATION',  inputId:'dial-velocity',     min:0,    max:1,     step:0.05, def:0 },
         iterations:  { cfg:'PRESSURE_ITERATIONS',   inputId:'dial-iterations',   min:4,    max:32,    step:1,    def:16 },
@@ -64,7 +64,7 @@
         } catch (e) {}
         return {};
       }
-      function saveStored(){
+      function saveStored(successMessage){
         clearTimeout(persistTimer);
         setStatus('Saving…', 'saving');
         persistTimer = setTimeout(function(){
@@ -72,7 +72,7 @@
           Object.keys(dials).forEach(function(k){ obj[k] = dials[k].value; });
           try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-            setStatus('Saved');
+            setStatus(successMessage || 'Saved');
           } catch (e) {
             setStatus('Session only', 'error');
           }
@@ -135,8 +135,8 @@
       var resetBtn = document.getElementById('dial-reset');
       if (resetBtn) {
         resetBtn.addEventListener('click', function(){
-          Object.keys(MAP).forEach(function(k){ if (dials[k]) setDial(k, MAP[k].def); });
-          setStatus('Defaults restored');
+          Object.keys(MAP).forEach(function(k){ if (dials[k]) setDial(k, MAP[k].def, { silent:true }); });
+          saveStored('Controls reset');
         });
       }
 

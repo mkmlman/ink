@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Move through the color in a playful, interactive fluid ink canvas. Drag, tune the flow, and see where it takes you.">
+  <meta name="description" content="Move through the color in a playful, interactive fluid ink canvas. Explore, tune the flow, and see where it takes you.">
   <meta name="theme-color" content="#080909">
   <meta name="color-scheme" content="dark">
   <meta property="og:title" content="Ink — move through the color">
-  <meta property="og:description" content="A playful fluid ink canvas. Drag through the color, tune the flow, and explore.">
+  <meta property="og:description" content="A playful fluid ink canvas. Move through the color, tune the flow, and explore.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://mkmlman.github.io/ink/">
   <meta property="og:image" content="https://mkmlman.github.io/ink/src/og-image.png">
@@ -95,25 +95,25 @@
       <section class="control-section" aria-labelledby="flow-title">
         <h3 id="flow-title">Flow</h3>
         <div class="dial-grid">
-          <div class="dial" data-key="curl" data-min="0" data-max="8" data-step="0.5" data-value="4"><div class="dial-head"><span class="dial-label" id="lbl-curl">Curl</span><span class="dial-value">4</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-curl" aria-labelledby="lbl-curl" min="0" max="8" step="0.5" value="4"></div>
-          <div class="dial" data-key="velocity" data-min="0" data-max="1" data-step="0.05" data-value="0"><div class="dial-head"><span class="dial-label" id="lbl-velocity">Velocity loss</span><span class="dial-value">0</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-velocity" aria-labelledby="lbl-velocity" min="0" max="1" step="0.05" value="0"></div>
-          <div class="dial" data-key="density" data-min="0" data-max="5" data-step="0.25" data-value="4"><div class="dial-head"><span class="dial-label" id="lbl-density">Ink persistence</span><span class="dial-value">4</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-density" aria-labelledby="lbl-density" min="0" max="5" step="0.25" value="4"></div>
+          <div class="dial" data-key="curl" data-min="0" data-max="8" data-step="0.5" data-value="4"><div class="dial-head"><span class="dial-label" id="lbl-curl">Swirl strength</span><span class="dial-value">4</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-curl" aria-labelledby="lbl-curl" min="0" max="8" step="0.5" value="4"></div>
+          <div class="dial" data-key="velocity" data-min="0" data-max="1" data-step="0.05" data-value="0"><div class="dial-head"><span class="dial-label" id="lbl-velocity">Motion fade</span><span class="dial-value">0</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-velocity" aria-labelledby="lbl-velocity" min="0" max="1" step="0.05" value="0"></div>
+          <div class="dial" data-key="density" data-min="0" data-max="5" data-step="0.25" data-value="4.5"><div class="dial-head"><span class="dial-label" id="lbl-density">Ink persistence</span><span class="dial-value">4.5</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-density" aria-labelledby="lbl-density" min="0" max="5" step="0.25" value="4.5"></div>
           <div class="dial" data-key="idle" data-min="0" data-max="2" data-step="0.25" data-value="0"><div class="dial-head"><span class="dial-label" id="lbl-idle">Ambient motion</span><span class="dial-value">0</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-idle" aria-labelledby="lbl-idle" min="0" max="2" step="0.25" value="0"></div>
         </div>
       </section>
 
       <section class="control-section" aria-labelledby="simulation-title">
-        <h3 id="simulation-title">Simulation</h3>
+        <h3 id="simulation-title">Advanced</h3>
         <div class="dial-grid">
-          <div class="dial" data-key="pressureDiss" data-min="0" data-max="0.20" data-step="0.01" data-value="0.08"><div class="dial-head"><span class="dial-label" id="lbl-pressureDiss">Pressure loss</span><span class="dial-value">0.08</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-pressureDiss" aria-labelledby="lbl-pressureDiss" min="0" max="0.20" step="0.01" value="0.08"></div>
-          <div class="dial" data-key="iterations" data-min="4" data-max="32" data-step="1" data-value="16"><div class="dial-head"><span class="dial-label" id="lbl-iterations">Pressure steps</span><span class="dial-value">16</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-iterations" aria-labelledby="lbl-iterations" min="4" max="32" step="1" value="16"></div>
+          <div class="dial" data-key="pressureDiss" data-min="0" data-max="0.20" data-step="0.01" data-value="0.08"><div class="dial-head"><span class="dial-label" id="lbl-pressureDiss">Pressure damping</span><span class="dial-value">0.08</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-pressureDiss" aria-labelledby="lbl-pressureDiss" min="0" max="0.20" step="0.01" value="0.08"></div>
+          <div class="dial" data-key="iterations" data-min="4" data-max="32" data-step="1" data-value="16"><div class="dial-head"><span class="dial-label" id="lbl-iterations">Solver steps</span><span class="dial-value">16</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-iterations" aria-labelledby="lbl-iterations" min="4" max="32" step="1" value="16"></div>
           <div class="dial" data-key="bloom" data-min="0" data-max="1.2" data-step="0.05" data-value="0.30"><div class="dial-head"><span class="dial-label" id="lbl-bloom">Glow</span><span class="dial-value">0.30</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-bloom" aria-labelledby="lbl-bloom" min="0" max="1.2" step="0.05" value="0.30"></div>
         </div>
       </section>
     </div>
 
     <div class="panel-foot">
-      <button class="dial-reset" id="dial-reset" type="button"><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M3 6.5A5 5 0 1 1 3.8 11M3 3v3.5h3.5"/></svg> Reset defaults</button>
+      <button class="dial-reset" id="dial-reset" type="button"><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M3 6.5A5 5 0 1 1 3.8 11M3 3v3.5h3.5"/></svg> Reset controls</button>
     </div>
   </aside>
 
@@ -130,7 +130,9 @@
       const runtimeStatus = document.getElementById('runtime-status');
       const burstButton = document.getElementById('burst-button');
       const pauseButton = document.getElementById('pause-toggle');
+      const welcomeCopy = document.querySelector('.welcome-copy');
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const playCopy = welcomeCopy.textContent;
 
       const setRuntime = (state, message) => {
         body.dataset.runtime = state;
@@ -143,24 +145,33 @@
         pauseButton.setAttribute('aria-label', paused ? 'Resume the simulation' : 'Pause the simulation');
         pauseButton.setAttribute('title', paused ? 'Resume the simulation (P)' : 'Pause the simulation (P)');
         pauseButton.querySelector('.action-text').textContent = paused ? 'Resume' : 'Pause';
+        burstButton.disabled = paused;
+        burstButton.title = paused ? 'Resume the simulation to add a burst' : 'Add a burst of ink (Space)';
       };
 
       const markInteraction = () => body.classList.add('has-interaction');
-      // Dismiss the hero on committed intent (press, drag, burst) — a mere
-      // hover wiggle shouldn't kill onboarding before it's read.
-      window.addEventListener('pointerdown', markInteraction, { once: true, passive: true });
+      const showReducedMotionState = () => {
+        welcomeCopy.textContent = 'A still color study is shown while motion is reduced.';
+        setRuntime('reduced-motion', 'Motion is disabled by your system settings.');
+      };
+      // Dismiss the hero when cursor/touch movement actually paints.
+      window.addEventListener('ink:input', markInteraction);
       window.addEventListener('ink:burst', markInteraction);
       window.addEventListener('ink:ready', () => {
         canvas.classList.add('is-visible');
-        setRuntime('ready');
+        if (reducedMotion.matches) showReducedMotionState();
+        else setRuntime('ready');
       });
       window.addEventListener('ink:unavailable', () => {
-        setRuntime('unavailable', 'WebGL is unavailable — the canvas is disabled.');
+        if (reducedMotion.matches) showReducedMotionState();
+        else setRuntime('unavailable', 'WebGL is unavailable — the canvas is disabled.');
         burstButton.disabled = true;
         pauseButton.disabled = true;
       });
       window.addEventListener('ink:contextlost', () => {
         setRuntime('paused', 'The canvas paused after losing its graphics context.');
+        burstButton.disabled = true;
+        pauseButton.disabled = true;
       });
       window.addEventListener('ink:pausechange', (event) => {
         const paused = Boolean(event.detail && event.detail.paused);
@@ -168,8 +179,12 @@
         body.dataset.paused = paused ? 'true' : 'false';
       });
       reducedMotion.addEventListener?.('change', (event) => {
-        if (event.matches) setRuntime('reduced-motion', 'Motion is disabled by your system settings.');
-        else if (window.inkFluid?.available !== false) setRuntime('ready');
+        if (event.matches) showReducedMotionState();
+        else if (window.inkFluid?.available === false) setRuntime('unavailable', 'WebGL is unavailable — the canvas is disabled.');
+        else {
+          welcomeCopy.textContent = playCopy;
+          setRuntime('ready');
+        }
       });
 
       burstButton.addEventListener('click', () => {
@@ -184,7 +199,7 @@
       });
 
       syncPause(false);
-      if (reducedMotion.matches) setRuntime('reduced-motion', 'Motion is disabled by your system settings.');
+      if (reducedMotion.matches) showReducedMotionState();
     })();
   </script>
 </body>

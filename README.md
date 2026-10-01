@@ -1,6 +1,6 @@
 # ink
 
-An interactive fluid ink canvas to play with, shape, and explore. Drag through the color, experiment with the brush and flow, and watch the motion evolve.
+An interactive fluid ink canvas to play with, shape, and explore. Move through the color, experiment with the brush and flow, and watch the motion evolve.
 
 **Play:** [open the live canvas](https://mkmlman.github.io/ink/). **For developers:** [embed Ink in your site](#embed-in-your-site). It runs in the browser, needs no backend, and is MIT licensed.
 
@@ -82,7 +82,7 @@ inkDials.reset();
 | --- | --- | --- |
 | `SPLAT_RADIUS` | `0.40` | dial `radius` |
 | `CURL` | `4` | dial `curl` |
-| `DENSITY_SLIDER` | via dial | maps to `DENSITY_DISSIPATION = 2.8 - v*0.53` |
+| `DENSITY_SLIDER` | `4.5` | maps to `DENSITY_DISSIPATION = 2.8 - v*0.53` |
 | `PRESSURE_DISSIPATION` | `0.08` | also derives `PRESSURE` |
 | `VELOCITY_DISSIPATION` | `0` | dial `velocity` × 2.5 |
 | `PRESSURE_ITERATIONS` | `16` | dial `iterations` |
@@ -106,6 +106,8 @@ inkDials.reset();
   ignore `#fluid-dialers`, topbar, footer, and form controls, so adjusting a
   slider never paints behind it and the mobile control dock keeps native
   scrolling.
+- Pause freezes the current image and ignores cursor movement and bursts until
+  the simulation resumes.
 - `Space` bursts and `P` pauses from anywhere except text inputs.
 - Missing WebGL hides the canvas with a console warning instead of throwing;
   a lost GL context pauses, and restores via reload.
