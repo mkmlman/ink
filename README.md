@@ -88,7 +88,7 @@ inkDials.reset();
 | `PRESSURE_ITERATIONS` | `16` | dial `iterations` |
 | `SPLAT_FORCE` | `12000` | dial `splatForce` |
 | `BRIGHTNESS` | `3` | dial `brightness` |
-| `IDLE_INJECTION` | `0` | dial `idle`; random ambient splats when > 0 |
+| `IDLE_INJECTION` | `0.5` | dial `idle`; occasional ambient splats when > 0 |
 | `BLOOM_INTENSITY` | `0.30` | dial `bloom` |
 | `BLOOM` / `SHADING` / `SUNRAYS` | `true` | toggle keywords |
 | `SIM_RESOLUTION` / `DYE_RESOLUTION` | `256` / `1024` (`512` on mobile) | re-inits buffers |
@@ -108,7 +108,8 @@ inkDials.reset();
   scrolling.
 - Pause freezes the current image and ignores cursor movement and bursts until
   the simulation resumes.
-- `Space` bursts and `P` pauses from anywhere except text inputs.
+- Ambient motion defaults to a light idle trickle; set it to `0` for a still canvas.
+- `Space` bursts when focus is outside controls; `P` toggles pause except while typing.
 - Missing WebGL hides the canvas with a console warning instead of throwing;
   a lost GL context pauses, and restores via reload.
 

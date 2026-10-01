@@ -34,7 +34,7 @@ let config = {
     SPLAT_RADIUS: 0.40,
     SPLAT_FORCE: 12000,
     BRIGHTNESS: 3.0,
-    IDLE_INJECTION: 0,
+    IDLE_INJECTION: 0.5,
     SHADING: true,
     COLOR_UPDATE_SPEED: 10,
     PAUSED: false,
@@ -1498,6 +1498,16 @@ function isTypingEvent (e) {
     return false;
 }
 
+function isInteractiveTarget (target) {
+    try {
+        return !!(target && typeof target.closest === 'function' && target.closest(
+            'button, a[href], input, select, textarea, summary, [role="button"], [contenteditable="true"]'
+        ));
+    } catch (err) {
+        return false;
+    }
+}
+
 window.addEventListener('keydown', e => {
     if (isTypingEvent(e)) return;
     if (e.code === 'KeyP') {
@@ -1505,6 +1515,8 @@ window.addEventListener('keydown', e => {
         setPaused(!config.PAUSED);
     }
     if (e.code === 'Space') {
+        // Preserve native Space activation for focused controls.
+        if (isInteractiveTarget(e.target)) return;
         e.preventDefault();
         if (config.PAUSED) return;
         splatStack.push(parseInt(Math.random() * 20) + 5);

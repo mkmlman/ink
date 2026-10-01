@@ -98,7 +98,7 @@
           <div class="dial" data-key="curl" data-min="0" data-max="8" data-step="0.5" data-value="4"><div class="dial-head"><span class="dial-label" id="lbl-curl">Swirl strength</span><span class="dial-value">4</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-curl" aria-labelledby="lbl-curl" min="0" max="8" step="0.5" value="4"></div>
           <div class="dial" data-key="velocity" data-min="0" data-max="1" data-step="0.05" data-value="0"><div class="dial-head"><span class="dial-label" id="lbl-velocity">Motion fade</span><span class="dial-value">0</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-velocity" aria-labelledby="lbl-velocity" min="0" max="1" step="0.05" value="0"></div>
           <div class="dial" data-key="density" data-min="0" data-max="5" data-step="0.25" data-value="4.5"><div class="dial-head"><span class="dial-label" id="lbl-density">Ink persistence</span><span class="dial-value">4.5</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-density" aria-labelledby="lbl-density" min="0" max="5" step="0.25" value="4.5"></div>
-          <div class="dial" data-key="idle" data-min="0" data-max="2" data-step="0.25" data-value="0"><div class="dial-head"><span class="dial-label" id="lbl-idle">Ambient motion</span><span class="dial-value">0</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-idle" aria-labelledby="lbl-idle" min="0" max="2" step="0.25" value="0"></div>
+          <div class="dial" data-key="idle" data-min="0" data-max="2" data-step="0.25" data-value="0.5"><div class="dial-head"><span class="dial-label" id="lbl-idle">Ambient motion</span><span class="dial-value">0.50</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-idle" aria-labelledby="lbl-idle" min="0" max="2" step="0.25" value="0.5"></div>
         </div>
       </section>
 
@@ -132,7 +132,12 @@
       const pauseButton = document.getElementById('pause-toggle');
       const welcomeCopy = document.querySelector('.welcome-copy');
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-      const playCopy = welcomeCopy.textContent;
+      const coarsePointer = window.matchMedia('(any-pointer: coarse)');
+      const getPlayCopy = () => coarsePointer.matches
+        ? 'Move the cursor or drag one finger to release ink into the flow. Tune the brush and motion, then see where it takes you.'
+        : 'Move the cursor to release ink into the flow. Tune the brush and motion, then see where it takes you.';
+      const playCopy = getPlayCopy();
+      welcomeCopy.textContent = playCopy;
 
       const setRuntime = (state, message) => {
         body.dataset.runtime = state;
@@ -182,9 +187,12 @@
         if (event.matches) showReducedMotionState();
         else if (window.inkFluid?.available === false) setRuntime('unavailable', 'WebGL is unavailable — the canvas is disabled.');
         else {
-          welcomeCopy.textContent = playCopy;
+          welcomeCopy.textContent = getPlayCopy();
           setRuntime('ready');
         }
+      });
+      coarsePointer.addEventListener?.('change', () => {
+        if (!reducedMotion.matches) welcomeCopy.textContent = getPlayCopy();
       });
 
       burstButton.addEventListener('click', () => {

@@ -47,7 +47,7 @@
         iterations:  { cfg:'PRESSURE_ITERATIONS',   inputId:'dial-iterations',   min:4,    max:32,    step:1,    def:16 },
         splatForce:  { cfg:'SPLAT_FORCE',           inputId:'dial-splatForce',   min:2000, max:20000, step:500,  def:12000 },
         brightness:  { cfg:'BRIGHTNESS',            inputId:'dial-brightness',   min:0,    max:5,     step:0.25, def:3 },
-        idle:        { cfg:'IDLE_INJECTION',        inputId:'dial-idle',         min:0,    max:2,     step:0.25, def:0 },
+        idle:        { cfg:'IDLE_INJECTION',        inputId:'dial-idle',         min:0,    max:2,     step:0.25, def:0.5 },
         bloom:       { cfg:'BLOOM_INTENSITY',       inputId:'dial-bloom',        min:0,    max:1.2,   step:0.05, def:0.30 }
       };
       var dials = {};

@@ -52,7 +52,7 @@
       <h1 id="about-title">How ink works</h1>
       <p class="lede">ink is a real-time 2D fluid simulation rendered in WebGL. Pointer input writes velocity and dye into the simulation; a solver advances both every frame while dissipation fades them out. This page documents the pipeline, the inputs, and every setting.</p>
       <ul class="hero-meta" aria-label="About this page">
-        <li>WebGL2</li>
+        <li>WebGL2 / WebGL1 fallback</li>
         <li>no backend</li>
         <li>MIT licensed</li>
       </ul>
@@ -260,7 +260,7 @@
       </details>
       <details class="faq">
         <summary>Why did the canvas go dark?</summary>
-        <p>Dissipation clears dye over time. Move the cursor or trigger Burst to add more; on touchscreens, drag with one finger.</p>
+        <p>Dye fades over time. The default Ambient motion setting occasionally adds ink without input. Set it to 0 for a still canvas, or move the cursor, drag one finger, or trigger Burst to add more.</p>
       </details>
       <details class="faq">
         <summary>Does it work on phones?</summary>
