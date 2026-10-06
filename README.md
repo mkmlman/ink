@@ -112,7 +112,7 @@ inkDials.reset();
 - The control panel includes expressive presets and a persisted Low power mode,
   which lowers simulation resolution and disables bloom/sunrays to save battery.
 - Ambient motion defaults to a subtle idle trickle; set it to `0` for a still canvas.
-- `Space` bursts when focus is outside controls; `P` toggles pause except while typing.
+- `Space` bursts when focus is outside controls; `P` toggles pause except while typing. `?` (or `H`) opens the quick help.
 - Missing WebGL hides the canvas with a console warning instead of throwing;
   a lost GL context pauses, and restores via reload.
 
