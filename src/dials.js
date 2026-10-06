@@ -47,11 +47,23 @@
         iterations:  { cfg:'PRESSURE_ITERATIONS',   inputId:'dial-iterations',   min:4,    max:32,    step:1,    def:16 },
         splatForce:  { cfg:'SPLAT_FORCE',           inputId:'dial-splatForce',   min:2000, max:20000, step:500,  def:12000 },
         brightness:  { cfg:'BRIGHTNESS',            inputId:'dial-brightness',   min:0,    max:5,     step:0.25, def:3 },
-        idle:        { cfg:'IDLE_INJECTION',        inputId:'dial-idle',         min:0,    max:2,     step:0.25, def:0.5 },
+        idle:        { cfg:'IDLE_INJECTION',        inputId:'dial-idle',         min:0,    max:2,     step:0.25, def:0.25 },
         bloom:       { cfg:'BLOOM_INTENSITY',       inputId:'dial-bloom',        min:0,    max:1.2,   step:0.05, def:0.30 }
       };
       var dials = {};
       var persistTimer = null;
+      var HINTS = {
+        radius: 'Sets the width of each paint stroke.',
+        splatForce: 'Sets how strongly each stroke pushes the flow.',
+        brightness: 'Sets the intensity of new color.',
+        curl: 'Higher values create more whirlpools.',
+        velocity: 'Higher values make motion settle sooner.',
+        density: 'Higher values keep color visible for longer.',
+        idle: 'Adds occasional ink while you are not painting.',
+        pressureDiss: 'Controls how quickly pressure settles.',
+        iterations: 'Higher values smooth the flow but can use more battery.',
+        bloom: 'Adds glow around bright color.'
+      };
       function clamp(v, lo, hi){ return Math.min(hi, Math.max(lo, v)); }
       function snap(v, step, min){
         var n = Math.round((v - min) / step);
@@ -126,7 +138,8 @@
         if (range) {
           // single accessible slider per dial — the knob is visual only
           range.setAttribute('aria-label', labelText);
-          range.setAttribute('title', labelText);
+          range.setAttribute('aria-description', HINTS[key] || 'Adjust this fluid setting.');
+          range.setAttribute('title', labelText + ': ' + (HINTS[key] || 'Adjust this fluid setting.'));
           range.addEventListener('input', function(){ setDial(key, parseFloat(range.value)); });
         }
         if (knob) knob.setAttribute('aria-hidden', 'true');
@@ -138,6 +151,50 @@
           Object.keys(MAP).forEach(function(k){ if (dials[k]) setDial(k, MAP[k].def, { silent:true }); });
           saveStored('Controls reset');
         });
+      }
+
+      var PRESETS = {
+        smoke: { radius: 0.55, splatForce: 6500, brightness: 2, curl: 2.5, velocity: 0.35, density: 4.75, idle: 0.25, pressureDiss: 0.10, iterations: 12, bloom: 0.15 },
+        bloom: { radius: 0.60, splatForce: 9000, brightness: 3.75, curl: 3, velocity: 0.10, density: 5, idle: 0.75, pressureDiss: 0.08, iterations: 16, bloom: 0.75 },
+        wild: { radius: 0.30, splatForce: 17500, brightness: 4, curl: 7, velocity: 0.05, density: 4.25, idle: 1, pressureDiss: 0.05, iterations: 20, bloom: 0.40 },
+        still: { radius: 0.45, splatForce: 7000, brightness: 2.5, curl: 1, velocity: 0.75, density: 3.5, idle: 0, pressureDiss: 0.14, iterations: 12, bloom: 0.10 }
+      };
+      BOX.querySelectorAll('[data-preset]').forEach(function(button){
+        button.addEventListener('click', function(){
+          var preset = PRESETS[button.getAttribute('data-preset')];
+          if (!preset) return;
+          Object.keys(preset).forEach(function(key){ setDial(key, preset[key], { silent: true }); });
+          BOX.querySelectorAll('[data-preset]').forEach(function(item){ item.setAttribute('aria-pressed', String(item === button)); });
+          saveStored(button.textContent.trim() + ' preset applied');
+        });
+      });
+
+      var lowPowerToggle = document.getElementById('low-power-toggle');
+      var QUALITY_KEY = 'ink:fluid-low-power-v1';
+      var standardQuality = {
+        SIM_RESOLUTION: config.SIM_RESOLUTION,
+        DYE_RESOLUTION: config.DYE_RESOLUTION,
+        BLOOM: config.BLOOM,
+        SUNRAYS: config.SUNRAYS
+      };
+      function setLowPower(enabled, announce) {
+        if (!lowPowerToggle) return;
+        if (enabled) fluid.setConfig({ SIM_RESOLUTION: 128, DYE_RESOLUTION: 384, BLOOM: false, SUNRAYS: false });
+        else fluid.setConfig(standardQuality);
+        lowPowerToggle.setAttribute('aria-pressed', String(enabled));
+        lowPowerToggle.textContent = enabled ? 'Low power: on' : 'Low power';
+        lowPowerToggle.title = enabled ? 'Restore full simulation quality' : 'Reduce simulation quality to save battery';
+        try { localStorage.setItem(QUALITY_KEY, enabled ? '1' : '0'); } catch (e) {}
+        if (announce) setStatus(enabled ? 'Low power enabled' : 'Full quality restored');
+      }
+      if (lowPowerToggle) {
+        var savedLowPower = false;
+        try { savedLowPower = localStorage.getItem(QUALITY_KEY) === '1'; } catch (e) {}
+        if (savedLowPower) setLowPower(true, false);
+        lowPowerToggle.addEventListener('click', function(){ setLowPower(lowPowerToggle.getAttribute('aria-pressed') !== 'true', true); });
+        window.addEventListener('ink:performance', function(){
+          if (lowPowerToggle.getAttribute('aria-pressed') !== 'true') setLowPower(true, true);
+        }, { once: true });
       }
 
       // center-stage toggle — the roomy single-column mode for slingshots

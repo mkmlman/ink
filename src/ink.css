@@ -227,6 +227,10 @@ body[data-paused="true"] .brand-dot, body[data-runtime="unavailable"] .brand-dot
   font-weight: 400;
 }
 .welcome-copy { margin: 20px 0 0; color: var(--text); font-family: var(--mono); font-size: 0.8rem; line-height: 1.6; text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55); }
+.gesture-cue { display: inline-flex; align-items: center; gap: 8px; margin: 14px 0 0; color: var(--accent); font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55); }
+.gesture-cue span { width: 28px; height: 1px; background: currentColor; transform-origin: left center; animation: gesture-sweep 1.7s var(--ease-out) infinite; }
+@keyframes gesture-sweep { 0%, 100% { opacity: 0.35; transform: scaleX(0.35); } 50% { opacity: 1; transform: scaleX(1); } }
+.has-interaction .gesture-cue { opacity: 0; }
 .welcome-secondary-link { display: inline-block; margin-top: 16px; padding: 5px 7px; border-radius: 4px; background: rgba(8, 9, 9, 0.48); color: var(--muted-strong); font-family: var(--mono); font-size: 0.6rem; line-height: 1.5; text-decoration-color: rgba(223, 248, 227, 0.35); text-underline-offset: 3px; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7); pointer-events: auto; transition: color 0.2s ease, text-decoration-color 0.2s ease, background 0.2s ease; }
 .welcome-secondary-link:hover { background: rgba(8, 9, 9, 0.68); color: var(--accent); text-decoration-color: currentColor; }
 .welcome-secondary-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
@@ -257,6 +261,12 @@ body[data-runtime="reduced-motion"] .runtime-status { color: var(--muted-strong)
 }
 .fluid-dialers[hidden] { display: none !important; }
 .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding-bottom: 18px; border-bottom: 1px solid var(--line-soft); }
+.preset-row { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding: 14px 0 0; }
+.preset-label { margin-right: 2px; color: var(--muted); font-family: var(--mono); font-size: 0.54rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.preset-button, .low-power-toggle { min-height: 28px; padding: 0 9px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted-strong); background: rgba(237, 244, 239, 0.04); font-family: var(--mono); font-size: 0.54rem; letter-spacing: 0.03em; cursor: pointer; transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease; }
+.preset-button[aria-pressed="true"], .low-power-toggle[aria-pressed="true"] { color: var(--accent); border-color: rgba(223, 248, 227, 0.32); background: rgba(223, 248, 227, 0.09); }
+.preset-button:hover, .low-power-toggle:hover { color: var(--text); border-color: var(--line-strong); }
+.preset-button:focus-visible, .low-power-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .panel-head .eyebrow { margin: 0 0 7px; font-size: 0.55rem; }
 .panel-head h2 { margin: 0; color: var(--text); font-size: 1.03rem; font-weight: 500; letter-spacing: -0.025em; }
 .save-state { padding-top: 2px; color: var(--muted); font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.04em; white-space: nowrap; }
@@ -278,7 +288,8 @@ body[data-runtime="reduced-motion"] .runtime-status { color: var(--muted-strong)
 .dial input[type="range"] { position: absolute; right: 0; bottom: 0; left: 0; z-index: 3; display: block !important; width: 100%; height: 30px; margin: 0; padding: 0; appearance: none; border: 0; background: transparent; cursor: ew-resize; opacity: 0; touch-action: none; }
 .dial input[type="range"]:focus-visible { outline: none; }
 .dial:has(input[type="range"]:focus-visible) .dial-knob { outline: 2px solid var(--accent); outline-offset: 4px; }
-.panel-foot { display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding-top: 14px; border-top: 1px solid var(--line-soft); color: var(--muted); font-family: var(--mono); font-size: 0.54rem; letter-spacing: 0.03em; }
+.panel-foot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line-soft); color: var(--muted); font-family: var(--mono); font-size: 0.54rem; letter-spacing: 0.03em; }
+.low-power-toggle { border-radius: var(--radius-sm); white-space: nowrap; }
 .dial-reset { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 30px; padding: 0 9px; border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--muted-strong); background: rgba(237, 244, 239, 0.04); cursor: pointer; font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.03em; white-space: nowrap; transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease; }
 .dial-reset svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.2; }
 .dial-reset:disabled { cursor: not-allowed; opacity: 0.45; }
@@ -872,9 +883,12 @@ body.page-about .about-main section { content-visibility: auto; contain-intrinsi
   }
   .welcome h1 { font-size: 1.375rem; text-shadow: 0 1px 16px rgba(0, 0, 0, 0.65), 0 2px 40px rgba(0, 0, 0, 0.5); }
   .welcome-copy { margin-top: 16px; font-size: 0.86rem; text-shadow: 0 1px 12px rgba(0, 0, 0, 0.75); }
+  .gesture-cue { margin-top: 12px; }
   body:has(.fluid-dialers:not([hidden])) .welcome { bottom: calc(min(58vh, 430px) + 60px + env(safe-area-inset-bottom)); }
   .fluid-dialers { top: auto; right: 12px; bottom: calc(51px + env(safe-area-inset-bottom)); left: 12px; width: auto; max-height: min(58vh, 430px); padding: 16px 16px 12px; overflow: hidden; border-radius: 20px; transform: none; }
   .panel-head { display: flex; align-items: center; gap: 16px; padding-bottom: 13px; }
+  .preset-row { gap: 6px; padding-top: 11px; }
+  .preset-button { min-height: 26px; padding: 0 8px; font-size: 0.51rem; }
   .panel-head .eyebrow { display: block; margin-bottom: 6px; font-size: 0.53rem; }
   .panel-head h2 { font-size: 0.98rem; }
   .control-sections { gap: 21px; padding: 15px 2px 18px; overflow-x: hidden; overflow-y: auto; scrollbar-width: thin; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
@@ -956,6 +970,7 @@ body.page-about .about-main section { content-visibility: auto; contain-intrinsi
   }
   .fluid-canvas { display: none !important; }
   .fluid-dialers, .dialers-toggle { display: none !important; }
+  .gesture-cue { display: none; }
   .welcome, .has-interaction .welcome { opacity: 1; transform: none; transition: none; }
   .welcome-copy { display: none; }
   body[data-runtime="reduced-motion"] .welcome-copy { display: block; }

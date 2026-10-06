@@ -34,7 +34,7 @@ let config = {
     SPLAT_RADIUS: 0.40,
     SPLAT_FORCE: 12000,
     BRIGHTNESS: 3.0,
-    IDLE_INJECTION: 0.5,
+    IDLE_INJECTION: 0.25,
     SHADING: true,
     COLOR_UPDATE_SPEED: 10,
     PAUSED: false,
@@ -80,6 +80,7 @@ if (!gl || !ext || !ext.formatRGBA) {
     hide: function(){},
     splat: function(){},
     burst: function(){},
+    clear: function(){},
     pause: function(){},
     resume: function(){},
     setConfig: function(){}
@@ -1047,12 +1048,19 @@ function updateKeywords () {
 updateKeywords();
 resizeCanvas();
 initFramebuffers();
-multipleSplats(parseInt(Math.random() * 20) + 5);
+multipleSplats(8);
 
-let lastUpdateTime = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+function nowMilliseconds () {
+    return (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+}
+let lastUpdateTime = nowMilliseconds();
+let lastIdleUpdateTime = lastUpdateTime;
 let colorUpdateTimer = 0.0;
 let frameRequest = 0;
 let needsResize = false;
+let performanceSamples = 0;
+let performanceIntervalTotal = 0;
+let performanceNoticeSent = false;
 
 function scheduleUpdate () {
     if (!frameRequest && !document.hidden && !canvas.hidden)
@@ -1066,7 +1074,8 @@ if (typeof ResizeObserver === 'function') {
 }
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden && !canvas.hidden) {
-        lastUpdateTime = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        lastUpdateTime = nowMilliseconds();
+        lastIdleUpdateTime = lastUpdateTime;
         scheduleUpdate();
     }
 });
@@ -1078,13 +1087,14 @@ function update () {
     // Do not keep a 60fps callback alive while the page is backgrounded or
     // the host has intentionally hidden the canvas.
     if (document.hidden || canvas.hidden) return;
+    const idleDt = calcIdleDeltaTime();
     const dt = calcDeltaTime();
     if (needsResize) {
         needsResize = false;
         if (resizeCanvas()) initFramebuffers();
     }
     updateColors(dt);
-    applyInputs();
+    applyInputs(idleDt);
     if (!config.PAUSED)
         step(dt);
     render(null);
@@ -1092,11 +1102,32 @@ function update () {
 }
 
 function calcDeltaTime () {
-    let now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-    let dt = (now - lastUpdateTime) / 1000;
-    dt = Math.min(dt, 0.016666);
+    let now = nowMilliseconds();
+    let rawDt = Math.max(0, (now - lastUpdateTime) / 1000);
     lastUpdateTime = now;
-    return dt;
+    // Observe sustained frame pacing without letting a slow device destabilize
+    // the simulation step. Hosts can respond by enabling their low-power UI.
+    if (!performanceNoticeSent && rawDt < 0.2) {
+        performanceSamples++;
+        performanceIntervalTotal += rawDt;
+        if (performanceSamples >= 120) {
+            const averageMs = (performanceIntervalTotal / performanceSamples) * 1000;
+            if (averageMs > 27) {
+                performanceNoticeSent = true;
+                emit('ink:performance', { averageFrameMs: averageMs });
+            }
+            performanceSamples = 0;
+            performanceIntervalTotal = 0;
+        }
+    }
+    return Math.min(rawDt, 0.016666);
+}
+
+function calcIdleDeltaTime () {
+    const now = nowMilliseconds();
+    const dt = Math.max(0, (now - lastIdleUpdateTime) / 1000);
+    lastIdleUpdateTime = now;
+    return Math.min(dt, 0.25);
 }
 
 function resizeCanvas () {
@@ -1120,7 +1151,7 @@ function updateColors (dt) {
     }
 }
 
-function applyInputs () {
+function applyInputs (dt) {
     if (config.PAUSED) {
         clearPendingInputs();
         return;
@@ -1129,7 +1160,9 @@ function applyInputs () {
     if (splatStack.length > 0)
         multipleSplats(splatStack.pop());
    
-    if (!config.PAUSED && config.IDLE_INJECTION > 0 && Math.random() < 0.015 * config.IDLE_INJECTION) {
+    // Use wall-clock time rather than the capped simulation step for a steady idle rate.
+    const idleRate = 0.9 * config.IDLE_INJECTION;
+    if (!config.PAUSED && idleRate > 0 && Math.random() < 1 - Math.exp(-idleRate * dt)) {
         multipleSplats(1);
     }
 
@@ -1147,6 +1180,25 @@ function clearPendingInputs () {
     pointers.forEach(p => { p.moved = false; });
 }
 
+function clearSimulation () {
+    clearPendingInputs();
+    const targets = [
+        dye && dye.read, dye && dye.write,
+        velocity && velocity.read, velocity && velocity.write,
+        divergence, curl, pressure && pressure.read, pressure && pressure.write,
+        bloom, sunrays, sunraysTemp
+    ].concat(bloomFramebuffers || []);
+    gl.clearColor(0, 0, 0, 0);
+    targets.forEach(target => {
+        if (!target || !target.fbo) return;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
+        gl.viewport(0, 0, target.width, target.height);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+    });
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    emit('ink:clear');
+}
+
 function setPaused (paused) {
     config.PAUSED = !!paused;
     if (config.PAUSED) {
@@ -1156,7 +1208,8 @@ function setPaused (paused) {
             frameRequest = 0;
         }
     } else {
-        lastUpdateTime = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        lastUpdateTime = nowMilliseconds();
+        lastIdleUpdateTime = lastUpdateTime;
         scheduleUpdate();
     }
     emit('ink:pausechange', { paused: config.PAUSED });
@@ -1347,13 +1400,13 @@ function splatPointer (pointer) {
 function multipleSplats (amount) {
     for (let i = 0; i < amount; i++) {
         const color = generateColor();
-        color.r *= 10.0;
-        color.g *= 10.0;
-        color.b *= 10.0;
+        color.r *= 2.5;
+        color.g *= 2.5;
+        color.b *= 2.5;
         const x = Math.random();
         const y = Math.random();
-        const dx = 1000 * (Math.random() - 0.5);
-        const dy = 1000 * (Math.random() - 0.5);
+        const dx = 700 * (Math.random() - 0.5);
+        const dy = 700 * (Math.random() - 0.5);
         splat(x, y, dx, dy, color);
     }
 }
@@ -1519,8 +1572,13 @@ window.addEventListener('keydown', e => {
         if (isInteractiveTarget(e.target)) return;
         e.preventDefault();
         if (config.PAUSED) return;
-        splatStack.push(parseInt(Math.random() * 20) + 5);
+        splatStack.push(8);
         emit('ink:burst');
+    }
+    if (e.code === 'KeyR') {
+        if (isInteractiveTarget(e.target)) return;
+        e.preventDefault();
+        if (!config.PAUSED) clearSimulation();
     }
 });
 
@@ -1545,6 +1603,15 @@ function updatePointerMoveData (pointer, posX, posY) {
     pointer.texcoordY = 1.0 - posY / canvas.height;
     pointer.deltaX = correctDeltaX(pointer.texcoordX - pointer.prevTexcoordX);
     pointer.deltaY = correctDeltaY(pointer.texcoordY - pointer.prevTexcoordY);
+    // A dropped/coalesced pointer event can span a large part of the canvas.
+    // Cap that single-frame impulse so it does not blow out into a white sheet.
+    const deltaLength = Math.hypot(pointer.deltaX, pointer.deltaY);
+    const maxDelta = 0.04;
+    if (deltaLength > maxDelta) {
+        const scale = maxDelta / deltaLength;
+        pointer.deltaX *= scale;
+        pointer.deltaY *= scale;
+    }
     pointer.moved = !config.PAUSED && (Math.abs(pointer.deltaX) > 0 || Math.abs(pointer.deltaY) > 0);
 }
 
@@ -1674,6 +1741,7 @@ const inkFluid = {
   hide: function(){ canvas.hidden = true; canvas.style.display = 'none'; canvas.classList.remove('is-visible'); if (frameRequest) { cancelAnimationFrame(frameRequest); frameRequest = 0; } },
   splat: function(x,y,dx,dy){ if (config.PAUSED) return; splat(x,y,dx,dy, generateColor()); },
   burst: function(n){ if (config.PAUSED) return; splatStack.push(Math.max(1, Math.min(40, n == null ? (parseInt(Math.random() * 20) + 5) : Number(n) || 1))); emit('ink:burst'); },
+  clear: function(){ if (!config.PAUSED) clearSimulation(); },
   pause: function(){ setPaused(true); },
   resume: function(){ setPaused(false); },
   get paused(){ return !!config.PAUSED; },

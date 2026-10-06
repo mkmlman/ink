@@ -1,2 +1,3 @@
 User-agent: *
 Allow: /
+Sitemap: https://mkmlman.github.io/ink/sitemap.xml

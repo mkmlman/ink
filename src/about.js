@@ -1,6 +1,11 @@
 'use strict';
 /* ink about page: progress bar, reveal-on-scroll, glow demo, TOC scrollspy. */
 try {
+  // Keep the first mobile viewport focused on the guide rather than its index.
+  var toc = document.querySelector('.toc');
+  if (toc && window.matchMedia('(max-width: 760px)').matches) toc.open = false;
+} catch (e) {}
+try {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.querySelectorAll('svg.diagram').forEach(function (s) { s.pauseAnimations(); });
   }

@@ -15,6 +15,7 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="ink droplet mark on a dark background">
   <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://mkmlman.github.io/ink/">
   <title>Ink — move through the color</title>
   <link rel="icon" href="src/ink-icon.svg" type="image/svg+xml" sizes="any">
   <link rel="icon" href="src/ink-icon.png" type="image/png" sizes="32x32">
@@ -41,6 +42,11 @@
         <span class="action-text">Burst</span>
         <kbd>Space</kbd>
       </button>
+      <button class="ui-action" id="clear-button" type="button" aria-label="Clear the canvas" aria-keyshortcuts="R" title="Clear the canvas (R)">
+        <svg aria-hidden="true" viewBox="0 0 16 16"><path d="M3 4.5h10M6 4.5v-2h4v2M5 6.5v5.5M8 6.5v5.5M11 6.5v5.5M4 4.5l.7 9h6.6l.7-9"/></svg>
+        <span class="action-text">Clear</span>
+        <kbd>R</kbd>
+      </button>
       <button class="ui-action" id="pause-toggle" type="button" aria-label="Pause the simulation" aria-keyshortcuts="P" aria-pressed="false" title="Pause the simulation (P)">
         <svg class="pause-icon" aria-hidden="true" viewBox="0 0 16 16"><path d="M5 3.5v9M11 3.5v9"/></svg>
         <svg class="play-icon" aria-hidden="true" viewBox="0 0 16 16"><path d="m6 3.5 5.5 4.5L6 12.5z"/></svg>
@@ -62,7 +68,8 @@
     <section class="welcome" aria-labelledby="welcome-title">
       <h1 id="welcome-title">Move through<br><em>the color.</em></h1>
       <p class="welcome-copy">Move the cursor to release ink into the flow. Tune the brush and motion, then see where it takes you.</p>
-      <a class="welcome-secondary-link" href="https://github.com/mkmlman/ink#embed-in-your-site">Want Ink on your site? See the embed guide <span aria-hidden="true">↗</span></a>
+      <p class="gesture-cue" aria-hidden="true"><span></span> Move here to paint</p>
+      <a class="welcome-secondary-link" href="https://github.com/mkmlman/ink#embed-in-your-site">Use Ink on your site — no build step <span aria-hidden="true">↗</span></a>
       <p class="runtime-status" id="runtime-status" role="status" aria-live="polite">Loading canvas…</p>
     </section>
   </main>
@@ -82,6 +89,13 @@
       </div>
     </div>
 
+    <div class="preset-row" role="group" aria-label="Fluid presets">
+      <span class="preset-label">Presets</span>
+      <button type="button" class="preset-button" data-preset="smoke">Smoke</button>
+      <button type="button" class="preset-button" data-preset="bloom">Slow bloom</button>
+      <button type="button" class="preset-button" data-preset="wild">Wild current</button>
+      <button type="button" class="preset-button" data-preset="still">Still color</button>
+    </div>
     <div class="control-sections">
       <section class="control-section" aria-labelledby="brush-title">
         <h3 id="brush-title">Brush</h3>
@@ -98,7 +112,7 @@
           <div class="dial" data-key="curl" data-min="0" data-max="8" data-step="0.5" data-value="4"><div class="dial-head"><span class="dial-label" id="lbl-curl">Swirl strength</span><span class="dial-value">4</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-curl" aria-labelledby="lbl-curl" min="0" max="8" step="0.5" value="4"></div>
           <div class="dial" data-key="velocity" data-min="0" data-max="1" data-step="0.05" data-value="0"><div class="dial-head"><span class="dial-label" id="lbl-velocity">Motion fade</span><span class="dial-value">0</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-velocity" aria-labelledby="lbl-velocity" min="0" max="1" step="0.05" value="0"></div>
           <div class="dial" data-key="density" data-min="0" data-max="5" data-step="0.25" data-value="4.5"><div class="dial-head"><span class="dial-label" id="lbl-density">Ink persistence</span><span class="dial-value">4.5</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-density" aria-labelledby="lbl-density" min="0" max="5" step="0.25" value="4.5"></div>
-          <div class="dial" data-key="idle" data-min="0" data-max="2" data-step="0.25" data-value="0.5"><div class="dial-head"><span class="dial-label" id="lbl-idle">Ambient motion</span><span class="dial-value">0.50</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-idle" aria-labelledby="lbl-idle" min="0" max="2" step="0.25" value="0.5"></div>
+          <div class="dial" data-key="idle" data-min="0" data-max="2" data-step="0.25" data-value="0.25"><div class="dial-head"><span class="dial-label" id="lbl-idle">Ambient motion</span><span class="dial-value">0.25</span></div><div class="dial-knob" aria-hidden="true"><span class="dial-knob-face"><span class="dial-indicator"></span></span></div><input type="range" id="dial-idle" aria-labelledby="lbl-idle" min="0" max="2" step="0.25" value="0.25"></div>
         </div>
       </section>
 
@@ -113,6 +127,7 @@
     </div>
 
     <div class="panel-foot">
+      <button class="low-power-toggle" id="low-power-toggle" type="button" aria-pressed="false" title="Reduce simulation quality to save battery">Low power</button>
       <button class="dial-reset" id="dial-reset" type="button"><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M3 6.5A5 5 0 1 1 3.8 11M3 3v3.5h3.5"/></svg> Reset controls</button>
     </div>
   </aside>
@@ -129,6 +144,7 @@
       const canvas = document.getElementById('fluid');
       const runtimeStatus = document.getElementById('runtime-status');
       const burstButton = document.getElementById('burst-button');
+      const clearButton = document.getElementById('clear-button');
       const pauseButton = document.getElementById('pause-toggle');
       const welcomeCopy = document.querySelector('.welcome-copy');
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -151,7 +167,9 @@
         pauseButton.setAttribute('title', paused ? 'Resume the simulation (P)' : 'Pause the simulation (P)');
         pauseButton.querySelector('.action-text').textContent = paused ? 'Resume' : 'Pause';
         burstButton.disabled = paused;
+        clearButton.disabled = paused;
         burstButton.title = paused ? 'Resume the simulation to add a burst' : 'Add a burst of ink (Space)';
+        clearButton.title = paused ? 'Resume the simulation to clear the canvas' : 'Clear the canvas (R)';
       };
 
       const markInteraction = () => body.classList.add('has-interaction');
@@ -171,6 +189,7 @@
         if (reducedMotion.matches) showReducedMotionState();
         else setRuntime('unavailable', 'WebGL is unavailable — the canvas is disabled.');
         burstButton.disabled = true;
+        clearButton.disabled = true;
         pauseButton.disabled = true;
       });
       window.addEventListener('ink:contextlost', () => {
@@ -198,6 +217,11 @@
       burstButton.addEventListener('click', () => {
         markInteraction();
         window.inkFluid?.burst(8);
+      });
+      clearButton.addEventListener('click', () => {
+        markInteraction();
+        window.inkFluid?.clear();
+        setRuntime('ready', 'Canvas cleared.');
       });
       pauseButton.addEventListener('click', () => {
         markInteraction();

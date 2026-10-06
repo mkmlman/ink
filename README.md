@@ -61,6 +61,7 @@ inkFluid.show();
 inkFluid.hide();
 inkFluid.splat(0.5, 0.5, dx, dy); // normalized coords + velocity delta
 inkFluid.burst(8);                // random splats
+inkFluid.clear();                 // clears dye and motion
 inkFluid.pause();
 inkFluid.resume();
 inkFluid.setConfig('CURL', 6);
@@ -88,7 +89,7 @@ inkDials.reset();
 | `PRESSURE_ITERATIONS` | `16` | dial `iterations` |
 | `SPLAT_FORCE` | `12000` | dial `splatForce` |
 | `BRIGHTNESS` | `3` | dial `brightness` |
-| `IDLE_INJECTION` | `0.5` | dial `idle`; occasional ambient splats when > 0 |
+| `IDLE_INJECTION` | `0.25` | dial `idle`; occasional ambient splats when > 0 |
 | `BLOOM_INTENSITY` | `0.30` | dial `bloom` |
 | `BLOOM` / `SHADING` / `SUNRAYS` | `true` | toggle keywords |
 | `SIM_RESOLUTION` / `DYE_RESOLUTION` | `256` / `1024` (`512` on mobile) | re-inits buffers |
@@ -107,8 +108,10 @@ inkDials.reset();
   slider never paints behind it and the mobile control dock keeps native
   scrolling.
 - Pause freezes the current image and ignores cursor movement and bursts until
-  the simulation resumes.
-- Ambient motion defaults to a light idle trickle; set it to `0` for a still canvas.
+  the simulation resumes. Use Clear (or `R`) to remove dye and motion.
+- The control panel includes expressive presets and a persisted Low power mode,
+  which lowers simulation resolution and disables bloom/sunrays to save battery.
+- Ambient motion defaults to a subtle idle trickle; set it to `0` for a still canvas.
 - `Space` bursts when focus is outside controls; `P` toggles pause except while typing.
 - Missing WebGL hides the canvas with a console warning instead of throwing;
   a lost GL context pauses, and restores via reload.
