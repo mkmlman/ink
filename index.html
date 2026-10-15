@@ -137,6 +137,7 @@
     </div>
   </aside>
 
+  <div class="quick-help-backdrop" id="quick-help-backdrop" hidden aria-hidden="true"></div>
   <dialog class="quick-help" id="quick-help" aria-labelledby="quick-help-title">
     <div class="quick-help-head">
       <div><p class="eyebrow">First strokes</p><h2 id="quick-help-title">Make the flow yours</h2></div>
@@ -223,9 +224,9 @@
         if (reducedMotion.matches) showReducedMotionState();
         else setRuntime('ready');
       });
-      window.addEventListener('ink:unavailable', () => {
+      window.addEventListener('ink:unavailable', (event) => {
         if (reducedMotion.matches) showReducedMotionState();
-        else setRuntime('unavailable', 'WebGL is unavailable — the canvas is disabled.');
+        else setRuntime('unavailable', event.detail?.message || 'WebGL is unavailable. The canvas is disabled.');
         burstButton.disabled = true;
         clearButton.disabled = true;
         pauseButton.disabled = true;
@@ -243,7 +244,7 @@
       });
       reducedMotion.addEventListener?.('change', (event) => {
         if (event.matches) showReducedMotionState();
-        else if (window.inkFluid?.available === false) setRuntime('unavailable', 'WebGL is unavailable — the canvas is disabled.');
+        else if (window.inkFluid?.available === false) setRuntime('unavailable', 'WebGL is unavailable. The canvas is disabled.');
         else {
           welcomeCopy.textContent = getPlayCopy();
           setRuntime('ready');
@@ -267,27 +268,70 @@
         if (window.inkFluid.paused) window.inkFluid.resume();
         else window.inkFluid.pause();
       });
+      const helpBackdrop = document.getElementById('quick-help-backdrop');
+      const nativeDialog = typeof helpDialog.showModal === 'function' && typeof helpDialog.close === 'function';
+      let helpIsOpen = false;
+      const finishHelpClose = () => {
+        helpIsOpen = false;
+        helpButton.setAttribute('aria-expanded', 'false');
+        helpButton.focus();
+      };
+      const closeHelp = () => {
+        if (!helpIsOpen) return;
+        helpIsOpen = false;
+        if (nativeDialog) {
+          helpDialog.close();
+          return;
+        }
+        helpDialog.removeAttribute('open');
+        helpDialog.classList.remove('is-fallback-open');
+        helpDialog.removeAttribute('aria-modal');
+        helpBackdrop.hidden = true;
+        finishHelpClose();
+      };
       const openHelp = () => {
-        if (helpDialog.open) return;
-        if (typeof helpDialog.showModal === 'function') helpDialog.showModal();
-        else helpDialog.setAttribute('open', '');
+        if (helpIsOpen) return;
+        helpIsOpen = true;
+        if (nativeDialog) helpDialog.showModal();
+        else {
+          helpBackdrop.hidden = false;
+          helpDialog.classList.add('is-fallback-open');
+          helpDialog.setAttribute('open', '');
+          helpDialog.setAttribute('aria-modal', 'true');
+        }
         helpButton.setAttribute('aria-expanded', 'true');
         helpClose.focus();
       };
       helpButton.addEventListener('click', openHelp);
-      helpClose.addEventListener('click', () => helpDialog.close());
+      helpClose.addEventListener('click', closeHelp);
+      helpBackdrop.addEventListener('click', closeHelp);
       helpDialog.addEventListener('click', (event) => {
-        if (event.target === helpDialog) helpDialog.close();
+        if (event.target === helpDialog) closeHelp();
       });
-      helpDialog.addEventListener('close', () => {
-        helpButton.setAttribute('aria-expanded', 'false');
-        helpButton.focus();
-      });
+      helpDialog.addEventListener('close', finishHelpClose);
       window.addEventListener('keydown', (event) => {
+        if (helpIsOpen && !nativeDialog && event.key === 'Escape') {
+          event.preventDefault();
+          closeHelp();
+          return;
+        }
+        if (helpIsOpen && !nativeDialog && event.key === 'Tab') {
+          const focusable = Array.from(helpDialog.querySelectorAll('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'));
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+          return;
+        }
         if (event.key !== '?' && event.key !== 'h' && event.key !== 'H') return;
         const target = event.target;
         if (target && typeof target.closest === 'function' && target.closest('input, select, textarea, [contenteditable="true"]')) return;
-        if (helpDialog.open) return;
+        if (helpIsOpen) return;
         event.preventDefault();
         openHelp();
       });

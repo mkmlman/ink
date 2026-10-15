@@ -128,8 +128,11 @@ inkDials.reset();
 ## Dev
 
 ```sh
-npm run dev   # python3 -m http.server 8080
-npm run check # node --check fluid.js + dials.js + angry-dials.js + about.js
+npm install
+npx playwright install chromium
+npm run dev
+npm run check
+npm test # browser regressions for touch input, WebGL failures, and help dialog fallback
 ```
 
 MIT

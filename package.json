@@ -31,7 +31,8 @@
   ],
   "scripts": {
     "dev": "python3 -m http.server 8080",
-    "check": "node --check src/fluid.js && node --check src/dials.js && node --check src/angry-dials.js && node --check src/about.js"
+    "check": "node --check src/fluid.js && node --check src/dials.js && node --check src/angry-dials.js && node --check src/about.js",
+    "test": "playwright test"
   },
   "repository": {
     "type": "git",
@@ -49,5 +50,8 @@
     "canvas",
     "background"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.64.1"
+  }
 }

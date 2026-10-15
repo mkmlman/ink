@@ -49,6 +49,24 @@ let config = {
     SUNRAYS_RESOLUTION: 196,
     SUNRAYS_WEIGHT: 1.0,
 }
+function markUnavailable (message) {
+    try { canvas.hidden = true; } catch (e) {}
+    window.inkFluid = {
+        available: false,
+        config,
+        get paused () { return true; },
+        show: function(){},
+        hide: function(){},
+        splat: function(){},
+        burst: function(){},
+        clear: function(){},
+        pause: function(){},
+        resume: function(){},
+        setConfig: function(){}
+    };
+    emit('ink:unavailable', { message });
+    console.warn('ink: ' + message);
+}
 function pointerPrototype () {
     this.id = -1;
     this.texcoordX = 0;
@@ -71,22 +89,7 @@ const ctx = getWebGLContext(canvas);
 const gl = ctx && ctx.gl;
 const ext = ctx && ctx.ext;
 if (!gl || !ext || !ext.formatRGBA) {
-  try { canvas.hidden = true; } catch (e) {}
-  window.inkFluid = {
-    available: false,
-    config,
-    get paused () { return true; },
-    show: function(){},
-    hide: function(){},
-    splat: function(){},
-    burst: function(){},
-    clear: function(){},
-    pause: function(){},
-    resume: function(){},
-    setConfig: function(){}
-  };
-  emit('ink:unavailable');
-  console.warn('ink: WebGL unavailable — fluid disabled');
+  markUnavailable('WebGL is unavailable. The canvas is disabled.');
   return;
 }
 
@@ -273,8 +276,11 @@ function createProgram (vertexShader, fragmentShader) {
     gl.attachShader(program, fragmentShader);
     gl.linkProgram(program);
 
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS))
-        console.trace(gl.getProgramInfoLog(program));
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        const log = gl.getProgramInfoLog(program);
+        markUnavailable('WebGL program linking failed. The canvas is disabled.');
+        throw new Error('ink: shader program link failed: ' + log);
+    }
 
     return program;
 }
@@ -296,8 +302,11 @@ function compileShader (type, source, keywords) {
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
 
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
-        console.trace(gl.getShaderInfoLog(shader));
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        const log = gl.getShaderInfoLog(shader);
+        markUnavailable('WebGL shader compilation failed. The canvas is disabled.');
+        throw new Error('ink: shader compilation failed: ' + log);
+    }
 
     return shader;
 };
@@ -1518,8 +1527,8 @@ window.addEventListener('touchmove', e => {
     if (e.cancelable) e.preventDefault();
     const touches = e.targetTouches;
     for (let i = 0; i < touches.length; i++) {
-        let pointer = pointers[i + 1];
-        if (!pointer.down) continue;
+        let pointer = pointers.find(p => p.id === touches[i].identifier);
+        if (!pointer || !pointer.down) continue;
         let posX = scaleByPixelRatio(touches[i].pageX);
         let posY = scaleByPixelRatio(touches[i].pageY);
         updatePointerMoveData(pointer, posX, posY);
