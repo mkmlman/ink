@@ -167,6 +167,29 @@ try {
   }
 } catch (e) {}
 try {
+  var previewFrame = document.getElementById('fluid-preview-frame');
+  if (previewFrame) {
+    var pendingPreviewControl = null;
+    var focusPreviewControl = function (controlId) {
+      try {
+        var control = previewFrame.contentDocument && previewFrame.contentDocument.getElementById(controlId);
+        if (control && !control.disabled) { control.focus(); return true; }
+      } catch (e) {}
+      return false;
+    };
+    previewFrame.addEventListener('load', function () {
+      if (pendingPreviewControl && focusPreviewControl(pendingPreviewControl)) pendingPreviewControl = null;
+    });
+    document.querySelectorAll('.setting-demo-link[data-preview-control]').forEach(function (link) {
+      link.addEventListener('click', function (event) {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        pendingPreviewControl = link.getAttribute('data-preview-control');
+        if (focusPreviewControl(pendingPreviewControl)) pendingPreviewControl = null;
+      });
+    });
+  }
+} catch (e) {}
+try {
   // TOC scrollspy: highlight the section currently in view.
   var tocMap = {};
   document.querySelectorAll('.toc a[href^="#"]').forEach(function (a) {

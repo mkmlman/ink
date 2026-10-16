@@ -806,6 +806,11 @@ body.page-about .effect-link a:focus-visible { outline: 2px solid var(--accent);
 .dial-card dl > div { margin: 0; padding: 9px 0; }
 .dial-card dl > div + div { border-top: 1px dashed rgba(237, 244, 239, 0.08); }
 .dial-card dt { margin: 0; }
+.setting-demo-link { display: inline-flex; align-items: center; gap: 5px; color: inherit; text-decoration: none; }
+.setting-demo-link > span { color: var(--accent); font-family: var(--mono); font-size: 0.65rem; opacity: 0.65; transition: opacity 160ms ease, transform 160ms ease; }
+.setting-demo-link:hover > span { opacity: 1; transform: translate(2px, -2px); }
+.setting-demo-link:hover code { border-color: rgba(223, 248, 227, 0.38); color: var(--accent); }
+.setting-demo-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
 .dial-card dd { margin: 5px 0 0; color: var(--muted); font-family: var(--mono); font-size: 0.8rem; line-height: 1.6; }
 .dial-card dd code { font-size: 0.72em; color: var(--muted); }
 .recipe {
