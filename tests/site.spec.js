@@ -147,6 +147,15 @@ test('dissipation explorer updates the modeled curve and readout', async ({ page
   await expect.poll(() => curve.getAttribute('d')).not.toBe(defaultCurve);
 });
 
+test('post-processing explanation returns readers to the real effect controls', async ({ page }) => {
+  await page.goto(`${home}about.html#about-glow`);
+  const link = page.getByRole('link', { name: 'Try Glow and Sunrays in the live simulation above' });
+  await expect(link).toHaveAttribute('href', '#about-lab');
+  await link.click();
+  await expect(page).toHaveURL(/#about-lab$/);
+  await expect(page.getByRole('heading', { name: 'Make a mark' })).toBeVisible();
+});
+
 test('input splat model responds to brush radius and push force', async ({ page }) => {
   await page.goto(`${home}about.html#about-motion`);
   const radius = page.locator('#splat-radius');

@@ -527,6 +527,20 @@ body:has(.about-main)::before, body.page-about::before {
   line-height: 1.8;
 }
 .about-main p strong { color: var(--text); font-weight: 700; }
+body.page-about .effect-link { margin-top: 12px; }
+body.page-about .effect-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-decoration: none;
+  text-underline-offset: 4px;
+  transition: color 180ms ease, gap 180ms ease;
+}
+body.page-about .effect-link a:hover { gap: 12px; color: var(--text); }
+body.page-about .effect-link a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 3px; }
 .about-main code {
   padding: 2px 7px;
   border: 1px solid var(--line-soft);
