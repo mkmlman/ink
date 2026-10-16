@@ -121,6 +121,7 @@ test('simulation walkthrough guides the reader through the five passes', async (
   await expect(page.locator('#flow-current-step')).toHaveText('STEP 03');
   await expect(page.locator('#flow-title')).toHaveText('Pressure evens the flow');
   await expect(page.locator('#flow-detail')).toContainText('Jacobi iterations');
+  await expect.poll(() => guide.evaluate(element => Number(getComputedStyle(element).getPropertyValue('--step-progress')))).toBe(0.5);
   await page.getByRole('button', { name: 'Next step' }).click();
   await expect(guide).toHaveAttribute('data-stage', 'advection');
   await expect(page.locator('#flow-title')).toHaveText('The current carries color');
@@ -234,5 +235,11 @@ test('about page fits narrow viewports without horizontal scrolling', async ({ p
   await page.goto(`${home}about.html`);
   await expect(page.getByRole('heading', { name: 'How ink works' })).toBeVisible();
   await expect(page.locator('.flow-step').first()).toHaveCSS('display', 'grid');
+  await expect(page.locator('#flow-current-step')).toHaveCSS('white-space', 'nowrap');
+  await expect(page.locator('.flow-reading-top')).toHaveCSS('display', 'grid');
+  await expect(page.locator('.site-footer')).toHaveCSS('position', 'static');
+  const footerTop = await page.locator('.site-footer').evaluate(element => element.getBoundingClientRect().top + window.scrollY);
+  const contentBottom = await page.locator('.about-main').evaluate(element => element.getBoundingClientRect().bottom + window.scrollY);
+  expect(footerTop).toBeGreaterThanOrEqual(contentBottom);
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
 });

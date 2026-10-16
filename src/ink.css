@@ -354,7 +354,7 @@ body:has(.about-main)::before, body.page-about::before {
 .about-aurora::before { top: -22vmax; left: 50%; margin-left: -26vmax; background: radial-gradient(circle, rgba(223, 248, 227, 0.08), transparent 65%); animation: auroraDrift 18s ease-in-out infinite alternate; }
 .about-aurora::after { top: 30vh; right: -20vmax; background: radial-gradient(circle, rgba(240, 199, 164, 0.06), transparent 65%); animation: auroraDrift 22s ease-in-out infinite alternate-reverse; }
 @keyframes auroraDrift { from { transform: translate3d(-4%, -2%, 0) scale(1); } to { transform: translate3d(4%, 3%, 0) scale(1.08); } }
-.about-main { position: relative; z-index: 5; max-width: 700px; margin: 0 auto; padding: calc(118px + env(safe-area-inset-top)) 22px 140px; }
+.about-main { position: relative; z-index: 5; max-width: 700px; margin: 0 auto; padding: calc(118px + env(safe-area-inset-top)) 22px 64px; }
 .about-main ::selection { background: rgba(223, 248, 227, 0.22); color: var(--text); }
 .about-hero { margin: 0; }
 /* Hero entrance: container stays put, children cascade in on load */
@@ -640,26 +640,33 @@ body:has(.about-main)::before, body.page-about::before {
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 7px;
   margin: 0;
-  padding: 16px 18px 0;
+  padding: 16px 18px 12px;
 }
-.flow-steps::before {
+.flow-steps::before, .flow-steps::after {
   position: absolute;
-  top: 34px;
-  right: 44px;
-  left: 44px;
+  right: 18px;
+  bottom: 3px;
+  left: 18px;
   height: 1px;
   content: "";
-  background: linear-gradient(90deg, rgba(223, 248, 227, 0.28), rgba(223, 248, 227, 0.08));
+}
+.flow-steps::before { background: linear-gradient(90deg, rgba(223, 248, 227, 0.28), rgba(223, 248, 227, 0.08)); }
+.flow-steps::after {
+  background: linear-gradient(90deg, var(--accent), rgba(240, 199, 164, 0.82));
+  box-shadow: 0 0 8px rgba(223, 248, 227, 0.22);
+  transform: scaleX(var(--step-progress, 0));
+  transform-origin: left center;
+  transition: transform 420ms cubic-bezier(0.2, 0.75, 0.25, 1);
 }
 .flow-step {
   position: relative;
   z-index: 1;
-  display: flex;
+  display: grid;
   min-width: 0;
   min-height: 56px;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
+  align-content: center;
+  justify-items: center;
+  gap: 5px;
   padding: 0 8px;
   border: 1px solid transparent;
   border-radius: 12px;
@@ -672,7 +679,7 @@ body:has(.about-main)::before, body.page-about::before {
   cursor: pointer;
   transition: color 180ms ease, border-color 180ms ease, background 180ms ease, transform 180ms ease;
 }
-.flow-step span { color: var(--muted); font-size: 0.54rem; }
+.flow-step span { color: var(--muted); font-size: 0.54rem; line-height: 1; }
 .flow-step:hover { color: var(--text); border-color: var(--line); transform: translateY(-2px); }
 .flow-step[aria-current="step"] {
   color: var(--accent);
@@ -684,10 +691,10 @@ body:has(.about-main)::before, body.page-about::before {
 .flow-step:focus-visible, .flow-nav-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .flow-reading {
   display: grid;
-  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: center;
   gap: 10px 24px;
-  min-height: 142px;
+  min-height: 154px;
   margin: 4px 18px 0;
   padding: 20px 22px;
   border: 1px solid var(--line-soft);
@@ -696,7 +703,7 @@ body:has(.about-main)::before, body.page-about::before {
 }
 .flow-reading-top { display: grid; gap: 9px; }
 .flow-reading-top p, .flow-reading > p { margin: 0; }
-.pipeline-eyebrow { color: var(--accent) !important; font-family: var(--mono) !important; font-size: 0.6rem !important; letter-spacing: 0.14em; text-transform: uppercase; }
+.pipeline-eyebrow { color: var(--accent) !important; font-family: var(--mono) !important; font-size: 0.6rem !important; letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap; }
 .pipeline-eyebrow span { color: var(--muted); }
 .flow-reading h3 { margin: 0; color: var(--text); font-family: var(--mono); font-size: clamp(1rem, 0.92rem + 0.5vw, 1.2rem); font-weight: 400; }
 .flow-reading > p { color: var(--muted-strong); font-size: 0.9rem; line-height: 1.7; }
@@ -722,7 +729,6 @@ body:has(.about-main)::before, body.page-about::before {
 .flow-nav-button:disabled { opacity: 0.38; cursor: default; }
 .flow-next { color: #080909; border-color: transparent; background: var(--accent); font-weight: 700; }
 .flow-next:hover:not(:disabled) { color: #080909; background: #edfff0; }
-.flow-nudge { color: var(--muted); font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.05em; text-align: center; }
 .lab-hint { display: flex; align-items: center; gap: 10px; color: var(--muted) !important; font-family: var(--mono) !important; font-size: 0.72rem !important; letter-spacing: 0.04em; }
 .lab-hint span { color: var(--accent); font-size: 1.1rem; }
 .live-lab-figure { overflow: hidden; padding: 12px; }
@@ -861,7 +867,15 @@ body.page-about .cta-band, body.page-about .hero-eyebrow {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-body.page-about .about-main section { content-visibility: auto; contain-intrinsic-size: auto 420px; }
+body.page-about .site-footer {
+  position: static;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  justify-content: space-between;
+  margin: 0 22px 24px;
+  pointer-events: auto;
+}
 /* Reveal on scroll */
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s ease, transform 0.8s var(--ease-out); }
 .reveal.is-in { opacity: 1; transform: none; }
@@ -913,7 +927,7 @@ body.page-about .about-main section { content-visibility: auto; contain-intrinsi
   .dial-reset { min-width: 132px; height: 36px; margin-left: 0; padding: 0 13px; border-radius: 10px; }
   .site-footer { right: 12px; left: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); }
   .foot-pill { padding: 8px 14px; font-size: 0.52rem; }
-  .about-main { padding-top: calc(86px + env(safe-area-inset-top)); padding-bottom: 110px; }
+  .about-main { padding-top: calc(86px + env(safe-area-inset-top)); padding-bottom: 44px; }
   .about-main h1 { font-size: clamp(1.5rem, 1.25rem + 3.4vw, 1.85rem); }
   .about-main h2 { font-size: 1.15rem; }
   .use-grid { grid-template-columns: minmax(0, 1fr); }
@@ -930,17 +944,16 @@ body.page-about .about-main section { content-visibility: auto; contain-intrinsi
   .flow-art { min-height: 175px; }
   .flow-art svg { height: 175px; }
   .flow-art-caption { right: 11px; bottom: 9px; font-size: 0.48rem; }
-  .flow-steps { gap: 3px; padding: 12px 9px 0; }
-  .flow-steps::before { top: 36px; right: 24px; left: 24px; }
-  .flow-step { display: grid; justify-items: center; align-content: center; min-height: 48px; gap: 2px; padding: 0 3px; border-radius: 9px; font-size: 0.55rem; letter-spacing: 0; line-height: 1.1; }
+  .flow-steps { gap: 3px; padding: 12px 9px 12px; }
+  .flow-steps::before, .flow-steps::after { right: 9px; bottom: 3px; left: 9px; }
+  .flow-step { min-height: 56px; gap: 4px; padding: 0 2px; border-radius: 9px; font-size: 0.55rem; letter-spacing: 0; line-height: 1.1; white-space: nowrap; }
   .flow-step span { font-size: 0.46rem; }
   .flow-reading { grid-template-columns: 1fr; gap: 8px; min-height: 0; margin: 4px 9px 0; padding: 15px; }
-  .flow-reading-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .flow-reading-top { display: grid; align-items: start; justify-content: initial; gap: 7px; }
   .flow-reading h3 { font-size: 1rem; }
   .flow-reading > p { font-size: 0.84rem; }
   .flow-nav { gap: 6px; padding: 12px 9px 11px; }
   .flow-nav-button { min-height: 36px; gap: 6px; padding: 0 9px; font-size: 0.53rem; }
-  .flow-nudge { max-width: 90px; font-size: 0.5rem; line-height: 1.4; }
   .fluid-preview-frame { height: 470px; }
   /* SVG labels are authored for 560 units wide; scale type up as the diagram shrinks. */
   .diagram-label { font-size: 15px; }
@@ -975,6 +988,7 @@ body.page-about .about-main section { content-visibility: auto; contain-intrinsi
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .flow-steps::after { transition: none; }
   .flow-art .art-current, .flow-art .art-current-fine { animation: none; }
   .flow-art .art-input, .flow-art .art-vorticity, .flow-art .art-pressure, .flow-art .art-advection, .flow-art .art-display { transition: none; transform: none; }
   .experience::before {

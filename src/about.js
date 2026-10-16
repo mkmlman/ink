@@ -58,12 +58,14 @@ try {
   var previous = document.querySelector('[data-flow-prev]');
   var next = document.querySelector('[data-flow-next]');
   var nextLabel = next.querySelector('span');
+  var reading = document.getElementById('pipeline-explanation');
   var activeIndex = 0;
 
   var selectStage = function (index, focus) {
     activeIndex = (index + stages.length) % stages.length;
     var stage = stages[activeIndex];
     guide.setAttribute('data-stage', stage.id);
+    guide.style.setProperty('--step-progress', activeIndex / (stages.length - 1));
     stageButtons.forEach(function (button, buttonIndex) {
       if (buttonIndex === activeIndex) button.setAttribute('aria-current', 'step');
       else button.removeAttribute('aria-current');
@@ -73,6 +75,13 @@ try {
     detail.textContent = stage.detail;
     previous.disabled = activeIndex === 0;
     nextLabel.textContent = activeIndex === stages.length - 1 ? 'Start again' : 'Next step';
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches && reading.animate) {
+      reading.getAnimations().forEach(function (animation) { animation.cancel(); });
+      reading.animate(
+        [{ opacity: 0.55, transform: 'translateY(5px)' }, { opacity: 1, transform: 'translateY(0)' }],
+        { duration: 260, easing: 'cubic-bezier(0.2, 0.75, 0.25, 1)' }
+      );
+    }
     if (focus) stageButtons[activeIndex].focus();
   };
 
