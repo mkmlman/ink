@@ -17,12 +17,14 @@
     "src/dials.js",
     "src/angry-dials.js",
     "src/about.js",
+    "src/preview.js",
     "src/*.css"
   ],
   "files": [
     "src",
     "index.html",
     "about.html",
+    "fluid-preview.html",
     "404.html",
     "robots.txt",
     "sitemap.xml",
@@ -31,7 +33,7 @@
   ],
   "scripts": {
     "dev": "python3 -m http.server 8080",
-    "check": "node --check src/fluid.js && node --check src/dials.js && node --check src/angry-dials.js && node --check src/about.js",
+    "check": "node --check src/fluid.js && node --check src/dials.js && node --check src/angry-dials.js && node --check src/about.js && node --check src/preview.js",
     "test": "playwright test"
   },
   "repository": {

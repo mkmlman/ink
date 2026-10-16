@@ -95,6 +95,14 @@ inkDials.reset();
 | `SIM_RESOLUTION` / `DYE_RESOLUTION` | `256` / `1024` (`512` on mobile) | re-inits buffers |
 | `BACK_COLOR` | `{r:10,g:10,b:10}` | dark paper |
 
+`setConfig` accepts only documented keys. Numeric settings must be finite and stay
+within the matching control range; resolution settings must be positive integers
+within the device's WebGL texture limit. Feature toggles require booleans, and
+`BACK_COLOR` accepts RGB channels from 0 to 255. When passing an object, every
+entry is validated before any setting changes. Invalid values throw a `TypeError`
+or `RangeError`. `inkFluid.config` is a frozen snapshot; use `setConfig` to change
+settings.
+
 ## Behavior notes
 
 - DPR is capped (`1.5x` mobile, `2x` desktop); loop skips all GL work when the
@@ -113,8 +121,8 @@ inkDials.reset();
   which lowers simulation resolution and disables bloom/sunrays to save battery.
 - Ambient motion defaults to a subtle idle trickle; set it to `0` for a still canvas.
 - `Space` bursts when focus is outside controls; `P` toggles pause except while typing. `?` (or `H`) opens the quick help.
-- Missing WebGL hides the canvas with a console warning instead of throwing;
-  a lost GL context pauses, and restores via reload.
+- WebGL startup failures are reported as unavailable instead of leaving a blank
+  canvas that appears ready; a lost GL context pauses, and restores via reload.
 
 ## Troubleshooting
 
@@ -132,7 +140,7 @@ npm install
 npx playwright install chromium
 npm run dev
 npm run check
-npm test # browser regressions for touch input, WebGL failures, and help dialog fallback
+npm test # Playwright coverage for interactions, config validation, resizing, and motion preferences
 ```
 
 MIT

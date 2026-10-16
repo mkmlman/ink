@@ -210,6 +210,9 @@ function supportRenderTextureFormat (gl, internalFormat, format, type) {
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
     let status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.deleteFramebuffer(fbo);
+    gl.deleteTexture(texture);
     return status == gl.FRAMEBUFFER_COMPLETE;
 }
 
@@ -882,6 +885,9 @@ function initFramebuffers () {
     else
         velocity = resizeDoubleFBO(velocity, simRes.width, simRes.height, rg.internalFormat, rg.format, texType, filtering);
 
+    deleteFBO(divergence);
+    deleteFBO(curl);
+    deleteDoubleFBO(pressure);
     divergence = createFBO      (simRes.width, simRes.height, r.internalFormat, r.format, texType, gl.NEAREST);
     curl       = createFBO      (simRes.width, simRes.height, r.internalFormat, r.format, texType, gl.NEAREST);
     pressure   = createDoubleFBO(simRes.width, simRes.height, r.internalFormat, r.format, texType, gl.NEAREST);
@@ -891,6 +897,8 @@ function initFramebuffers () {
 }
 
 function initBloomFramebuffers () {
+    deleteFBO(bloom);
+    bloomFramebuffers.forEach(deleteFBO);
     let res = getResolution(config.BLOOM_RESOLUTION);
 
     const texType = ext.halfFloatTexType;
@@ -913,6 +921,8 @@ function initBloomFramebuffers () {
 }
 
 function initSunraysFramebuffers () {
+    deleteFBO(sunrays);
+    deleteFBO(sunraysTemp);
     let res = getResolution(config.SUNRAYS_RESOLUTION);
 
     const texType = ext.halfFloatTexType;
@@ -957,6 +967,18 @@ function createFBO (w, h, internalFormat, format, type, param) {
     };
 }
 
+function deleteFBO (target) {
+    if (!target) return;
+    if (target.fbo) gl.deleteFramebuffer(target.fbo);
+    if (target.texture) gl.deleteTexture(target.texture);
+}
+
+function deleteDoubleFBO (target) {
+    if (!target) return;
+    deleteFBO(target.read);
+    deleteFBO(target.write);
+}
+
 function createDoubleFBO (w, h, internalFormat, format, type, param) {
     let fbo1 = createFBO(w, h, internalFormat, format, type, param);
     let fbo2 = createFBO(w, h, internalFormat, format, type, param);
@@ -991,6 +1013,7 @@ function resizeFBO (target, w, h, internalFormat, format, type, param) {
     copyProgram.bind();
     gl.uniform1i(copyProgram.uniforms.uTexture, target.attach(0));
     blit(newFBO);
+    deleteFBO(target);
     return newFBO;
 }
 
@@ -998,6 +1021,7 @@ function resizeDoubleFBO (target, w, h, internalFormat, format, type, param) {
     if (target.width == w && target.height == h)
         return target;
     target.read = resizeFBO(target.read, w, h, internalFormat, format, type, param);
+    deleteFBO(target.write);
     target.write = createFBO(w, h, internalFormat, format, type, param);
     target.width = w;
     target.height = h;
@@ -1731,14 +1755,79 @@ function hashCode (s) {
     return hash;
 };
 // public control surface
-function applySingleConfig (key, value) {
-    if (key === 'CURL') { config.CURL = value; }
-    else if (key === 'PRESSURE_DISSIPATION') { config.PRESSURE_DISSIPATION = value; config.PRESSURE = Math.max(0, Math.min(1, 1 - value * 2)); }
-    else if (key === 'VELOCITY_DISSIPATION') { config.VELOCITY_DISSIPATION = value * 2.5; }
-    else if (key === 'DENSITY_SLIDER') { config.DENSITY_DISSIPATION = 2.8 - value * 0.53; }
-    else config[key] = value;
-    if (key === 'BLOOM' || key === 'SHADING' || key === 'SUNRAYS') updateKeywords();
-    if (key === 'SIM_RESOLUTION' || key === 'DYE_RESOLUTION') initFramebuffers();
+const CONFIG_RULES = {
+    CURL: { min: 0, max: 8 },
+    PRESSURE_DISSIPATION: { min: 0, max: 0.2 },
+    VELOCITY_DISSIPATION: { min: 0, max: 1 },
+    DENSITY_SLIDER: { min: 0, max: 5 },
+    PRESSURE_ITERATIONS: { min: 4, max: 32, integer: true },
+    SPLAT_RADIUS: { min: 0.1, max: 0.8 },
+    SPLAT_FORCE: { min: 2000, max: 20000 },
+    BRIGHTNESS: { min: 0, max: 5 },
+    IDLE_INJECTION: { min: 0, max: 2 },
+    BLOOM_INTENSITY: { min: 0, max: 1.2 },
+    SIM_RESOLUTION: { resolution: true },
+    DYE_RESOLUTION: { resolution: true },
+    BLOOM: { boolean: true },
+    SHADING: { boolean: true },
+    SUNRAYS: { boolean: true },
+    BACK_COLOR: { color: true }
+};
+
+function validateConfigValue (key, value) {
+    const rule = CONFIG_RULES[key];
+    if (!rule) throw new RangeError('Unknown fluid config key: ' + key);
+    if (rule.boolean) {
+        if (typeof value !== 'boolean') throw new TypeError(key + ' must be a boolean');
+        return value;
+    }
+    if (rule.color) {
+        if (!value || typeof value !== 'object' || Array.isArray(value))
+            throw new TypeError(key + ' must be an RGB object');
+        const color = {};
+        for (const channel of ['r', 'g', 'b']) {
+            if (typeof value[channel] !== 'number' || !Number.isFinite(value[channel]) || value[channel] < 0 || value[channel] > 255)
+                throw new RangeError(key + '.' + channel + ' must be between 0 and 255');
+            color[channel] = value[channel];
+        }
+        return color;
+    }
+    if (typeof value !== 'number' || !Number.isFinite(value))
+        throw new TypeError(key + ' must be a finite number');
+    if (rule.resolution) {
+        if (!Number.isInteger(value) || value < 1)
+            throw new RangeError(key + ' must be a positive integer');
+        const size = getResolution(value);
+        const maximum = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+        if (size.width > maximum || size.height > maximum)
+            throw new RangeError(key + ' exceeds this device\'s texture limit');
+        return value;
+    }
+    if (value < rule.min || value > rule.max || (rule.integer && !Number.isInteger(value)))
+        throw new RangeError(key + ' is outside its supported range');
+    return value;
+}
+
+function applyConfigEntries (entries) {
+    const updates = entries.map(([key, value]) => [key, validateConfigValue(key, value)]);
+    let refreshKeywords = false;
+    let refreshFramebuffers = false;
+    for (const [key, value] of updates) {
+        if (key === 'PRESSURE_DISSIPATION') {
+            config.PRESSURE_DISSIPATION = value;
+            config.PRESSURE = Math.max(0, Math.min(1, 1 - value * 2));
+        } else if (key === 'VELOCITY_DISSIPATION') {
+            config.VELOCITY_DISSIPATION = value * 2.5;
+        } else if (key === 'DENSITY_SLIDER') {
+            config.DENSITY_DISSIPATION = 2.8 - value * 0.53;
+        } else {
+            config[key] = value;
+        }
+        if (key === 'BLOOM' || key === 'SHADING' || key === 'SUNRAYS') refreshKeywords = true;
+        if (key === 'SIM_RESOLUTION' || key === 'DYE_RESOLUTION') refreshFramebuffers = true;
+    }
+    if (refreshKeywords) updateKeywords();
+    if (refreshFramebuffers) initFramebuffers();
 }
 const inkFluid = {
   available: true,
@@ -1754,10 +1843,12 @@ const inkFluid = {
   pause: function(){ setPaused(true); },
   resume: function(){ setPaused(false); },
   get paused(){ return !!config.PAUSED; },
-  get config(){ return config; },
+  get config(){ return Object.freeze({ ...config, BACK_COLOR: Object.freeze({ ...config.BACK_COLOR }) }); },
   setConfig: function(key, value){
-    if (key && typeof key === 'object') { Object.keys(key).forEach(k => applySingleConfig(k, key[k])); return; }
-    applySingleConfig(key, value);
+    if (typeof key === 'string') { applyConfigEntries([[key, value]]); return; }
+    if (!key || typeof key !== 'object' || Array.isArray(key))
+      throw new TypeError('setConfig expects a key and value or a config object');
+    applyConfigEntries(Object.entries(key));
   }
 };
 window.inkFluid = inkFluid;

@@ -51,7 +51,7 @@
     <header class="about-hero reveal">
       <p class="hero-eyebrow"><span class="hero-drop" aria-hidden="true"></span>ink · documentation</p>
       <h1 id="about-title">How ink works</h1>
-      <p class="lede">ink is a real-time 2D fluid simulation rendered in WebGL. Pointer input writes velocity and dye into the simulation; a solver advances both every frame while dissipation fades them out. This page documents the pipeline, the inputs, and every setting.</p>
+      <p class="lede">Move through the color, then peek beneath the surface. Follow one frame from brush input to light, and tune the live simulation as you go.</p>
       <ul class="hero-meta" aria-label="About this page">
         <li>WebGL2 / WebGL1 fallback</li>
         <li>no backend</li>
@@ -59,7 +59,7 @@
       </ul>
     </header>
 
-    <details class="toc reveal" open>
+    <details class="toc reveal">
       <summary>Table of contents</summary>
       <ul>
         <li><a href="#about-use">Usage</a></li>
@@ -80,7 +80,7 @@
           <span class="use-step" aria-hidden="true">01</span>
           <svg class="use-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17c3-1 4-6 7-6s3 4 5 4 4-3 6-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="3" cy="17" r="1.6" fill="currentColor"/></svg>
           <h3>Paint</h3>
-          <p>Move your cursor over the canvas to paint without clicking. Pointer velocity sets the force of each splat: slow movement makes wide ribbons, fast movement throws dye further.</p>
+          <p>Move to paint without clicking. Faster movement gives each splat a stronger push; Brush radius sets the width of the mark.</p>
         </article>
         <article class="use-card">
           <span class="use-step" aria-hidden="true">02</span>
@@ -100,21 +100,22 @@
 
     <section class="reveal" aria-labelledby="about-loop">
       <h2 id="about-loop">Simulation loop <a class="anchor" href="#about-loop" aria-label="Link to this section">#</a></h2>
-      <p>Each frame advances the simulation through the following passes, in order:</p>
-      <figure class="figure">
-        <div class="pipeline" aria-hidden="true">
-          <span class="pipe-chip" style="--d:0s">splat</span><span class="pipe-arrow">→</span><span class="pipe-chip" style="--d:.4s">vorticity</span><span class="pipe-arrow">→</span><span class="pipe-chip" style="--d:.8s">pressure</span><span class="pipe-arrow">→</span><span class="pipe-chip" style="--d:1.2s">advect</span><span class="pipe-arrow">→</span><span class="pipe-chip" style="--d:1.6s">display</span>
+      <p>Follow a single frame. Choose a stage to see what changes in the fluid.</p>
+      <figure class="figure pipeline-figure">
+        <ol class="pipeline" aria-label="Simulation stages">
+          <li><button type="button" class="pipeline-stage" data-stage="input" aria-pressed="true"><span>01</span>Input</button></li>
+          <li><button type="button" class="pipeline-stage" data-stage="vorticity" aria-pressed="false"><span>02</span>Vorticity</button></li>
+          <li><button type="button" class="pipeline-stage" data-stage="pressure" aria-label="Pressure projection" aria-pressed="false"><span>03</span>Pressure</button></li>
+          <li><button type="button" class="pipeline-stage" data-stage="advection" aria-pressed="false"><span>04</span>Advection</button></li>
+          <li><button type="button" class="pipeline-stage" data-stage="display" aria-pressed="false"><span>05</span>Display</button></li>
+        </ol>
+        <div class="pipeline-explanation" id="pipeline-explanation" aria-live="polite" aria-atomic="true">
+          <p class="pipeline-eyebrow">01 / Input</p>
+          <p>Pointer movement adds dye at the brush and pushes the velocity field in the direction you move.</p>
         </div>
-        <figcaption><span class="fig-no">Figure 1</span><span class="fig-title">One simulation frame</span></figcaption>
+        <figcaption><span class="fig-no">One frame, five stages</span><span class="fig-title">Select a stage. The same sequence drives the live canvas.</span></figcaption>
       </figure>
-      <ol class="steps">
-        <li><strong>Splat.</strong> Pointer deltas are written into the velocity and dye fields, scaled by brush force and radius.</li>
-        <li><strong>Vorticity.</strong> Curl is computed from the velocity field and fed back in, scaled by Swirl strength. This is what forms eddies.</li>
-        <li><strong>Pressure solve.</strong> Divergence is computed, then a Jacobi solver (Solver steps iterations) derives the pressure field, which is subtracted from velocity to keep the flow divergence-free.</li>
-        <li><strong>Advect.</strong> Velocity and dye move along the velocity field. Motion fade and ink persistence remove energy here.</li>
-        <li><strong>Display.</strong> Bloom, sunrays, and dithering composite over the dye field for output.</li>
-      </ol>
-      <p>Reloading the page resets the simulation. Dial positions are the only persisted state.</p>
+      <p>The solver runs vorticity, pressure projection, and advection before drawing the finished frame. Reloading resets the flow; your dial settings stay in this browser.</p>
     </section>
 
     <section class="reveal" aria-labelledby="about-motion">
@@ -122,9 +123,7 @@
       <p>Each pointer movement writes one splat: a velocity impulse along the direction of travel, plus dye at the pointer position. Radius and force come from the Brush settings. Stroke color is picked at random for every stroke.</p>
       <figure class="figure">
         <svg class="diagram" viewBox="0 0 560 200" role="img" aria-label="Diagram of a brush stamp: a circle for the brush radius with an arrow for the push direction">
-          <circle cx="280" cy="100" r="62" fill="none" stroke="#dff8e3" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.8">
-            <animate attributeName="r" values="62;70;62" dur="3s" repeatCount="indefinite"/>
-          </circle>
+          <circle cx="280" cy="100" r="62" fill="none" stroke="#dff8e3" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.8"/>
           <defs>
             <marker id="pushArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M0,1 L9,5 L0,9 z" fill="#f0c7a4"/>
@@ -132,10 +131,6 @@
           </defs>
           <circle cx="280" cy="100" r="4" fill="#dff8e3"/>
           <line x1="280" y1="100" x2="392" y2="52" stroke="#f0c7a4" stroke-width="2" marker-end="url(#pushArrow)"/>
-          <circle r="5" fill="#f0c7a4">
-            <animateMotion dur="1.8s" repeatCount="indefinite" path="M280,100 L392,52"/>
-            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.15;.85;1" dur="1.8s" repeatCount="indefinite"/>
-          </circle>
           <text x="280" y="182" text-anchor="middle" class="diagram-label">brush radius</text>
           <text x="398" y="46" text-anchor="middle" class="diagram-label">your push</text>
           <text x="280" y="124" text-anchor="middle" class="diagram-label">dab of color</text>
@@ -149,62 +144,40 @@
       <h2 id="about-fade">Dissipation <a class="anchor" href="#about-fade" aria-label="Link to this section">#</a></h2>
       <p>Advection applies dissipation every frame, so dye and velocity decay toward zero. The default ink persistence keeps the opening colors visible longer while they flow; lower settings clear sooner, and higher settings leave longer trails. Ink persistence sets density dissipation as <code>2.8 − v × 0.53</code>; motion fade controls velocity dissipation as <code>v × 2.5</code>.</p>
       <figure class="figure">
-        <svg class="diagram graph" viewBox="0 0 560 240" role="img" aria-label="Graph of splash brightness over twenty seconds for default and maximum persistence" xmlns:xlink="http://www.w3.org/1999/xlink">
-          <line x1="44" y1="10" x2="44" y2="190" stroke="rgba(237,244,239,.18)"/>
-          <line x1="44" y1="190" x2="544" y2="190" stroke="rgba(237,244,239,.18)"/>
-          <line x1="44" y1="145" x2="544" y2="145" stroke="rgba(237,244,239,.07)"/>
-          <line x1="44" y1="100" x2="544" y2="100" stroke="rgba(237,244,239,.07)"/>
-          <line x1="44" y1="55" x2="544" y2="55" stroke="rgba(237,244,239,.07)"/>
-          <path id="curveDefault" class="graph-draw" pathLength="100" d="M44,14 C82,76 128,108 196,136 C260,163 337,182 420,188 C470,190 510,190 544,190" fill="none" stroke="#6b706c" stroke-width="1.5" opacity="0.85"/>
-          <path id="curveMax" class="graph-draw graph-max" pathLength="100" d="M44,14 C120,80 180,130 260,160 C340,182 430,188 544,190" fill="none" stroke="#dff8e3" stroke-width="2.5"/>
-          <circle r="4.5" fill="#dff8e3">
-            <animateMotion dur="12s" repeatCount="indefinite"><mpath href="#curveMax" xlink:href="#curveMax"/></animateMotion>
-          </circle>
-          <circle cx="44" cy="14" r="3.5" fill="#dff8e3"/>
-          <text x="36" y="16" text-anchor="end" class="diagram-tick">100</text>
-          <text x="36" y="104" text-anchor="end" class="diagram-tick">50</text>
-          <text x="44" y="208" text-anchor="middle" class="diagram-tick">0s</text>
-          <text x="294" y="208" text-anchor="middle" class="diagram-tick">10s</text>
-          <text x="544" y="208" text-anchor="middle" class="diagram-tick">20s</text>
-          <circle cx="222" cy="30" r="3" fill="#6b706c"/><text x="232" y="34" class="diagram-legend">default</text>
-          <circle cx="222" cy="52" r="3" fill="#dff8e3"/><text x="232" y="56" class="diagram-legend">max persistence</text>
+        <svg class="diagram graph" viewBox="0 0 560 250" role="img" aria-labelledby="decay-chart-title decay-chart-description">
+          <title id="decay-chart-title">Modeled dye remaining after one splat</title>
+          <desc id="decay-chart-description">A dye-only estimate at 60 frames per second. It excludes advection, new input, and glow.</desc>
+          <line x1="44" y1="12" x2="44" y2="190" stroke="rgba(237,244,239,.2)"/>
+          <line x1="44" y1="190" x2="544" y2="190" stroke="rgba(237,244,239,.2)"/>
+          <line x1="44" y1="101" x2="544" y2="101" stroke="rgba(237,244,239,.08)"/>
+          <line x1="44" y1="56" x2="544" y2="56" stroke="rgba(237,244,239,.08)"/>
+          <path id="curveDefault" class="graph-curve graph-default" d="M44,12 L69,72.3 L94,112.2 L119,138.5 L144,156 L169,167.5 L194,175.1 L219,180.2 L244,183.5 L269,185.7 L294,187.2 L319,188.1 L344,188.8 L369,189.2 L394,189.5 L419,189.6 L444,189.8 L469,189.8 L494,189.9 L519,189.9 L544,190" fill="none" stroke="#8b918c" stroke-width="2"/>
+          <path id="curveMax" class="graph-curve graph-max" d="M44,12 L69,36.8 L94,58.1 L119,76.4 L144,92.2 L169,105.8 L194,117.5 L219,127.6 L244,136.3 L269,143.8 L294,150.2 L319,155.7 L344,160.5 L369,164.6 L394,168.1 L419,171.2 L444,173.8 L469,176.1 L494,178 L519,179.7 L544,181.1" fill="none" stroke="#dff8e3" stroke-width="2.5"/>
+          <text x="36" y="16" text-anchor="end" class="diagram-tick">100%</text>
+          <text x="36" y="105" text-anchor="end" class="diagram-tick">50%</text>
+          <text x="36" y="194" text-anchor="end" class="diagram-tick">0%</text>
+          <text x="44" y="210" text-anchor="middle" class="diagram-tick">0s</text>
+          <text x="169" y="210" text-anchor="middle" class="diagram-tick">5s</text>
+          <text x="294" y="210" text-anchor="middle" class="diagram-tick">10s</text>
+          <text x="419" y="210" text-anchor="middle" class="diagram-tick">15s</text>
+          <text x="544" y="210" text-anchor="middle" class="diagram-tick">20s</text>
+          <text x="294" y="239" text-anchor="middle" class="diagram-tick">Time after splat</text>
+          <circle cx="128" cy="28" r="3" fill="#8b918c"/><text x="138" y="32" class="diagram-legend">Default persistence</text>
+          <circle cx="322" cy="28" r="3" fill="#dff8e3"/><text x="332" y="32" class="diagram-legend">Maximum persistence</text>
         </svg>
-        <figcaption><span class="fig-no">Figure 3</span><span class="fig-title">Dye brightness over 20 seconds</span></figcaption>
-        <div class="gauge" role="img" aria-label="Ink level draining over time">
-          <span class="gauge-label">ink level</span>
-          <span class="gauge-track"><span class="gauge-fill"></span></span>
-        </div>
+        <figcaption><span class="fig-no">A model, not a benchmark</span><span class="fig-title">Dye-only retention at 60 frames per second</span></figcaption>
       </figure>
       <p>Dissipation is what clears the canvas for the next stroke.</p>
     </section>
 
     <section class="reveal" aria-labelledby="about-glow">
       <h2 id="about-glow">Post-processing <a class="anchor" href="#about-glow" aria-label="Link to this section">#</a></h2>
-      <p>The solver output is matte. Light is added after the fact: Glow sets bloom intensity over bright dye, a sunrays pass adds directional shafts, and a dither texture (<code>bloom-dither.png</code>) breaks up gradient banding.</p>
-      <figure class="figure glow-figure">
-        <div class="glow-demo" id="glow-demo" tabindex="0" role="group" aria-label="Interactive light-pass demo. Drag across the pool, or focus it and use the arrow keys to move the light." aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight">
-          <span class="glow-orb glow-orb-a" aria-hidden="true"></span>
-          <span class="glow-orb glow-orb-b" aria-hidden="true"></span>
-          <span class="glow-shaft" aria-hidden="true"></span>
-          <span class="glow-grain" aria-hidden="true"></span>
-          <span class="glow-hint" aria-hidden="true">drag · arrow keys</span>
-        </div>
-        <figcaption><span class="fig-no">Figure 4</span><span class="fig-title">Post-processing layers. Drag to move the light.</span></figcaption>
-        <div class="glow-controls">
-          <label class="glow-slider" for="glow-amount">
-            <span class="glow-slider-head"><span>glow</span><output id="glow-value" for="glow-amount">0.70</output></span>
-            <input type="range" id="glow-amount" min="0" max="120" step="5" value="70">
-          </label>
-          <div class="glow-toggles" role="group" aria-label="Light layers">
-            <button class="glow-toggle" id="glow-shafts" type="button" aria-pressed="true"><span class="swatch swatch-shaft" aria-hidden="true"></span>shafts</button>
-            <button class="glow-toggle" id="glow-grain-btn" type="button" aria-pressed="true"><span class="swatch swatch-grain" aria-hidden="true"></span>grain</button>
-          </div>
-        </div>
-        <ul class="glow-key" aria-label="Light layers">
-          <li><span class="swatch swatch-bloom" aria-hidden="true"></span>bloom — intensity-scaled blur of bright dye</li>
-        </ul>
+      <p>The solver output is matte. Bloom adds a soft halo around bright dye, sunrays add light shafts, and the dither texture breaks up gradient banding. Try the actual simulation below, not a separate visual mock-up.</p>
+      <figure class="figure live-lab-figure">
+        <iframe id="fluid-preview-frame" class="fluid-preview-frame" src="fluid-preview.html" title="Interactive live ink simulation with brush, persistence, glow, and sunray controls" loading="lazy"></iframe>
+        <figcaption><span class="fig-no">Figure 4 / Live lab</span><span class="fig-title">This is the same WebGL simulation used on the canvas. Move inside the field, then tune its controls.</span></figcaption>
       </figure>
-      <p>Setting Glow to 0 removes the bloom contribution.</p>
+      <p>The controls are local to this preview. They do not change your saved settings on the canvas page.</p>
     </section>
 
     <section class="reveal" aria-labelledby="about-dials">

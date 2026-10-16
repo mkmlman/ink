@@ -1,0 +1,157 @@
+@font-face {
+  font-family: 'Departure Mono';
+  src: url('fonts/DepartureMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  --bg: #080909;
+  --text: #f1f3f0;
+  --muted: #a4aaa5;
+  --line: rgba(237, 244, 239, 0.18);
+  --accent: #dff8e3;
+  --mono: 'Departure Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { width: 100%; height: 100%; margin: 0; }
+body {
+  position: relative;
+  overflow: hidden;
+  color: var(--text);
+  background: var(--bg);
+  font-family: var(--sans);
+}
+button, input { font: inherit; }
+.fluid-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+}
+@supports (height: 100dvh) {
+  .fluid-canvas { height: 100dvh; }
+}
+.preview-intro {
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  z-index: 1;
+  max-width: min(440px, calc(100% - 40px));
+  text-shadow: 0 2px 18px #000;
+  pointer-events: none;
+}
+.preview-kicker, .preview-controls legend {
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+.preview-intro p {
+  margin: 8px 0 0;
+  color: var(--text);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+.preview-controls {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  z-index: 2;
+  display: grid;
+  gap: 12px;
+  width: min(346px, calc(100% - 32px));
+  margin: 0;
+  padding: 15px 17px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  color: var(--text);
+  background: rgba(8, 10, 10, 0.88);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.46), 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+.preview-controls legend { padding: 0 7px; }
+.preview-range {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 6px 12px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.preview-range output { color: var(--text); font-variant-numeric: tabular-nums; }
+.preview-range input {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: ew-resize;
+}
+.preview-range input:focus-visible, .preview-controls button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.preview-toggles, .preview-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.preview-controls button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--muted);
+  background: rgba(237, 244, 239, 0.045);
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 160ms ease, border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+.preview-controls button:hover { color: var(--text); border-color: rgba(223, 248, 227, 0.42); }
+.preview-controls button:active { transform: scale(0.97); }
+.preview-controls button[aria-pressed="true"] {
+  color: var(--accent);
+  border-color: rgba(223, 248, 227, 0.32);
+  background: rgba(223, 248, 227, 0.09);
+}
+.preview-actions button:first-child { color: #080909; border-color: transparent; background: var(--accent); }
+.preview-controls:disabled { opacity: 0.55; }
+.preview-controls:disabled button, .preview-controls:disabled input { cursor: not-allowed; }
+.preview-controls:disabled .preview-actions button:first-child {
+  color: var(--muted);
+  border-color: var(--line);
+  background: rgba(237, 244, 239, 0.045);
+}
+
+@media (max-width: 480px) {
+  .preview-intro { top: 12px; left: 14px; }
+  .preview-controls {
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    width: auto;
+    gap: 7px;
+    padding: 11px 13px 12px;
+    border-radius: 15px;
+  }
+  .preview-range { gap: 2px 10px; font-size: 0.58rem; }
+  .preview-range input { height: 18px; }
+  .preview-toggles, .preview-actions { gap: 6px; }
+  .preview-controls button { min-height: 32px; padding: 0 9px; font-size: 0.55rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preview-controls button { transition: none; }
+}
