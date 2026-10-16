@@ -134,7 +134,7 @@ test('simulation walkthrough guides the reader through the five passes', async (
 
 test('dissipation explorer updates the modeled curve and readout', async ({ page }) => {
   await page.goto(`${home}about.html#about-fade`);
-  const slider = page.getByRole('slider', { name: 'Explore ink persistence' });
+  const slider = page.getByRole('slider', { name: 'Model ink persistence' });
   const curve = page.locator('#curveSelected');
   await expect(slider).toHaveValue('4.5');
   await expect(page.locator('#decay-value')).toHaveText('4.50');

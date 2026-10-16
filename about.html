@@ -202,9 +202,10 @@
           <circle cx="274" cy="28" r="3" fill="#dff8e3"/><text x="284" y="32" class="diagram-legend">Maximum 5.0</text>
         </svg>
         <div class="decay-controls">
-          <div class="decay-control-heading"><label for="decay-persistence">Explore ink persistence</label><output id="decay-value" for="decay-persistence">4.50</output></div>
-          <input id="decay-persistence" type="range" min="0" max="5" step="0.25" value="4.5" aria-describedby="decay-readout">
+          <div class="decay-control-heading"><label for="decay-persistence">Model ink persistence</label><output id="decay-value" for="decay-persistence">4.50</output></div>
+          <input id="decay-persistence" type="range" min="0" max="5" step="0.25" value="4.5" aria-describedby="decay-readout decay-note">
           <p id="decay-readout" aria-live="polite">At 5 seconds, about 13% remains at 60 fps.</p>
+          <p class="decay-note" id="decay-note">This estimate does not change the live simulation.</p>
         </div>
         <figcaption><span class="fig-no">A model, not a benchmark</span><span class="fig-title">Dye-only retention at 60 frames per second</span></figcaption>
       </figure>

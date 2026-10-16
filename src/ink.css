@@ -600,6 +600,7 @@ body:has(.about-main)::before, body.page-about::before {
 .decay-controls input { grid-column: 1 / -1; width: 100%; height: 20px; margin: 0; accent-color: var(--accent); cursor: ew-resize; }
 .decay-controls input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .decay-controls p { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: 0.78rem; line-height: 1.5; }
+.decay-controls .decay-note { padding-top: 7px; border-top: 1px solid var(--line-soft); font-size: 0.68rem; }
 .diagram-label { fill: var(--muted-strong); font-family: var(--mono); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
 .diagram-tick { fill: var(--muted); font-family: var(--mono); font-size: 12px; }
 .diagram-legend { fill: var(--muted-strong); font-family: var(--mono); font-size: 13px; }
