@@ -111,13 +111,25 @@ test('help dialog closes when native dialog methods are unavailable', async ({ p
   await expect(helpButton).toBeFocused();
 });
 
-test('simulation walkthrough updates its accessible explanation', async ({ page }) => {
+test('simulation walkthrough guides the reader through the five passes', async ({ page }) => {
   await page.goto(`${home}about.html`);
-  const projection = page.getByRole('button', { name: 'Pressure projection' });
-  await projection.click();
-  await expect(projection).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('#pipeline-explanation')).toContainText('Jacobi');
-  await expect(page.locator('#pipeline-explanation')).toContainText('divergence');
+  const guide = page.locator('#flow-guide');
+  const pressure = page.getByRole('button', { name: '03 Pressure projection' });
+  await pressure.click();
+  await expect(pressure).toHaveAttribute('aria-current', 'step');
+  await expect(guide).toHaveAttribute('data-stage', 'pressure');
+  await expect(page.locator('#flow-current-step')).toHaveText('STEP 03');
+  await expect(page.locator('#flow-title')).toHaveText('Pressure evens the flow');
+  await expect(page.locator('#flow-detail')).toContainText('Jacobi iterations');
+  await expect(page.locator('.art-pressure')).toHaveCSS('opacity', '1');
+  await page.getByRole('button', { name: 'Next step' }).click();
+  await expect(guide).toHaveAttribute('data-stage', 'advection');
+  await expect(page.locator('#flow-title')).toHaveText('The current carries color');
+  await page.getByRole('button', { name: '← Back' }).click();
+  await expect(guide).toHaveAttribute('data-stage', 'pressure');
+  await pressure.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(guide).toHaveAttribute('data-stage', 'advection');
 });
 
 test('live lab controls change the real simulation configuration', async ({ page }) => {
@@ -222,5 +234,6 @@ test('about page fits narrow viewports without horizontal scrolling', async ({ p
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto(`${home}about.html`);
   await expect(page.getByRole('heading', { name: 'How ink works' })).toBeVisible();
+  await expect(page.locator('.flow-step').first()).toHaveCSS('display', 'grid');
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
 });

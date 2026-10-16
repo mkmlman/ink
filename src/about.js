@@ -43,42 +43,54 @@ try {
   }
 } catch (e) {}
 try {
-  var stages = {
-    input: {
-      label: '01 / Input',
-      detail: 'Pointer movement adds dye at the brush and pushes the velocity field in the direction you move.'
-    },
-    vorticity: {
-      label: '02 / Vorticity',
-      detail: 'The solver measures local curl, then feeds it back into velocity to keep small swirls alive.'
-    },
-    pressure: {
-      label: '03 / Pressure projection',
-      detail: 'It computes divergence, runs Jacobi pressure iterations, then subtracts the pressure gradient to correct the velocity field.'
-    },
-    advection: {
-      label: '04 / Advection',
-      detail: 'Velocity carries both itself and the dye forward. Motion fade and ink persistence control how quickly each field settles.'
-    },
-    display: {
-      label: '05 / Display',
-      detail: 'The dye is drawn to the canvas. Bloom, sunrays, and dithering add the final light and texture.'
-    }
-  };
-  var stageButtons = document.querySelectorAll('.pipeline-stage');
-  var stageLabel = document.querySelector('.pipeline-eyebrow');
-  var stageDetail = document.querySelector('#pipeline-explanation p:last-child');
-  stageButtons.forEach(function (button) {
-    button.addEventListener('click', function () {
-      var stage = stages[button.getAttribute('data-stage')];
-      if (!stage) return;
-      stageButtons.forEach(function (item) {
-        item.setAttribute('aria-pressed', String(item === button));
-      });
-      stageLabel.textContent = stage.label;
-      stageDetail.textContent = stage.detail;
+  var stages = [
+    { id: 'input', title: 'A stroke starts it', detail: 'Your pointer adds dye at the brush and pushes the velocity field in the direction you move.' },
+    { id: 'vorticity', title: 'Swirls come alive', detail: 'The solver measures local curl, then feeds it back into velocity to keep small eddies from fading away.' },
+    { id: 'pressure', title: 'Pressure evens the flow', detail: 'It measures where fluid is bunching up, solves pressure with Jacobi iterations, then corrects velocity to spread the flow out.' },
+    { id: 'advection', title: 'The current carries color', detail: 'Velocity carries both itself and the dye forward. Motion fade and ink persistence set how quickly each field settles.' },
+    { id: 'display', title: 'Light finishes the frame', detail: 'The updated dye is drawn to the canvas. Bloom, sunrays, and dithering add the final glow and texture.' }
+  ];
+  var guide = document.getElementById('flow-guide');
+  var stageButtons = Array.from(document.querySelectorAll('.flow-step'));
+  var currentStep = document.getElementById('flow-current-step');
+  var title = document.getElementById('flow-title');
+  var detail = document.getElementById('flow-detail');
+  var previous = document.querySelector('[data-flow-prev]');
+  var next = document.querySelector('[data-flow-next]');
+  var nextLabel = next.querySelector('span');
+  var activeIndex = 0;
+
+  var selectStage = function (index, focus) {
+    activeIndex = (index + stages.length) % stages.length;
+    var stage = stages[activeIndex];
+    guide.setAttribute('data-stage', stage.id);
+    stageButtons.forEach(function (button, buttonIndex) {
+      if (buttonIndex === activeIndex) button.setAttribute('aria-current', 'step');
+      else button.removeAttribute('aria-current');
     });
+    currentStep.textContent = 'STEP ' + String(activeIndex + 1).padStart(2, '0');
+    title.textContent = stage.title;
+    detail.textContent = stage.detail;
+    previous.disabled = activeIndex === 0;
+    nextLabel.textContent = activeIndex === stages.length - 1 ? 'Start again' : 'Next step';
+    if (focus) stageButtons[activeIndex].focus();
+  };
+
+  stageButtons.forEach(function (button, index) {
+    button.addEventListener('click', function () { selectStage(index, false); });
   });
+  document.querySelector('.flow-steps').addEventListener('keydown', function (event) {
+    var index = stageButtons.indexOf(document.activeElement);
+    if (index < 0) return;
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') selectStage(index + 1, true);
+    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') selectStage(index - 1, true);
+    else if (event.key === 'Home') selectStage(0, true);
+    else if (event.key === 'End') selectStage(stages.length - 1, true);
+    else return;
+    event.preventDefault();
+  });
+  previous.addEventListener('click', function () { selectStage(activeIndex - 1, false); });
+  next.addEventListener('click', function () { selectStage(activeIndex === stages.length - 1 ? 0 : activeIndex + 1, false); });
 } catch (e) {}
 try {
   // TOC scrollspy: highlight the section currently in view.
