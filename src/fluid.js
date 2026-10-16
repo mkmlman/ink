@@ -1674,6 +1674,14 @@ function generateColor () {
     return c;
 }
 
+function normalizeSplatColor (color) {
+    if (!color || typeof color !== 'object' || ['r', 'g', 'b'].some(channel =>
+        !Number.isFinite(color[channel]) || color[channel] < 0 || color[channel] > 1))
+        throw new TypeError('splat color must be an object with normalized r, g, and b channels');
+    const brightness = (config.BRIGHTNESS != null ? config.BRIGHTNESS : 3.0) * 0.15;
+    return { r: color.r * brightness, g: color.g * brightness, b: color.b * brightness };
+}
+
 function HSVtoRGB (h, s, v) {
     let r, g, b, i, f, p, q, t;
     i = Math.floor(h * 6);
@@ -1837,7 +1845,7 @@ const inkFluid = {
     } catch (e) {}
     canvas.hidden = false; canvas.style.display = ''; canvas.classList.add('is-visible'); needsResize = true; if (resizeCanvas()) initFramebuffers(); scheduleUpdate(); },
   hide: function(){ canvas.hidden = true; canvas.style.display = 'none'; canvas.classList.remove('is-visible'); if (frameRequest) { cancelAnimationFrame(frameRequest); frameRequest = 0; } },
-  splat: function(x,y,dx,dy){ if (config.PAUSED) return; splat(x,y,dx,dy, generateColor()); },
+  splat: function(x,y,dx,dy,color){ if (config.PAUSED) return; splat(x,y,dx,dy, color == null ? generateColor() : normalizeSplatColor(color)); },
   burst: function(n){ if (config.PAUSED) return; splatStack.push(Math.max(1, Math.min(40, n == null ? (parseInt(Math.random() * 20) + 5) : Number(n) || 1))); emit('ink:burst'); },
   clear: function(){ if (!config.PAUSED) clearSimulation(); },
   pause: function(){ setPaused(true); },

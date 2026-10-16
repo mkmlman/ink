@@ -3,7 +3,32 @@
 (function () {
   const fluid = window.inkFluid;
   const controls = document.querySelector('.preview-controls');
+  const controlsToggle = document.getElementById('preview-controls-toggle');
+  const controlsToggleLabel = document.getElementById('preview-controls-toggle-label');
   const status = document.getElementById('preview-status');
+  const compactLayout = window.matchMedia('(max-width: 480px)');
+  const setControlsOpen = open => {
+    document.body.classList.toggle('preview-controls-open', open);
+    controlsToggle.setAttribute('aria-expanded', String(open));
+    controlsToggleLabel.textContent = open ? 'Hide controls' : 'Show controls';
+  };
+  controlsToggle.addEventListener('click', () => {
+    setControlsOpen(controlsToggle.getAttribute('aria-expanded') !== 'true');
+  });
+  window.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && document.body.classList.contains('preview-controls-open')) {
+      setControlsOpen(false);
+      controlsToggle.focus();
+    }
+  });
+  window.focusInkPreviewControl = id => {
+    if (compactLayout.matches) setControlsOpen(true);
+    const control = document.getElementById(id);
+    if (control && !controls.contains(control)) return false;
+    if (!control || control.disabled) return false;
+    control.focus({ preventScroll: true });
+    return document.activeElement === control;
+  };
   if (!fluid || fluid.available === false) {
     if (status) status.textContent = fluid && fluid.config
       ? 'Live ink is unavailable on this device.'
@@ -17,13 +42,20 @@
     controls.disabled = reducedMotion.matches;
     status.textContent = reducedMotion.matches
       ? 'Live motion is disabled by your reduced-motion setting.'
-      : 'Move inside the field to release ink.';
+      : 'Sample flow ready. Move inside to add ink.';
   };
   syncMotionPreference();
   if (reducedMotion.addEventListener) reducedMotion.addEventListener('change', syncMotionPreference);
   else if (reducedMotion.addListener) reducedMotion.addListener(syncMotionPreference);
 
   fluid.setConfig({ IDLE_INJECTION: 0 });
+  if (!reducedMotion.matches) {
+    [
+      { x: 0.18, y: 0.70, dx: 420, dy: 140, color: { r: 0.95, g: 0.16, b: 0.42 } },
+      { x: 0.50, y: 0.42, dx: -260, dy: 340, color: { r: 0.12, g: 0.52, b: 1.00 } },
+      { x: 0.82, y: 0.64, dx: -420, dy: -100, color: { r: 0.38, g: 0.95, b: 0.58 } }
+    ].forEach(({ x, y, dx, dy, color }) => fluid.splat(x, y, dx, dy, color));
+  }
   const ranges = [
     { id: 'preview-radius', key: 'SPLAT_RADIUS', output: 'preview-radius-value', digits: 2 },
     { id: 'preview-force', key: 'SPLAT_FORCE', output: 'preview-force-value', digits: 0 },

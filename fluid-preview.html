@@ -12,9 +12,12 @@
   <canvas class="fluid-canvas" id="fluid" aria-hidden="true"></canvas>
   <header class="preview-intro">
     <span class="preview-kicker">Live simulation</span>
-    <p id="preview-status" role="status" aria-live="polite">Move inside the field to release ink.</p>
+    <p id="preview-status" role="status" aria-live="polite">Sample flow ready. Move inside to add ink.</p>
   </header>
-  <fieldset class="preview-controls" aria-label="Live simulation controls">
+  <button class="preview-controls-toggle" id="preview-controls-toggle" type="button" aria-controls="preview-controls" aria-expanded="false">
+    <span aria-hidden="true">☷</span><span id="preview-controls-toggle-label">Show controls</span>
+  </button>
+  <fieldset class="preview-controls" id="preview-controls" aria-label="Live simulation controls">
     <legend>Shape the flow</legend>
     <label class="preview-range" for="preview-radius">
       <span>Brush radius</span><output id="preview-radius-value" for="preview-radius">0.40</output>

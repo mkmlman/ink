@@ -173,9 +173,14 @@
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
       const coarsePointer = window.matchMedia('(any-pointer: coarse)');
       const getPlayCopy = () => coarsePointer.matches
-        ? 'Move the cursor or drag one finger to release ink into the flow. Tune the brush and motion, then see where it takes you.'
-        : 'Move the cursor to release ink into the flow. Tune the brush and motion, then see where it takes you.';
+        ? 'Drag one finger to paint. Tap the sliders icon to tune the brush and flow.'
+        : 'Move the cursor to paint. Open Controls to tune the brush and flow.';
       const playCopy = getPlayCopy();
+      const openingComposition = [
+        { x: 0.18, y: 0.70, dx: 420, dy: 140, color: { r: 0.95, g: 0.16, b: 0.42 } },
+        { x: 0.50, y: 0.42, dx: -260, dy: 340, color: { r: 0.12, g: 0.52, b: 1.00 } },
+        { x: 0.82, y: 0.64, dx: -420, dy: -100, color: { r: 0.38, g: 0.95, b: 0.58 } }
+      ];
       welcomeCopy.textContent = playCopy;
 
       let toastTimer;
@@ -222,7 +227,13 @@
       window.addEventListener('ink:ready', () => {
         canvas.classList.add('is-visible');
         if (reducedMotion.matches) showReducedMotionState();
-        else setRuntime('ready');
+        else {
+          if (body.dataset.openingComposition !== 'shown') {
+            openingComposition.forEach(({ x, y, dx, dy, color }) => window.inkFluid?.splat(x, y, dx, dy, color));
+            body.dataset.openingComposition = 'shown';
+          }
+          setRuntime('ready');
+        }
       });
       window.addEventListener('ink:unavailable', (event) => {
         if (reducedMotion.matches) showReducedMotionState();

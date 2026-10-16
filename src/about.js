@@ -172,6 +172,8 @@ try {
     var pendingPreviewControl = null;
     var focusPreviewControl = function (controlId) {
       try {
+        var child = previewFrame.contentWindow;
+        if (child && typeof child.focusInkPreviewControl === 'function' && child.focusInkPreviewControl(controlId)) return true;
         var control = previewFrame.contentDocument && previewFrame.contentDocument.getElementById(controlId);
         if (control && !control.disabled) { control.focus(); return true; }
       } catch (e) {}

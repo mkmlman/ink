@@ -11,7 +11,7 @@ Move your cursor over the canvas to paint; no click or drag is needed. On touchs
 - `src/fluid.js` — WebGL fluid simulation with a WebGL1 fallback (auto-starts on `<canvas id="fluid">`)
 - `src/dials.js` — 10-slider panel wired to `#fluid-dialers` (persists to `localStorage ink:fluid-dials-v1`)
 - `src/angry-dials.js` — optional slingshot-thumb play layer for the dials (keyboard path untouched)
-- `src/about.js` — progress bar, reveal-on-scroll, glow demo, and TOC scrollspy for `about.html`
+- `src/about.js` — solver walkthrough, model-only explorers, progress bar, reveal-on-scroll, and TOC scrollspy for `about.html`
 - `src/ink.css` — full-bleed canvas + responsive control dock
 - `src/bloom-dither.png` — dithering texture
 - `src/og-image.png` — link-preview image (1200×630 droplet mark)
@@ -19,7 +19,9 @@ Move your cursor over the canvas to paint; no click or drag is needed. On touchs
 - `src/fonts/DepartureMono-Regular.woff2` — self-hosted mono font (SIL OFL 1.1, see `src/fonts/OFL.txt`)
 - `index.html` — demo page (published to GitHub Pages from the repo root)
 - `about.html` — “How it works” explainer linked from the demo footer
-- `404.html`, `robots.txt` — Pages fallback and crawler rules
+- `fluid-preview.html`, `src/preview.js`, and `src/preview.css` — interactive guide preview; on narrow screens, **Show controls** opens the panel and Escape closes it
+- `404.html`, `robots.txt`, `sitemap.xml` — Pages fallback and crawler metadata
+- `tests/site.spec.js`, `tests/compat.spec.js`, and `playwright.config.js` — Chromium regression and WebKit mobile smoke tests
 
 ## Embed in your site
 
@@ -33,11 +35,14 @@ Add the stylesheet, canvas, and two scripts. No build step or server component i
 <script src="https://mkmlman.github.io/ink/src/dials.js" defer></script>
 ```
 
-ESM side-effect import also works (same globals, no named exports):
+In a browser module, dynamic imports work with the same globals and no named
+exports. Set the texture URL first because imported modules do not expose a
+`document.currentScript` URL to the simulation:
 
 ```js
-import 'https://mkmlman.github.io/ink/src/fluid.js';
-import 'https://mkmlman.github.io/ink/src/dials.js';
+window.inkDitherUrl = 'https://mkmlman.github.io/ink/src/bloom-dither.png';
+await import('https://mkmlman.github.io/ink/src/fluid.js');
+await import('https://mkmlman.github.io/ink/src/dials.js');
 ```
 
 Keep `fluid.js` before `dials.js`. The dithering LUT (`bloom-dither.png`) resolves
@@ -60,6 +65,7 @@ Primary global is `window.inkFluid`.
 inkFluid.show();
 inkFluid.hide();
 inkFluid.splat(0.5, 0.5, dx, dy); // normalized coords + velocity delta
+inkFluid.splat(0.5, 0.5, dx, dy, { r: 0.95, g: 0.16, b: 0.42 }); // optional normalized RGB
 inkFluid.burst(8);                // random splats
 inkFluid.clear();                 // clears dye and motion
 inkFluid.pause();
@@ -68,6 +74,10 @@ inkFluid.setConfig('CURL', 6);
 inkFluid.setConfig({ BRIGHTNESS: 2.5, BLOOM_INTENSITY: 0.4 });
 console.log(inkFluid.config, inkFluid.paused);
 ```
+
+The optional fifth argument to `inkFluid.splat` is an RGB object with finite
+channels from `0` to `1`. Its brightness is scaled by the current `BRIGHTNESS`
+setting; invalid channels throw a `TypeError`.
 
 Panel helper (`window.inkDials`):
 
@@ -119,7 +129,7 @@ settings.
   the simulation resumes. Use Clear (or `R`) to remove dye and motion.
 - The control panel includes expressive presets and a persisted Low power mode,
   which lowers simulation resolution and disables bloom/sunrays to save battery.
-- Ambient motion defaults to a subtle idle trickle; set it to `0` for a still canvas.
+- Ambient motion defaults to a subtle idle trickle; set it to `0` for a still canvas. With motion enabled, the home page and guide preview open with the same three fixed-position, fixed-color splats; Clear removes them like any other ink. On phones, the home-page copy points to the sliders icon for tuning the flow.
 - `Space` bursts when focus is outside controls; `P` toggles pause except while typing. `?` (or `H`) opens the quick help.
 - WebGL startup failures are reported as unavailable instead of leaving a blank
   canvas that appears ready; a lost GL context pauses, and restores via reload.
@@ -137,10 +147,14 @@ settings.
 
 ```sh
 npm install
-npx playwright install chromium
+npx playwright install chromium webkit
 npm run dev
 npm run check
-npm test # Playwright coverage for interactions, config validation, resizing, and motion preferences
+npm test # Chromium regression suite plus WebKit mobile smoke coverage
 ```
+
+The simulation assertions run on Chromium with SwiftShader; WebKit runs UI-only
+mobile smoke tests. Physical phones and hardware-backed GPUs are not covered by
+this automated suite.
 
 MIT

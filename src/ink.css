@@ -284,8 +284,8 @@ body[data-runtime="reduced-motion"] .runtime-status { color: var(--muted-strong)
 .fluid-dialers[hidden] { display: none !important; }
 .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding-bottom: 18px; border-bottom: 1px solid var(--line-soft); }
 .preset-row { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding: 14px 0 0; }
-.preset-label { margin-right: 2px; color: var(--muted); font-family: var(--mono); font-size: 0.54rem; letter-spacing: 0.12em; text-transform: uppercase; }
-.preset-button, .low-power-toggle { min-height: 28px; padding: 0 9px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted-strong); background: rgba(237, 244, 239, 0.04); font-family: var(--mono); font-size: 0.54rem; letter-spacing: 0.03em; cursor: pointer; transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease; }
+.preset-label { margin-right: 2px; color: var(--muted); font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.preset-button, .low-power-toggle { min-height: 28px; padding: 0 9px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted-strong); background: rgba(237, 244, 239, 0.04); font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.03em; cursor: pointer; transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease; }
 .preset-button[aria-pressed="true"], .low-power-toggle[aria-pressed="true"] { color: var(--accent); border-color: rgba(223, 248, 227, 0.32); background: rgba(223, 248, 227, 0.09); }
 .preset-button:hover, .low-power-toggle:hover { color: var(--text); border-color: var(--line-strong); }
 .preset-button:focus-visible, .low-power-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
@@ -592,7 +592,7 @@ body.page-about .effect-link a:focus-visible { outline: 2px solid var(--accent);
   font-family: var(--mono);
   text-align: center;
 }
-.fig-no { color: var(--accent); font-size: 0.6rem; letter-spacing: 0.18em; opacity: 0.9; }
+.fig-no { color: var(--accent); font-size: 0.64rem; letter-spacing: 0.18em; opacity: 0.9; }
 .fig-title { color: var(--muted); font-size: 0.66rem; letter-spacing: 0.04em; }
 .diagram { display: block; width: 100%; height: auto; }
 .graph-max { filter: drop-shadow(0 0 5px rgba(223, 248, 227, 0.3)); }
@@ -963,14 +963,14 @@ body.page-about .site-footer {
   .fluid-dialers { top: auto; right: 12px; bottom: calc(51px + env(safe-area-inset-bottom)); left: 12px; width: auto; max-height: min(58vh, 430px); padding: 16px 16px 12px; overflow: hidden; border-radius: 20px; transform: none; }
   .panel-head { display: flex; align-items: center; gap: 16px; padding-bottom: 13px; }
   .preset-row { gap: 6px; padding-top: 11px; }
-  .preset-button { min-height: 26px; padding: 0 8px; font-size: 0.51rem; }
+  .preset-button { min-height: 30px; padding: 0 8px; font-size: 0.58rem; }
   .panel-head .eyebrow { display: block; margin-bottom: 6px; font-size: 0.53rem; }
   .panel-head h2 { font-size: 0.98rem; }
   .control-sections { gap: 21px; padding: 15px 2px 18px; overflow-x: hidden; overflow-y: auto; scrollbar-width: thin; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
   .control-section h3 { display: block; margin-bottom: 11px; font-size: 0.55rem; }
   .dial-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 16px; }
   .dial { min-width: 0; gap: 9px; }
-  .dial-label { font-size: 0.56rem; }
+  .dial-label { font-size: 0.62rem; }
   .dial-knob { height: 24px; padding: 7px 0; }
   .dial-knob-face { height: 4px; }
   .dial-knob-face::after { width: 16px; height: 16px; }
@@ -995,17 +995,17 @@ body.page-about .site-footer {
   .brand-word { font-size: 0.65rem; letter-spacing: 0.12em; }
   .flow-art { min-height: 175px; }
   .flow-art svg { height: 175px; }
-  .flow-art-caption { right: 11px; bottom: 9px; font-size: 0.48rem; }
+  .flow-art-caption { right: 11px; bottom: 9px; font-size: 0.53rem; }
   .flow-steps { gap: 3px; padding: 12px 9px 12px; }
   .flow-steps::before, .flow-steps::after { right: 9px; bottom: 3px; left: 9px; }
-  .flow-step { min-height: 56px; gap: 4px; padding: 0 2px; border-radius: 9px; font-size: 0.55rem; letter-spacing: 0; line-height: 1.1; white-space: nowrap; }
-  .flow-step span { font-size: 0.46rem; }
+  .flow-step { min-height: 56px; gap: 4px; padding: 0 2px; border-radius: 9px; font-size: 0.59rem; letter-spacing: 0; line-height: 1.1; white-space: nowrap; }
+  .flow-step span { font-size: 0.5rem; }
   .flow-reading { grid-template-columns: 1fr; gap: 8px; min-height: 0; margin: 4px 9px 0; padding: 15px; }
   .flow-reading-top { display: grid; align-items: start; justify-content: initial; gap: 7px; }
   .flow-reading h3 { font-size: 1rem; }
   .flow-reading > p { font-size: 0.84rem; }
   .flow-nav { gap: 6px; padding: 12px 9px 11px; }
-  .flow-nav-button { min-height: 36px; gap: 6px; padding: 0 9px; font-size: 0.53rem; }
+  .flow-nav-button { min-height: 38px; gap: 6px; padding: 0 9px; font-size: 0.58rem; }
   .fluid-preview-frame { height: 470px; }
   /* SVG labels are authored for 560 units wide; scale type up as the diagram shrinks. */
   .diagram-label { font-size: 15px; }

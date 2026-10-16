@@ -6,6 +6,33 @@ const setRangeValue = (locator, value) => locator.evaluate((input, nextValue) =>
   input.dispatchEvent(new Event('input', { bubbles: true }));
 }, value);
 
+test('home starts with the same curated color composition', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.__openingSplats = [];
+    window.addEventListener('ink:ready', () => {
+      const originalSplat = window.inkFluid.splat;
+      window.inkFluid.splat = function (...args) {
+        window.__openingSplats.push(args);
+        return originalSplat.apply(this, args);
+      };
+    });
+  });
+  await page.goto(home);
+  await page.waitForFunction(() => window.__openingSplats?.length === 3);
+  const openingSplats = await page.evaluate(() => window.__openingSplats);
+  expect(openingSplats.map(([x, y]) => [x, y])).toEqual([[0.18, 0.7], [0.5, 0.42], [0.82, 0.64]]);
+  expect(openingSplats.map(([, , , , color]) => color)).toEqual([
+    { r: 0.95, g: 0.16, b: 0.42 },
+    { r: 0.12, g: 0.52, b: 1 },
+    { r: 0.38, g: 0.95, b: 0.58 }
+  ]);
+  const invalidColor = await page.evaluate(() => {
+    try { window.inkFluid.splat(0.5, 0.5, 0, 0, { r: 2, g: 0, b: 0 }); return null; }
+    catch (error) { return error.message; }
+  });
+  expect(invalidColor).toContain('normalized r, g, and b');
+});
+
 test('remaining touch keeps its pointer after another touch ends', async ({ page }) => {
   await page.addInitScript(() => {
     window.inkInputCount = 0;
@@ -148,12 +175,46 @@ test('dissipation explorer updates the modeled curve and readout', async ({ page
 });
 
 test('settings glossary links focus matching live-preview controls', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${home}about.html#about-dials`);
   const link = page.getByRole('link', { name: 'Try Radius in the live preview' });
   await expect(link).toHaveAttribute('data-preview-control', 'preview-radius');
   await link.click();
   await expect(page).toHaveURL(/#about-lab$/);
   await expect(page.frameLocator('#fluid-preview-frame').locator('#preview-radius')).toBeFocused();
+});
+
+test('mobile live preview prioritizes the canvas and exposes controls on demand', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.__previewSplats = [];
+    window.addEventListener('ink:ready', () => {
+      const originalSplat = window.inkFluid.splat;
+      window.inkFluid.splat = function (...args) {
+        window.__previewSplats.push(args);
+        return originalSplat.apply(this, args);
+      };
+    });
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${home}fluid-preview.html`);
+  await page.waitForFunction(() => window.__previewSplats?.length === 3);
+  const toggle = page.locator('#preview-controls-toggle');
+  const controls = page.locator('#preview-controls');
+  await expect(toggle).toBeVisible();
+  await expect(controls).toBeHidden();
+  const labelFontSize = await page.locator('.preview-range').first().evaluate(element => parseFloat(getComputedStyle(element).fontSize));
+  expect(labelFontSize).toBeGreaterThanOrEqual(10);
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(controls).toBeVisible();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#preview-radius')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(toggle).toBeFocused();
+  await expect(controls).toBeHidden();
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await expect(controls).toBeVisible();
+  await expect(page.locator('#preview-controls-toggle')).toBeHidden();
 });
 
 test('post-processing explanation returns readers to the real effect controls', async ({ page }) => {
@@ -188,7 +249,7 @@ test('live lab controls change the real simulation configuration', async ({ page
   await page.goto(`${home}about.html`);
   await page.locator('#fluid-preview-frame').scrollIntoViewIfNeeded();
   const lab = page.frameLocator('#fluid-preview-frame');
-  await expect(lab.locator('#preview-status')).toContainText('Move inside the field');
+  await expect(lab.locator('#preview-status')).toContainText('Sample flow ready');
   await setRangeValue(lab.locator('#preview-radius'), 0.65);
   await setRangeValue(lab.locator('#preview-force'), 15000);
   await expect.poll(() => lab.locator('body').evaluate(body => {
