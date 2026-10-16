@@ -154,20 +154,27 @@
       <h2 id="about-motion">Input <a class="anchor" href="#about-motion" aria-label="Link to this section">#</a></h2>
       <p>Each pointer movement writes one splat: a velocity impulse along the direction of travel, plus dye at the pointer position. Radius and force come from the Brush settings. Stroke color is picked at random for every stroke.</p>
       <figure class="figure">
-        <svg class="diagram" viewBox="0 0 560 200" role="img" aria-label="Diagram of a brush stamp: a circle for the brush radius with an arrow for the push direction">
-          <circle cx="280" cy="100" r="62" fill="none" stroke="#dff8e3" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.8"/>
+        <svg class="diagram input-diagram" viewBox="0 0 560 260" role="img" aria-label="Interactive model of an input splat: brush radius, dye dab, and a velocity push">
           <defs>
             <marker id="pushArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M0,1 L9,5 L0,9 z" fill="#f0c7a4"/>
             </marker>
           </defs>
-          <circle cx="280" cy="100" r="4" fill="#dff8e3"/>
-          <line x1="280" y1="100" x2="392" y2="52" stroke="#f0c7a4" stroke-width="2" marker-end="url(#pushArrow)"/>
-          <text x="280" y="182" text-anchor="middle" class="diagram-label">brush radius</text>
-          <text x="398" y="46" text-anchor="middle" class="diagram-label">your push</text>
-          <text x="280" y="124" text-anchor="middle" class="diagram-label">dab of color</text>
+          <circle id="splat-radius-ring" cx="280" cy="130" r="62" fill="none" stroke="#dff8e3" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.8"/>
+          <circle cx="280" cy="130" r="4" fill="#dff8e3"/>
+          <line id="splat-force-vector" x1="280" y1="130" x2="392" y2="82" stroke="#f0c7a4" stroke-width="2" marker-end="url(#pushArrow)"/>
+          <text id="splat-radius-label" x="280" y="206" text-anchor="middle" class="diagram-label">brush radius</text>
+          <text id="splat-force-label" x="398" y="76" text-anchor="middle" class="diagram-label">your push</text>
+          <text x="280" y="154" text-anchor="middle" class="diagram-label">dab of color</text>
         </svg>
-        <figcaption><span class="fig-no">Figure 2</span><span class="fig-title">One input splat: radius, direction, dye</span></figcaption>
+        <div class="splat-controls">
+          <label for="splat-radius">Brush radius <output id="splat-radius-value" for="splat-radius">0.40</output></label>
+          <input id="splat-radius" type="range" min="0.10" max="0.80" step="0.05" value="0.40" aria-describedby="splat-note">
+          <label for="splat-force">Push force <output id="splat-force-value" for="splat-force">12,000</output></label>
+          <input id="splat-force" type="range" min="2000" max="20000" step="500" value="12000" aria-describedby="splat-note">
+          <p id="splat-note">Adjust the model only; these controls do not change the live simulation.</p>
+        </div>
+        <figcaption><span class="fig-no">Figure 2</span><span class="fig-title">One input splat: radius, force, dye</span></figcaption>
       </figure>
       <p>Burst writes eight splats at random positions. Pause freezes the canvas without clearing it; cursor movement and bursts resume when you unpause.</p>
     </section>

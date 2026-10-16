@@ -147,6 +147,25 @@ test('dissipation explorer updates the modeled curve and readout', async ({ page
   await expect.poll(() => curve.getAttribute('d')).not.toBe(defaultCurve);
 });
 
+test('input splat model responds to brush radius and push force', async ({ page }) => {
+  await page.goto(`${home}about.html#about-motion`);
+  const radius = page.locator('#splat-radius');
+  const force = page.locator('#splat-force');
+  const ring = page.locator('#splat-radius-ring');
+  const vector = page.locator('#splat-force-vector');
+  await expect(radius).toHaveValue('0.4');
+  await expect(force).toHaveValue('12000');
+  await expect(ring).toHaveAttribute('r', '62.0');
+  const initialVectorLength = await vector.getAttribute('x2');
+  await setRangeValue(radius, 0.8);
+  await expect(page.locator('#splat-radius-value')).toHaveText('0.80');
+  await expect(ring).toHaveAttribute('r', '112.0');
+  await setRangeValue(force, 20000);
+  await expect(page.locator('#splat-force-value')).toHaveText('20,000');
+  await expect.poll(() => vector.getAttribute('x2')).not.toBe(initialVectorLength);
+  await expect(page.locator('#splat-note')).toContainText('do not change the live simulation');
+});
+
 test('live lab controls change the real simulation configuration', async ({ page }) => {
   await page.goto(`${home}about.html`);
   await page.locator('#fluid-preview-frame').scrollIntoViewIfNeeded();

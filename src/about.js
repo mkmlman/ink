@@ -131,6 +131,42 @@ try {
   }
 } catch (e) {}
 try {
+  var splatRadius = document.getElementById('splat-radius');
+  var splatForce = document.getElementById('splat-force');
+  var splatRing = document.getElementById('splat-radius-ring');
+  var splatRadiusLabel = document.getElementById('splat-radius-label');
+  var splatVector = document.getElementById('splat-force-vector');
+  var splatForceLabel = document.getElementById('splat-force-label');
+  var splatRadiusOutput = document.getElementById('splat-radius-value');
+  var splatForceOutput = document.getElementById('splat-force-value');
+  if (splatRadius && splatForce && splatRing && splatRadiusLabel && splatVector && splatForceLabel && splatRadiusOutput && splatForceOutput) {
+    var updateSplatModel = function () {
+      var radius = parseFloat(splatRadius.value);
+      var force = parseFloat(splatForce.value);
+      var radiusPixels = 12 + radius * 125;
+      var forceRatio = (force - 2000) / 18000;
+      var angle = -Math.atan2(48, 112);
+      var vectorLength = 90 + forceRatio * 58;
+      var x = 280 + Math.cos(angle) * vectorLength;
+      var y = 130 + Math.sin(angle) * vectorLength;
+      splatRing.setAttribute('r', radiusPixels.toFixed(1));
+      splatRadiusLabel.setAttribute('y', (130 + radiusPixels + 14).toFixed(1));
+      splatVector.setAttribute('x2', x.toFixed(1));
+      splatVector.setAttribute('y2', y.toFixed(1));
+      splatVector.setAttribute('stroke-width', (1.2 + forceRatio * 1.44).toFixed(2));
+      splatForceLabel.setAttribute('x', (x + 8).toFixed(1));
+      splatForceLabel.setAttribute('y', (y - 6).toFixed(1));
+      splatRadiusOutput.textContent = radius.toFixed(2);
+      splatForceOutput.textContent = String(force).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      splatRadius.setAttribute('aria-valuetext', radius.toFixed(2) + ' brush radius');
+      splatForce.setAttribute('aria-valuetext', splatForceOutput.textContent + ' push force');
+    };
+    splatRadius.addEventListener('input', updateSplatModel);
+    splatForce.addEventListener('input', updateSplatModel);
+    updateSplatModel();
+  }
+} catch (e) {}
+try {
   // TOC scrollspy: highlight the section currently in view.
   var tocMap = {};
   document.querySelectorAll('.toc a[href^="#"]').forEach(function (a) {
