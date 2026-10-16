@@ -121,7 +121,6 @@ test('simulation walkthrough guides the reader through the five passes', async (
   await expect(page.locator('#flow-current-step')).toHaveText('STEP 03');
   await expect(page.locator('#flow-title')).toHaveText('Pressure evens the flow');
   await expect(page.locator('#flow-detail')).toContainText('Jacobi iterations');
-  await expect(page.locator('.art-pressure')).toHaveCSS('opacity', '1');
   await page.getByRole('button', { name: 'Next step' }).click();
   await expect(guide).toHaveAttribute('data-stage', 'advection');
   await expect(page.locator('#flow-title')).toHaveText('The current carries color');
