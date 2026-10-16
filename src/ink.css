@@ -582,6 +582,24 @@ body:has(.about-main)::before, body.page-about::before {
 .fig-title { color: var(--muted); font-size: 0.66rem; letter-spacing: 0.04em; }
 .diagram { display: block; width: 100%; height: auto; }
 .graph-max { filter: drop-shadow(0 0 5px rgba(223, 248, 227, 0.3)); }
+.graph-selected { filter: drop-shadow(0 0 5px rgba(240, 199, 164, 0.32)); }
+.decay-controls {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 10px 0 0;
+  padding: 13px 15px 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: rgba(5, 7, 7, 0.45);
+}
+.decay-control-heading { display: flex; grid-column: 1 / -1; align-items: baseline; justify-content: space-between; gap: 12px; }
+.decay-control-heading label { color: var(--muted-strong); font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.decay-control-heading output { color: var(--accent); font-family: var(--mono); font-size: 0.7rem; font-variant-numeric: tabular-nums; }
+.decay-controls input { grid-column: 1 / -1; width: 100%; height: 20px; margin: 0; accent-color: var(--accent); cursor: ew-resize; }
+.decay-controls input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.decay-controls p { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: 0.78rem; line-height: 1.5; }
 .diagram-label { fill: var(--muted-strong); font-family: var(--mono); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
 .diagram-tick { fill: var(--muted); font-family: var(--mono); font-size: 12px; }
 .diagram-legend { fill: var(--muted-strong); font-family: var(--mono); font-size: 13px; }

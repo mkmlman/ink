@@ -102,6 +102,35 @@ try {
   next.addEventListener('click', function () { selectStage(activeIndex === stages.length - 1 ? 0 : activeIndex + 1, false); });
 } catch (e) {}
 try {
+  var persistenceInput = document.getElementById('decay-persistence');
+  var selectedCurve = document.getElementById('curveSelected');
+  var selectedMarker = document.getElementById('decay-marker');
+  var persistenceOutput = document.getElementById('decay-value');
+  var decayReadout = document.getElementById('decay-readout');
+  if (persistenceInput && selectedCurve && selectedMarker && persistenceOutput && decayReadout) {
+    var updateDecayModel = function () {
+      var persistence = parseFloat(persistenceInput.value);
+      var dissipation = 2.8 - persistence * 0.53;
+      var points = [];
+      for (var second = 0; second <= 20; second++) {
+        var retained = Math.pow(1 / (1 + dissipation / 60), second * 60);
+        var x = 44 + second * 25;
+        var y = 190 - Math.max(0, Math.min(1, retained)) * 178;
+        points.push((second === 0 ? 'M' : 'L') + x + ',' + y.toFixed(1));
+      }
+      selectedCurve.setAttribute('d', points.join(' '));
+      var atFiveSeconds = Math.pow(1 / (1 + dissipation / 60), 300);
+      selectedMarker.setAttribute('cy', (190 - atFiveSeconds * 178).toFixed(1));
+      var remaining = Math.round(atFiveSeconds * 100);
+      persistenceOutput.textContent = persistence.toFixed(2);
+      decayReadout.textContent = 'At 5 seconds, about ' + remaining + '% remains at 60 fps.';
+      persistenceInput.setAttribute('aria-valuetext', persistence.toFixed(2) + ' persistence; about ' + remaining + '% remains after 5 seconds');
+    };
+    persistenceInput.addEventListener('input', updateDecayModel);
+    updateDecayModel();
+  }
+} catch (e) {}
+try {
   // TOC scrollspy: highlight the section currently in view.
   var tocMap = {};
   document.querySelectorAll('.toc a[href^="#"]').forEach(function (a) {

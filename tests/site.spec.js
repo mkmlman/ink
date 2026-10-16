@@ -132,6 +132,21 @@ test('simulation walkthrough guides the reader through the five passes', async (
   await expect(guide).toHaveAttribute('data-stage', 'advection');
 });
 
+test('dissipation explorer updates the modeled curve and readout', async ({ page }) => {
+  await page.goto(`${home}about.html#about-fade`);
+  const slider = page.getByRole('slider', { name: 'Explore ink persistence' });
+  const curve = page.locator('#curveSelected');
+  await expect(slider).toHaveValue('4.5');
+  await expect(page.locator('#decay-value')).toHaveText('4.50');
+  await expect(page.locator('#decay-readout')).toHaveText('At 5 seconds, about 13% remains at 60 fps.');
+  const defaultCurve = await curve.getAttribute('d');
+  await setRangeValue(slider, 5);
+  await expect(page.locator('#decay-value')).toHaveText('5.00');
+  await expect(page.locator('#decay-readout')).toHaveText('At 5 seconds, about 47% remains at 60 fps.');
+  await expect(slider).toHaveAttribute('aria-valuetext', '5.00 persistence; about 47% remains after 5 seconds');
+  await expect.poll(() => curve.getAttribute('d')).not.toBe(defaultCurve);
+});
+
 test('live lab controls change the real simulation configuration', async ({ page }) => {
   await page.goto(`${home}about.html`);
   await page.locator('#fluid-preview-frame').scrollIntoViewIfNeeded();
